@@ -15,6 +15,8 @@ Dernière mise à jour : 2026-11-07
 
 - Interface 3 publiée sur le canal existant. 49 aliments hors ligne, 8 catégories avec pictogrammes intégrés, recherche, portions en grammes et calories calculées. Saisie manuelle en secours. Les paramètres ont deux actions et une fermeture.
 
+- Sur `feat/profil-objectif`, l’aperçu V0.4 embarque l’interface 3 comme base et y ajoute le profil détaillé, l’estimation de maintien et l’objectif de poids. Les données supplémentaires sont enregistrées dans le profil Android existant. Le pont V0.3 reste compatible avec la partie historique de cette interface.
+
 ## Décisions et changements
 
 - 2026-11-07. Passage du POC à de petites itérations testables. [Spécifications et lots](docs/SPECIFICATIONS.md).
@@ -27,6 +29,8 @@ Dernière mise à jour : 2026-11-07
 
 - 2026-11-07. Les estimations utilisent la [base suisse des valeurs nutritives de l’OSAV V7.1](https://www.naehrwertdaten.ch/fr/telechargement/). L’interface 3 conserve le protocole 1 et enregistre le libellé avec la portion et les kcal calculées via le pont existant.
 
+- 2026-11-07. L’objectif de poids est indépendant de l’objectif calorique. La tendance utilise des pesées datées et le poids issu d’un profil ancien reste disponible. [Méthode et essai sur téléphone](docs/PROFIL_OBJECTIF.md).
+
 ## Contrôles et limites
 
 - La V0.1 est signée avec une clé debug générée par le runner CI. Une nouvelle APK signée avec une autre clé ne peut pas la remplacer en conservant son journal.
@@ -38,6 +42,9 @@ Dernière mise à jour : 2026-11-07
 - CI V0.3 réussie : tests, compilation Gradle et artefact dans le [run 42373121667](https://github.com/fchautems/NutritionCoach/actions/runs/42373121667). Le canal HTTPS sert l’interface 2 et le SHA-256 téléchargé correspond au manifeste.
 - Interface 3 : manifeste HTTPS et empreinte vérifiés sur le canal public. Test DOM avec pont simulé dans les deux sens, 2 → 3 → 2, avec le même profil, le même objectif, une entrée historique et une saisie manuelle de la V2. La V2 relit aussi l’ajout fait par le catalogue de la V3. Le chargement de la V3 sur téléphone reste à confirmer.
 
+- Profil V0.4 : neuf tests JUnit et quatre tests DOM réussis. Compilation locale avec le SDK Android 35 et certificat vérifié identique à celui de l’aperçu V0.3 distribué. L’essai physique de la mise à niveau reste à effectuer.
+
 ## Prochaine action
 
 - Confirmer le passage à l’interface 3 sur téléphone et l’affichage des saisies existantes. Poursuivre avec récents et favoris.
+- Pour le lot profil, essayer l’APK V0.4 en mise à jour de la V0.3 avec le même certificat. La fusion et la diffusion relèvent du chat de coordination.
