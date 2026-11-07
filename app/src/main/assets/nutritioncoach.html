@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<title>NutritionCoach</title>
+<style>
+:root {
+    color-scheme: light;
+    --cream: #fcf8f1;
+    --surface: #fffdfa;
+    --ink: #22283a;
+    --muted: #555e73;
+    --denim: #425783;
+    --deep: #33446a;
+    --apricot: #f0b781;
+    --edge: #e6ded2;
+    --shadow: 0 2px 0 #e1d9cc, 0 3px 7px #47372812;
+    font: 100%/1.48 system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--cream); color: var(--ink); }
+main { max-width: 34rem; margin: auto; padding: 1rem 1.1rem 2rem; }
+h1, h2, p { margin: 0; }
+h1 { margin-top: .65rem; font-size: 2.1rem; line-height: 1.13; letter-spacing: -.04em; }
+h2 { font-size: 1.15rem; }
+p { color: var(--muted); }
+[hidden] { display: none !important; }
+button, input, select { font: inherit; }
+button {
+    color: var(--ink); min-height: 3rem; background: var(--surface); padding: .55rem .85rem;
+    border: 1px solid var(--edge); border-radius: .9rem; font-weight: 650; box-shadow: var(--shadow);
+}
+button:active { transform: translateY(2px); box-shadow: none; }
+:focus-visible { outline: 3px solid #9f541d; outline-offset: 3px; }
+.brand, .date-row, .row, .actions { display: flex; align-items: center; gap: .7rem; }
+.brand { color: var(--deep); font-weight: 750; }
+.brand svg { flex: none; }
+.brand button { margin-left: auto; min-width: 3rem; padding: .35rem; font-size: 1.35rem; }
+.date-row { margin: .85rem 0; text-align: center; justify-content: space-between; }
+.date-row button { min-width: 3rem; font-size: 1.35rem; }
+.date-row time { font-weight: 650; }
+.return { width: 100%; margin: 0 0 .75rem; }
+.summary {
+    border-radius: 1.25rem; color: var(--surface); padding: .9rem 1rem;
+    background: linear-gradient(153deg, #4c618e, var(--deep));
+    box-shadow: 0 3px 0 #2d3c5f, 0 6px 14px #23335421;
+}
+.summary p { color: #fff6ec; }
+.total { font-size: 2.55rem; line-height: 1.13; letter-spacing: -.055em; font-weight: 780; }
+.meter { border-radius: 1rem; background: #ffffff43; height: .5rem; margin: .65rem 0 .4rem; }
+.meter span { display: block; background: var(--apricot); height: 100%; border-radius: 1rem; }
+.goal {
+    width: 100%; color: #fff7ed; background: #ffffff15; border-color: #ffffff51;
+    box-shadow: none; margin-top: .55rem; min-height: 3rem;
+}
+.section-title { margin: 1.15rem 0 .5rem; }
+.card { background: var(--surface); border-radius: 1rem; border: 1px solid var(--edge); overflow: hidden; }
+.meal {
+    width: 100%; text-align: left; border: 0; border-radius: 0; box-shadow: none;
+    border-bottom: 1px solid var(--edge); padding: .6rem .85rem; min-height: 4.1rem;
+}
+.meal:last-child { border-bottom: 0; }
+.meal:focus-visible { outline-offset: -3px; }
+.meal small { display: block; font-weight: 450; color: var(--muted); }
+.meal-mark { width: 2.5rem; height: 2.5rem; flex: none; }
+.arrow { margin-left: auto; font-size: 1.4rem; color: var(--deep); }
+.primary {
+    width: 100%; background: linear-gradient(155deg, #506591, var(--denim));
+    color: #fffaf3; border-color: var(--deep); box-shadow: 0 3px 0 #303f61, 0 5px 10px #22325227;
+    min-height: 3.25rem; font-weight: 750;
+}
+.spaced { margin-top: .9rem; }
+.intro { margin: .65rem 0 1.1rem; }
+.eyebrow { color: var(--deep); font-weight: 750; font-size: .78rem; letter-spacing: .09em; }
+.panel { padding: 1rem; }
+label { display: block; font-weight: 650; margin: .75rem 0 .25rem; }
+label:first-child { margin-top: 0; }
+input, select {
+    color: var(--ink); width: 100%; min-height: 3rem; padding: .55rem .65rem;
+    border: 1px solid #a6a7ae; border-radius: .65rem; background: var(--surface);
+}
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+.pair label { margin-top: .75rem; }
+.hint { margin-top: .8rem; font-size: .9rem; }
+.error { color: #8b2347; margin-top: .65rem; }
+.actions { margin-top: .8rem; }
+.actions .primary { width: auto; flex: 1; }
+.entry { min-height: 3rem; padding: .4rem .65rem; border-bottom: 1px solid var(--edge); }
+.entry:last-child { border-bottom: 0; }
+.entry strong { overflow-wrap: anywhere; }
+.entry small { color: var(--muted); white-space: nowrap; margin-left: auto; }
+.entry button { flex: none; width: 3rem; box-shadow: none; }
+dialog {
+    background: var(--cream); color: var(--ink); width: calc(100% - 2rem); max-width: 30rem;
+    border: 1px solid var(--edge); border-radius: 1.1rem; padding: 1rem; max-height: 85vh;
+}
+dialog::backdrop { background: #2528407a; }
+dialog h2 { margin-bottom: .55rem; }
+dialog .meal { margin-top: .35rem; border-radius: .7rem; }
+@media (max-width: 350px) { .pair { grid-template-columns: 1fr; gap: 0; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+    <defs>
+        <symbol id="fork" viewBox="0 0 40 40">
+            <circle cx="20" cy="20" r="18" fill="#425783" stroke="#33446a"/>
+            <circle cx="20" cy="20" r="14" fill="none" stroke="#fff3dc" stroke-width="1.5"/>
+            <path d="M16 12v6a4 4 0 008 0v-6m-4 0v7m0 3v6" fill="none" stroke="#f0b781"
+                stroke-width="2" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="breakfast-mark" viewBox="0 0 44 44">
+            <circle cx="22" cy="22" r="20" fill="#fae3c7"/>
+            <path d="M11 20c-5-3-3-10 4-11h13c7 1 9 8 4 11v12c0 2-2 3-4 3H15c-2 0-4-1-4-3Z"
+                fill="#ce8a4d" stroke="#9b5935" stroke-width="1.3"/>
+            <path d="M13 18c-4-3-1-6 3-6h11c4 0 7 3 3 6v13H13Z" fill="#efb975"/>
+            <path d="M16 23c0-4 4-7 8-6 4 0 6 3 6 6 1 5-4 7-8 7-4 0-7-3-6-7Z" fill="#fff8df"/>
+            <circle cx="23" cy="23" r="3.8" fill="#eb9a34"/>
+        </symbol>
+        <symbol id="lunch-mark" viewBox="0 0 44 44">
+            <circle cx="22" cy="22" r="20" fill="#e7edf8"/>
+            <ellipse cx="22" cy="22" rx="14" ry="8" fill="#f5dbaa" stroke="#587292" stroke-width="1.4"/>
+            <path d="M8 22c1 9 6 13 14 13s13-4 14-13c-5 5-23 5-28 0Z" fill="#7594b7" stroke="#587292" stroke-width="1.2"/>
+            <path d="m15 20 3-2m2 3 3-3m1 5 3-2m2-2 2 1" fill="none" stroke="#bf844c"
+                stroke-width="1.7" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="dinner-mark" viewBox="0 0 44 44">
+            <circle cx="22" cy="22" r="20" fill="#e9e4f0"/>
+            <ellipse cx="22" cy="23" rx="15" ry="10" fill="#fff8e9" stroke="#b69bb1" stroke-width="1.4"/>
+            <path d="M14 25c-5-2-3-7 0-7 1-4 6-3 7 1 5-1 6 5 1 7-2 4-6 3-8-1Z" fill="#748c54"/>
+            <circle cx="16" cy="23" r="2.3" fill="#e17a53"/>
+            <path d="M24 20c3-5 10-2 9 2 0 4-6 8-9 5-2-1-2-4 0-7Z" fill="#dc9b5e"/>
+            <path d="m25 21 5 3m-6-1 4 3" stroke="#975c3e" stroke-width="1.3" stroke-linecap="round"/>
+        </symbol>
+    </defs>
+</svg>
+<main>
+    <header class="brand">
+        <svg width="36" height="36" aria-hidden="true"><use href="#fork"/></svg>
+        <span>NutritionCoach</span>
+        <button id="settings-button" type="button" aria-label="Paramètres" hidden>⋮</button>
+    </header>
+
+    <section id="profile" hidden aria-labelledby="profile-title">
+        <p class="eyebrow spaced">PREMIER PAS</p>
+        <h1 id="profile-title">Ton profil</h1>
+        <p class="intro">Renseigne tes infos pour ouvrir ton journal.</p>
+        <form id="profile-form" class="card panel">
+            <label for="first-name">Prénom</label>
+            <input id="first-name" autocomplete="given-name" maxlength="60" required>
+            <label for="sex">Sexe</label>
+            <select id="sex" required>
+                <option value="">Sélectionner</option>
+                <option value="female">Féminin</option>
+                <option value="male">Masculin</option>
+                <option value="other">Autre</option>
+                <option value="undisclosed">Je préfère ne pas préciser</option>
+            </select>
+            <div class="pair">
+                <div>
+                    <label for="height">Taille (cm)</label>
+                    <input id="height" inputmode="numeric" type="number" min="50" max="250" placeholder="175" required>
+                </div>
+                <div>
+                    <label for="weight">Poids (kg)</label>
+                    <input id="weight" inputmode="decimal" maxlength="6" placeholder="72,5" required>
+                </div>
+            </div>
+            <p class="hint">Ton profil et ton journal sont enregistrés sur ce téléphone.</p>
+            <p id="profile-error" class="error" role="alert" hidden></p>
+            <div class="actions">
+                <button id="cancel-profile" type="button" hidden>Annuler</button>
+                <button class="primary" type="submit">Enregistrer</button>
+            </div>
+        </form>
+    </section>
+
+    <section id="today" hidden aria-labelledby="today-title">
+        <h1 id="today-title" tabindex="-1">Aujourd’hui</h1>
+        <nav class="date-row" aria-label="Date du journal">
+            <button id="previous" type="button" aria-label="Jour précédent">‹</button>
+            <time id="day"></time>
+            <button id="next" type="button" aria-label="Jour suivant">›</button>
+        </nav>
+        <button id="return-today" class="return" type="button" hidden>Revenir à aujourd’hui</button>
+
+        <div class="summary">
+            <h2>Calories du jour</h2>
+            <div id="total" class="total"></div>
+            <div class="meter" aria-hidden="true"><span id="fill"></span></div>
+            <p id="balance"></p>
+            <button id="goal-button" class="goal" type="button"></button>
+        </div>
+
+        <h2 class="section-title">Tes repas</h2>
+        <div id="meals" class="card"></div>
+        <div id="legacy" hidden>
+            <h2 class="section-title">Saisies précédentes</h2>
+            <div id="legacy-entries" class="card"></div>
+        </div>
+        <button id="add" class="primary spaced" type="button">+ Ajouter un aliment</button>
+    </section>
+
+    <section id="meal" hidden aria-labelledby="meal-title">
+        <button id="back" type="button" class="spaced">‹ Journal</button>
+        <h1 id="meal-title" tabindex="-1"></h1>
+        <p id="meal-date" class="intro"></p>
+        <form id="entry-form" class="card panel">
+            <label for="food">Aliment ou plat</label>
+            <input id="food" maxlength="80" placeholder="Ex. salade de pâtes" required>
+            <label for="kcal">Calories (kcal)</label>
+            <input id="kcal" type="number" inputmode="numeric" min="1" max="10000" placeholder="Ex. 420" required>
+            <p id="entry-error" class="error" role="alert" hidden></p>
+            <button class="primary spaced" type="submit">Ajouter au repas</button>
+        </form>
+        <h2 class="section-title">Aliments enregistrés</h2>
+        <p id="meal-empty">Tu n’as encore rien saisi pour ce repas.</p>
+        <div id="meal-entries" class="card" hidden></div>
+    </section>
+
+    <p id="fatal" class="error" role="alert" hidden>Le journal local est inaccessible.</p>
+</main>
+
+<dialog id="pick-meal" aria-labelledby="pick-title">
+    <h2 id="pick-title">Pour quel repas ?</h2>
+    <div id="meal-choices"></div>
+    <button class="spaced close" type="button">Annuler</button>
+</dialog>
+<dialog id="settings" aria-labelledby="settings-title">
+    <h2 id="settings-title">Paramètres</h2>
+    <button id="edit-profile" type="button">Modifier mon profil</button>
+    <p id="interface-version" class="hint"></p>
+    <button id="check-update" class="spaced" type="button">Vérifier les mises à jour</button>
+    <p id="update-status" class="hint" aria-live="polite"></p>
+    <button id="apply-update" class="spaced" type="button" hidden>Appliquer maintenant</button>
+    <div><button class="spaced close" type="button">Fermer</button></div>
+</dialog>
+<dialog id="goal-dialog" aria-labelledby="goal-title">
+    <h2 id="goal-title">Objectif quotidien</h2>
+    <form id="goal-form">
+        <label for="goal-input">Calories (kcal)</label>
+        <input id="goal-input" type="number" min="500" max="10000" inputmode="numeric" required>
+        <p id="goal-error" class="error" role="alert" hidden></p>
+        <div class="actions">
+            <button class="close" type="button">Annuler</button>
+            <button class="primary" type="submit">Enregistrer</button>
+        </div>
+    </form>
+</dialog>
+<dialog id="delete-dialog" aria-labelledby="delete-title">
+    <h2 id="delete-title">Supprimer cet aliment ?</h2>
+    <p id="delete-name"></p>
+    <p id="delete-error" class="error" role="alert" hidden></p>
+    <div class="actions">
+        <button class="close" type="button">Annuler</button>
+        <button id="delete-confirm" class="primary" type="button">Supprimer</button>
+    </div>
+</dialog>
+
+<!-- nutrition-boot -->
+<script>
+'use strict';
+const host = window.NutritionHost;
+const byId = id => document.getElementById(id);
+const meals = [
+    {id: 'breakfast', label: 'Petit-déjeuner', illustration: 'breakfast-mark'},
+    {id: 'lunch', label: 'Midi', illustration: 'lunch-mark'},
+    {id: 'dinner', label: 'Soir', illustration: 'dinner-mark'}
+];
+const number = new Intl.NumberFormat('fr-CH', {useGrouping: false});
+const formatted = value => number.format(value).replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f');
+const dateFormat = new Intl.DateTimeFormat('fr-CH', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'});
+const two = value => String(value).padStart(2, '0');
+const dateKey = date => date.getFullYear() + '-' + two(date.getMonth() + 1) + '-' + two(date.getDate());
+const capital = value => value.charAt(0).toUpperCase() + value.slice(1);
+
+let state;
+let date = new Date();
+let currentMeal;
+let pendingDelete;
+let screen;
+
+function readState() {
+    const data = JSON.parse(host.state());
+    if (data.error) throw new Error('Journal unavailable');
+    state = data;
+}
+
+function show(name) {
+    screen = name;
+    ['profile', 'today', 'meal'].forEach(id => { byId(id).hidden = id !== name; });
+    byId('settings-button').hidden = name !== 'today';
+    window.scrollTo(0, 0);
+}
+
+function message(id, value) {
+    byId(id).textContent = value;
+    byId(id).hidden = !value;
+}
+
+function dayEntries() {
+    return state.entries.filter(entry => entry && entry.date === dateKey(date));
+}
+
+function sum(entries) {
+    return entries.reduce((total, entry) => total + Number(entry.kcal), 0);
+}
+
+function mealButton(meal, entries) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'meal row';
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'meal-mark');
+    svg.setAttribute('aria-hidden', 'true');
+    const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+    use.setAttribute('href', '#' + meal.illustration);
+    svg.appendChild(use);
+    const label = document.createElement('span');
+    label.textContent = meal.label;
+    if (entries.length) {
+        const amount = document.createElement('small');
+        amount.textContent = formatted(sum(entries)) + ' kcal';
+        label.appendChild(amount);
+    }
+    const arrow = document.createElement('span');
+    arrow.className = 'arrow';
+    arrow.setAttribute('aria-hidden', 'true');
+    arrow.textContent = '›';
+    button.append(svg, label, arrow);
+    button.addEventListener('click', () => openMeal(meal));
+    return button;
+}
+
+function renderToday() {
+    show('today');
+    const isToday = dateKey(date) === dateKey(new Date());
+    byId('today-title').textContent = isToday ? 'Aujourd’hui' : 'Journal du jour';
+    byId('day').dateTime = dateKey(date);
+    byId('day').textContent = capital(dateFormat.format(date));
+    byId('return-today').hidden = isToday;
+    const entries = dayEntries();
+    const total = sum(entries);
+    const goal = state.goal;
+    byId('total').textContent = formatted(total) + ' kcal';
+    byId('fill').style.width = Math.min(100, 100 * total / goal) + '%';
+    byId('balance').textContent = total === goal ? 'Objectif atteint' : formatted(Math.abs(goal - total)) +
+        (total < goal ? ' kcal restantes' : ' kcal au-dessus de l’objectif');
+    byId('goal-button').textContent = 'Objectif ' + formatted(goal) + ' kcal · Modifier';
+    byId('meals').textContent = '';
+    meals.forEach(meal => {
+        byId('meals').appendChild(mealButton(meal, entries.filter(entry => entry.meal === meal.id)));
+    });
+    const legacy = entries.filter(entry => !meals.some(meal => meal.id === entry.meal));
+    byId('legacy').hidden = !legacy.length;
+    listEntries(byId('legacy-entries'), legacy);
+}
+
+function listEntries(container, entries) {
+    container.textContent = '';
+    entries.slice().reverse().forEach(entry => {
+        const row = document.createElement('div');
+        row.className = 'entry row';
+        const name = document.createElement('strong');
+        name.textContent = entry.name;
+        const amount = document.createElement('small');
+        amount.textContent = formatted(entry.kcal) + ' kcal';
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.textContent = '×';
+        remove.setAttribute('aria-label', 'Supprimer ' + entry.name);
+        remove.addEventListener('click', () => {
+            pendingDelete = entry.id;
+            byId('delete-name').textContent = entry.name;
+            message('delete-error', '');
+            byId('delete-dialog').showModal();
+        });
+        row.append(name, amount, remove);
+        container.appendChild(row);
+    });
+}
+
+function renderMealEntries() {
+    const entries = dayEntries().filter(entry => entry.meal === currentMeal.id);
+    byId('meal-empty').hidden = !!entries.length;
+    byId('meal-entries').hidden = !entries.length;
+    listEntries(byId('meal-entries'), entries);
+}
+
+function openMeal(meal) {
+    if (byId('pick-meal').open) byId('pick-meal').close();
+    currentMeal = meal;
+    byId('meal-title').textContent = meal.label;
+    byId('meal-date').textContent = capital(dateFormat.format(date));
+    byId('entry-form').reset();
+    message('entry-error', '');
+    show('meal');
+    renderMealEntries();
+    byId('meal-title').focus();
+}
+
+function openProfile() {
+    const profile = state.profile;
+    byId('profile-form').reset();
+    if (profile) {
+        byId('first-name').value = profile.name;
+        byId('sex').value = profile.sex;
+        byId('height').value = profile.height;
+        byId('weight').value = String(profile.weight).replace('.', ',');
+    }
+    byId('cancel-profile').hidden = !profile;
+    byId('profile').querySelector('.eyebrow').hidden = !!profile;
+    byId('profile').querySelector('.intro').hidden = !!profile;
+    message('profile-error', '');
+    show('profile');
+}
+
+function updateStatus() {
+    const info = JSON.parse(host.updateInfo());
+    const messages = {
+        idle: '', checking: 'Vérification en cours…', current: 'L’interface est à jour.',
+        available: 'Version prête pour le prochain lancement. Tu peux aussi l’appliquer ici.',
+        applied: 'La nouvelle interface est chargée.',
+        unavailable: 'Vérification indisponible. Ton journal reste accessible.',
+        failed: 'La mise à jour n’a pas pu être appliquée.'
+    };
+    byId('interface-version').textContent = 'Version de l’interface ' + info.version;
+    byId('update-status').textContent = messages[info.status] || '';
+    byId('apply-update').hidden = info.status !== 'available';
+    byId('check-update').disabled = info.status === 'checking';
+}
+
+if (!host) {
+    message('fatal', 'Ouvre cette interface depuis l’application NutritionCoach.');
+} else {
+    try {
+        readState();
+        if (state.profile) renderToday();
+        else openProfile();
+        host.ready(window.nutritionOpening);
+    } catch (error) {
+        message('fatal', 'Le journal local est inaccessible.');
+    }
+}
+
+byId('profile-form').addEventListener('submit', event => {
+    event.preventDefault();
+    const weight = byId('weight').value.trim().replace(',', '.');
+    if (!/^[0-9]{1,3}(\.[0-9]{1,2})?$/.test(weight) || Number(weight) < 10 || Number(weight) > 500) {
+        message('profile-error', 'Indique un poids entre 10 et 500 kg.');
+        byId('weight').focus();
+        return;
+    }
+    if (!host.saveProfile(byId('first-name').value, byId('sex').value, byId('height').value, weight)) {
+        message('profile-error', 'Vérifie les informations puis réessaie.');
+        return;
+    }
+    readState();
+    renderToday();
+    byId('today-title').focus();
+});
+
+byId('entry-form').addEventListener('submit', event => {
+    event.preventDefault();
+    if (!host.addEntry(dateKey(date), currentMeal.id, byId('food').value, byId('kcal').value)) {
+        message('entry-error', 'Vérifie le nom et indique entre 1 et 10 000 kcal.');
+        return;
+    }
+    readState();
+    byId('entry-form').reset();
+    message('entry-error', '');
+    renderMealEntries();
+});
+byId('delete-confirm').addEventListener('click', () => {
+    if (!host.deleteEntry(pendingDelete)) {
+        message('delete-error', 'La suppression n’a pas abouti. Réessaie.');
+        return;
+    }
+    readState();
+    byId('delete-dialog').close();
+    if (screen === 'meal') renderMealEntries();
+    else renderToday();
+});
+byId('goal-form').addEventListener('submit', event => {
+    event.preventDefault();
+    if (!host.saveGoal(byId('goal-input').value)) {
+        message('goal-error', 'Indique un objectif entre 500 et 10 000 kcal.');
+        return;
+    }
+    readState();
+    byId('goal-dialog').close();
+    renderToday();
+});
+byId('goal-button').addEventListener('click', () => {
+    byId('goal-input').value = state.goal;
+    message('goal-error', '');
+    byId('goal-dialog').showModal();
+});
+byId('previous').addEventListener('click', () => { date.setDate(date.getDate() - 1); renderToday(); });
+byId('next').addEventListener('click', () => { date.setDate(date.getDate() + 1); renderToday(); });
+byId('return-today').addEventListener('click', () => { date = new Date(); renderToday(); });
+byId('cancel-profile').addEventListener('click', renderToday);
+byId('back').addEventListener('click', renderToday);
+byId('add').addEventListener('click', () => {
+    byId('meal-choices').textContent = '';
+    meals.forEach(meal => byId('meal-choices').appendChild(mealButton(meal, [])));
+    byId('pick-meal').showModal();
+});
+byId('settings-button').addEventListener('click', () => {
+    updateStatus();
+    byId('settings').showModal();
+});
+byId('edit-profile').addEventListener('click', () => { byId('settings').close(); openProfile(); });
+byId('check-update').addEventListener('click', () => host.checkUpdate());
+byId('apply-update').addEventListener('click', () => host.applyUpdate());
+document.querySelectorAll('.close').forEach(button => {
+    button.addEventListener('click', () => button.closest('dialog').close());
+});
+window.addEventListener('nutrition-update', updateStatus);
+window.nutritionBack = () => {
+    const dialog = document.querySelector('dialog[open]');
+    if (dialog) { dialog.close(); return true; }
+    if (screen === 'meal' || (screen === 'profile' && state.profile)) { renderToday(); return true; }
+    return false;
+};
+</script>
+</body>
+</html>
