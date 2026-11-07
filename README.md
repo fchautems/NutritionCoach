@@ -32,3 +32,11 @@ Le socle Android embarque `app/src/main/assets/nutritioncoach.html`. Il vérifie
 Pour publier une interface, ajouter `ui-N.html` sur `ui-channel` et remplacer `channel.json` dans le même commit. Incrémenter `version` et renseigner le SHA-256 exact des octets. Conserver `protocol: 1` tant que le contrat du pont Android reste compatible. Une publication initiale V2 permet de vérifier la mise à jour depuis l’interface V1 embarquée.
 
 L’APK d’aperçu distribuée et celle produite par un runner CI peuvent porter des signatures différentes. Pour mettre à jour l’aperçu V0.2 téléchargé dans ChatGPT, utiliser l’APK V0.3 distribuée avec le même certificat.
+
+## Interface 3
+
+L’interface publiée vit sur [la branche ui-channel](https://github.com/fchautems/NutritionCoach/tree/ui-channel). Le fichier intégré à la V0.3 reste la version de secours numérotée 1. Cette livraison se distribue via le canal et s’utilise avec l’APK existante.
+
+Le catalogue initial rassemble 49 aliments extraits de la [Base de données suisse des valeurs nutritives de l’OSAV, V7.1](https://www.naehrwertdaten.ch/fr/telechargement/). Les valeurs sont exprimées par 100 g de partie comestible. Les identifiants d’origine sont conservés dans les données du catalogue.
+
+Pour rétablir une ancienne interface, publier son contenu sous un numéro supérieur. Le stockage Android est indépendant des versions de l’interface.
