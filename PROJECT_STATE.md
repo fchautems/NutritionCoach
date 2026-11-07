@@ -2,32 +2,23 @@
 
 Dernière mise à jour : 2026-11-07
 
-## Objectif
-Livrer rapidement une APK Android installable de suivi calorique, puis améliorer l'application par petites itérations.
-
 ## État vérifié
-- Dépôt : `fchautems/NutritionCoach`, branche `main`.
-- V0.1 Android natif Java (minSdk 26), sans serveur, compte ni permission Internet.
-- Fonctionnalités implémentées : aliment + kcal, total par date, objectif journalier, navigation temporelle, suppression, persistance locale.
-- CI GitHub Actions : **tests unitaires réussis** et **APK debug construite** (run `42369769381`).
-- Préversion v0.1.0 publiée : [NutritionCoach-v0.1.0-debug.apk](https://github.com/fchautems/NutritionCoach/releases/download/v0.1.0/NutritionCoach-v0.1.0-debug.apk).
-- SHA-256 de l'APK publiée : `4494973fe49d30476935b5b11511d43a8c19f0ecdb8835664ad8611fc2af4896`.
-- **Installation et fonctionnement sur un véritable téléphone : non encore vérifiés.**
 
-## Modifications
-- 2026-11-07 : dépôt initialisé et POC Android créé.
-- 2026-11-07 : workflow SDK corrigé après deux échecs de configuration ; tests, build et release réussis.
+- V0.1.0 Android Java, minSdk 26, sans compte ni permission Internet.
+- Le POC sait enregistrer un aliment et ses kcal, afficher le total par jour, naviguer par date, modifier l’objectif et supprimer une entrée. Le journal reste local.
+- Tests et compilation V0.1 réussis dans le [run 42369769381](https://github.com/fchautems/NutritionCoach/actions/runs/42369769381). [APK V0.1 publiée](https://github.com/fchautems/NutritionCoach/releases/tag/v0.1.0).
+- Le test utilisateur confirme que la V0.1 fonctionne sur téléphone et que le journal affiche une entrée et son total. Les autres scénarios sur téléphone restent à vérifier.
 
-## Contrôles
-- Réussi : `gradle --no-daemon :app:testDebugUnitTest`.
-- Réussi : `gradle --no-daemon :app:assembleDebug`.
-- Réussi : publication d'un APK de debug dans la release GitHub v0.1.0.
-- À faire sur Android : installer, ajouter/supprimer un repas, changer d'objectif et vérifier les données après redémarrage.
+## Décisions et changements
 
-## Blocages / limites
-- Pas de reconnaissance des repas par photo ni de base nutritionnelle : calories saisies manuellement dans cette V0.
-- Pas de synchronisation/export : les données restent sur l'appareil et sont effacées à la désinstallation.
-- L'APK est signée avec la clé de debug automatisée du runner : pour des mises à jour Android fiables, passer à une signature de release persistante.
+- 2026-11-07. Passage du POC à de petites itérations testables. [Spécifications et lots](docs/SPECIFICATIONS.md).
+- Premier lot : refaire l’écran Aujourd’hui et déplacer la saisie manuelle dans un dialogue. Les repas par type, les portions et les favoris sont des lots séparés.
+
+## Contrôles et limites
+
+- La V0.1 est signée avec une clé debug générée par le runner CI. Une nouvelle APK signée avec une autre clé ne peut pas la remplacer en conservant son journal.
+- L’aperçu V0.2 doit être installable en parallèle avec un journal indépendant.
 
 ## Prochaine action
-- Faire tester l'APK sur Android, puis prioriser les retours pour V0.2.
+
+- Coder et vérifier le premier lot avant l’essai sur téléphone.
