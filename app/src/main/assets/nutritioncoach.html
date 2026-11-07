@@ -172,6 +172,13 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
 }
 .row-icon svg { width: 1rem; height: 1rem; }
 #update-status { margin: .6rem 0 0; }
+.profile-results { background: #edf1f8; border-radius: .75rem; padding: .65rem .75rem; }
+.profile-results strong { color: var(--deep); }
+.weight-check { display: flex; align-items: center; gap: .6rem; font-weight: 450; }
+.weight-check input { width: 1.15rem; height: 1.15rem; min-height: 0; margin: 0; flex: none; }
+#weight-guide summary { color: var(--deep); cursor: pointer; font-weight: 650; }
+#deadline-actions { display: flex; flex-wrap: wrap; gap: .55rem; }
+#birthday { margin-top: .75rem; background: #f7eddb; color: var(--ink); }
 
 @media (max-width: 350px) { .pair { grid-template-columns: 1fr; gap: 0; } }
 </style>
@@ -291,11 +298,18 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
 
     <section id="profile" hidden aria-labelledby="profile-title">
         <p class="eyebrow spaced">PREMIER PAS</p>
-        <h1 id="profile-title">Ton profil</h1>
+        <h1 id="profile-title" tabindex="-1">Ton profil</h1>
         <p class="intro">Renseigne tes infos pour ouvrir ton journal.</p>
-        <form id="profile-form" class="card panel">
+        <form id="profile-form">
+          <div class="card panel">
             <label for="first-name">Prénom</label>
             <input id="first-name" autocomplete="given-name" maxlength="60" required>
+            <div class="spaced" data-detailed-profile hidden>
+                <label for="birth-date">Date de naissance (facultative)</label>
+                <input id="birth-date" type="date" min="0001-01-01" autocomplete="bday"
+                       aria-describedby="birth-age">
+                <p id="birth-age" class="hint">Elle sert à calculer ton âge et à te souhaiter ton anniversaire.</p>
+            </div>
             <label for="sex">Sexe</label>
             <select id="sex" required>
                 <option value="">Sélectionner</option>
@@ -310,10 +324,66 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
                     <input id="height" inputmode="numeric" type="number" min="50" max="250" placeholder="175" required>
                 </div>
                 <div>
-                    <label for="weight">Poids (kg)</label>
+                    <label for="weight">Poids actuel (kg)</label>
                     <input id="weight" inputmode="decimal" maxlength="6" placeholder="72,5" required>
                 </div>
             </div>
+            <div data-detailed-profile hidden>
+                <label class="weight-check">
+                    <input id="record-weight" type="checkbox">Enregistrer une pesée aujourd’hui
+                </label>
+                <p id="profile-bmi" class="hint" hidden></p>
+            </div>
+          </div>
+          <section class="card panel spaced" data-detailed-profile hidden aria-labelledby="activity-title">
+            <h2 id="activity-title">Ton activité</h2>
+            <label for="movement">Hors sport, tu bouges combien dans une journée habituelle ?</label>
+            <select id="movement">
+                <option value="">Choisir</option>
+                <option value="seated">Je suis surtout assis·e</option>
+                <option value="mixed">J’alterne entre position assise, debout et marche</option>
+                <option value="active">Je marche ou bouge une bonne partie de la journée</option>
+            </select>
+            <label for="sport">Combien de temps fais-tu du sport dans une semaine habituelle ?</label>
+            <select id="sport">
+                <option value="">Choisir</option>
+                <option value="none">Aucun</option>
+                <option value="short">Moins d’une heure</option>
+                <option value="weekly">De 1 h à moins de 2 h</option>
+                <option value="regular">De 2 h à moins de 4 h</option>
+                <option value="frequent">4 h ou plus</option>
+            </select>
+            <div class="profile-results spaced">
+                <strong id="profile-energy"></strong>
+                <p id="energy-goal" class="hint"></p>
+            </div>
+          </section>
+          <section class="card panel spaced" data-detailed-profile hidden aria-labelledby="weight-goal-title">
+            <h2 id="weight-goal-title">Ton objectif de poids</h2>
+            <label for="weight-goal-mode">Que souhaites-tu faire ?</label>
+            <select id="weight-goal-mode">
+                <option value="">Choisir plus tard</option>
+                <option value="maintain">Maintenir mon poids</option>
+                <option value="target">Fixer un poids cible</option>
+            </select>
+            <div id="weight-target-fields" hidden>
+                <label for="target-weight">Poids cible (kg)</label>
+                <input id="target-weight" inputmode="decimal" maxlength="6" placeholder="72,5">
+                <details id="weight-guide" class="spaced" hidden>
+                    <summary>Voir une fourchette indicative</summary>
+                    <p id="weight-range" class="hint"></p>
+                </details>
+                <label for="weight-deadline">Échéance (facultative)</label>
+                <input id="weight-deadline" type="date" min="0001-01-01" max="9999-12-31">
+            </div>
+            <p id="weight-pace" class="hint" hidden></p>
+            <p id="observed-pace" class="hint" hidden></p>
+            <p id="pace-warning" class="error" hidden></p>
+            <div id="deadline-actions" class="spaced" hidden>
+                <button id="postpone-deadline" type="button">Repousser l’échéance</button>
+                <button id="adjust-weight" type="button">Ajuster le poids cible</button>
+            </div>
+          </section>
             <p class="hint">Ton profil et ton journal sont enregistrés sur ce téléphone.</p>
             <p id="profile-error" class="error" role="alert" hidden></p>
             <div class="actions">
@@ -325,6 +395,7 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
 
     <section id="today" hidden aria-labelledby="today-title">
         <h1 id="today-title" tabindex="-1">Aujourd’hui</h1>
+        <p id="birthday" class="card panel" role="status" hidden></p>
         <nav class="date-row" aria-label="Date du journal">
             <button id="previous" type="button" aria-label="Jour précédent">‹</button>
             <time id="day"></time>
@@ -465,6 +536,7 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
 <script>
 'use strict';
 const host = window.NutritionHost;
+const detailedProfile = host && typeof host.saveProfileDetails === 'function';
 const byId = id => document.getElementById(id);
 const meals = [
     {id: 'breakfast', label: 'Petit-déjeuner', illustration: 'breakfast-mark'},
@@ -540,6 +612,9 @@ const dateFormat = new Intl.DateTimeFormat('fr-CH', {weekday: 'long', day: 'nume
 const two = value => String(value).padStart(2, '0');
 const dateKey = date => date.getFullYear() + '-' + two(date.getMonth() + 1) + '-' + two(date.getDate());
 const capital = value => value.charAt(0).toUpperCase() + value.slice(1);
+const dayMillis = 86400000;
+const movementFactors = {seated: 1.4, mixed: 1.6, active: 1.8};
+const sportHours = {none: 0, short: 0.5, weekly: 1.5, regular: 3, frequent: 5};
 
 let state;
 let date = new Date();
@@ -704,8 +779,12 @@ function mealButton(meal, entries) {
 
 function renderToday() {
     show('today');
-    const isToday = dateKey(date) === dateKey(new Date());
+    const today = dateKey(new Date());
+    const isToday = dateKey(date) === today;
     byId('today-title').textContent = isToday ? 'Aujourd’hui' : 'Journal du jour';
+    const birth = state.profile && state.profile.birthDate;
+    message('birthday', detailedProfile && isToday && birth && birth.slice(5) === today.slice(5)
+        ? 'Joyeux anniversaire, ' + state.profile.name + ' !' : '');
     byId('day').dateTime = dateKey(date);
     byId('day').textContent = capital(dateFormat.format(date));
     byId('return-today').hidden = isToday;
@@ -773,6 +852,142 @@ function openMeal(meal) {
     byId('meal-title').focus();
 }
 
+function weightValue(value) {
+    const normalized = value.trim().replace(',', '.');
+    const kg = Number(normalized);
+    return /^[0-9]{1,3}(\.[0-9]{1,2})?$/.test(normalized) && kg >= 10 && kg <= 500 ? kg : null;
+}
+
+function ageOn(birth, today) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(birth) || birth > today) return null;
+    return Number(today.slice(0, 4)) - Number(birth.slice(0, 4)) - (today.slice(5) < birth.slice(5) ? 1 : 0);
+}
+
+function daysBetween(start, end) {
+    return (Date.parse(end) - Date.parse(start)) / dayMillis;
+}
+
+function profileDraft() {
+    return {
+        name: byId('first-name').value,
+        sex: byId('sex').value,
+        height: byId('height').value,
+        weight: byId('weight').value,
+        birthDate: byId('birth-date').value,
+        movement: byId('movement').value,
+        sport: byId('sport').value,
+        goalMode: byId('weight-goal-mode').value,
+        targetWeight: byId('target-weight').value,
+        deadline: byId('weight-deadline').value,
+        recordWeight: byId('record-weight').checked
+    };
+}
+
+function renderEnergy(draft, age, cm, kg) {
+    const energy = byId('profile-energy');
+    const link = byId('energy-goal');
+    const goal = formatted(state.goal) + ' kcal/j';
+    energy.textContent = 'Dépense quotidienne estimée';
+    if (age === null || age < 18 || !cm || kg === null || !draft.sex || !draft.movement || !draft.sport) {
+        link.textContent = (age !== null && age < 18 ? 'L’estimation est prévue pour les adultes. '
+            : 'Complète la date de naissance, les mesures et l’activité pour obtenir une estimation. ')
+            + 'Objectif du journal · ' + goal + '.';
+        return;
+    }
+    // Mifflin–St Jeor at rest, approximate daily movement, then net cost of moderate sport.
+    const base = 10 * kg + 6.25 * cm - 5 * age;
+    const extra = 3 * kg * sportHours[draft.sport] / 7;
+    const estimate = offset => Math.round(((base + offset) * movementFactors[draft.movement] + extra) / 50) * 50;
+    const low = estimate(draft.sex === 'male' ? 5 : -161);
+    const high = estimate(draft.sex === 'female' ? -161 : 5);
+    if (low <= 0) {
+        link.textContent = 'Estimation indisponible pour ces mesures. Objectif du journal · ' + goal + '.';
+        return;
+    }
+    energy.textContent += ' · ≈ ' + formatted(low) + (high === low ? '' : ' à ' + formatted(high)) + ' kcal/j';
+    const comparison = state.goal < low ? 'en dessous de' : state.goal > high ? 'au-dessus de' : 'proche de';
+    link.textContent = 'Ton objectif de ' + goal + ' se situe ' + comparison
+        + ' cette estimation de maintien. Manger en dessous tend à faire baisser le poids, et manger au-dessus tend à le faire monter.';
+}
+
+function observedWeight(today) {
+    const weighIns = state.profile && state.profile.weighIns;
+    if (!weighIns) return null;
+    const days = Object.keys(weighIns).filter(day => {
+        const elapsed = daysBetween(day, today);
+        return elapsed >= 0 && elapsed < 90;
+    }).sort();
+    const first = days[0];
+    const last = days[days.length - 1];
+    const duration = daysBetween(first, last);
+    return duration >= 7 ? {pace: 7 * (weighIns[last] - weighIns[first]) / duration, duration} : null;
+}
+
+function paceText(pace) {
+    const rounded = Math.round(Math.abs(pace) * 100) / 100;
+    return (rounded === 0 ? '' : pace < 0 ? '−' : '+') + number.format(rounded) + ' kg/semaine';
+}
+
+function renderWeightGoal(draft, age, cm, kg, today) {
+    const targeting = draft.goalMode === 'target';
+    const target = weightValue(draft.targetWeight);
+    const adult = age !== null && age >= 18;
+    byId('weight-target-fields').hidden = !targeting;
+    byId('target-weight').required = targeting;
+    byId('weight-deadline').disabled = !targeting;
+    byId('weight-guide').hidden = !adult || !cm;
+    if (adult && cm) {
+        const area = (cm / 100) ** 2;
+        const kgText = bmi => number.format(Math.round(bmi * area * 10) / 10);
+        byId('weight-range').textContent = 'Pour ta taille, environ ' + kgText(18.5) + ' à '
+            + kgText(24.9) + ' kg (repère d’IMC adulte). Ce repère général laisse le choix du poids cible.';
+    }
+    const days = daysBetween(today, draft.deadline);
+    const delta = targeting && target !== null && kg !== null ? target - kg : null;
+    const required = draft.goalMode === 'maintain' || delta === 0 ? 0
+        : delta !== null && days > 0 ? 7 * delta / days : null;
+    message('weight-pace', required !== null ? 'Rythme visé · ' + paceText(required)
+        : delta !== null && !draft.deadline ? 'Ajoute une échéance si tu veux calculer un rythme hebdomadaire.' : '');
+
+    const observed = draft.goalMode && observedWeight(today);
+    let comparison = '';
+    if (observed && required !== null) {
+        const tolerance = 0.05;
+        const difference = Math.abs(required - observed.pace);
+        if (difference < tolerance) comparison = ' Ton rythme observé est proche du rythme visé.';
+        else if (required === 0) comparison = ' Ton poids évolue alors que tu vises le maintien.';
+        else if (Math.abs(observed.pace) < tolerance) comparison = ' Ton poids est resté assez stable.';
+        else if (Math.sign(required) !== Math.sign(observed.pace)) comparison = ' Ton poids évolue dans le sens opposé.';
+        else comparison = Math.abs(required) > Math.abs(observed.pace)
+            ? ' Il faudrait avancer plus vite.' : ' Ton rythme observé est plus rapide.';
+    }
+    message('observed-pace', observed ? 'Rythme observé · ' + paceText(observed.pace)
+        + ' sur ' + observed.duration + ' jours.' + comparison
+        : draft.goalMode ? 'Pour voir une tendance, enregistre deux pesées espacées d’au moins 7 jours.' : '');
+
+    const limit = delta < 0 ? 1 : 0.5;
+    const expired = delta !== null && delta !== 0 && days <= 0;
+    const tight = required !== null && Math.abs(required) > limit;
+    message('pace-warning', expired ? 'L’échéance est aujourd’hui ou déjà passée.'
+        : tight ? 'L’échéance semble serrée au vu du rythme hebdomadaire nécessaire.' : '');
+    byId('deadline-actions').hidden = !expired && !tight;
+    return tight || expired ? Math.max(7, Math.ceil(Math.abs(delta) * 7 / limit)) : null;
+}
+
+function renderProfileDetails() {
+    const draft = profileDraft();
+    const today = dateKey(new Date());
+    const age = ageOn(draft.birthDate, today);
+    const height = Number(draft.height);
+    const cm = Number.isInteger(height) && height >= 50 && height <= 250 ? height : null;
+    const kg = weightValue(draft.weight);
+    byId('birth-age').textContent = age === null ? 'Elle sert à calculer ton âge et à te souhaiter ton anniversaire.'
+        : 'Âge · ' + age + ' ans';
+    message('profile-bmi', cm && kg !== null ? 'IMC · ' + number.format(Math.round(10 * kg / (cm / 100) ** 2) / 10) : '');
+    renderEnergy(draft, age, cm, kg);
+    return renderWeightGoal(draft, age, cm, kg, today);
+}
+
 function openProfile() {
     const profile = state.profile;
     byId('profile-form').reset();
@@ -782,11 +997,24 @@ function openProfile() {
         byId('height').value = profile.height;
         byId('weight').value = String(profile.weight).replace('.', ',');
     }
+    if (detailedProfile) {
+        document.querySelectorAll('[data-detailed-profile]').forEach(section => { section.hidden = false; });
+        byId('birth-date').max = dateKey(new Date());
+        byId('birth-date').value = profile?.birthDate || '';
+        byId('movement').value = profile?.movement || '';
+        byId('sport').value = profile?.sport || '';
+        byId('weight-goal-mode').value = profile?.goalMode || '';
+        byId('target-weight').value = profile?.targetWeight ? String(profile.targetWeight).replace('.', ',') : '';
+        byId('weight-deadline').value = profile?.deadline || '';
+        byId('weight-guide').open = false;
+        renderProfileDetails();
+    }
     byId('cancel-profile').hidden = !profile;
     byId('profile').querySelector('.eyebrow').hidden = !!profile;
     byId('profile').querySelector('.intro').hidden = !!profile;
     message('profile-error', '');
     show('profile');
+    byId('profile-title').focus();
 }
 
 function updateStatus() {
@@ -822,13 +1050,21 @@ if (!host) {
 
 byId('profile-form').addEventListener('submit', event => {
     event.preventDefault();
-    const weight = byId('weight').value.trim().replace(',', '.');
-    if (!/^[0-9]{1,3}(\.[0-9]{1,2})?$/.test(weight) || Number(weight) < 10 || Number(weight) > 500) {
+    const draft = profileDraft();
+    const weight = weightValue(draft.weight);
+    if (weight === null) {
         message('profile-error', 'Indique un poids entre 10 et 500 kg.');
         byId('weight').focus();
         return;
     }
-    if (!host.saveProfile(byId('first-name').value, byId('sex').value, byId('height').value, weight)) {
+    if (detailedProfile && draft.goalMode === 'target' && weightValue(draft.targetWeight) === null) {
+        message('profile-error', 'Indique un poids cible entre 10 et 500 kg.');
+        byId('target-weight').focus();
+        return;
+    }
+    const saved = detailedProfile ? host.saveProfileDetails(JSON.stringify(draft))
+        : host.saveProfile(draft.name, draft.sex, draft.height, String(weight));
+    if (!saved) {
         message('profile-error', 'Vérifie les informations puis réessaie.');
         return;
     }
@@ -836,6 +1072,22 @@ byId('profile-form').addEventListener('submit', event => {
     renderToday();
     byId('today-title').focus();
 });
+if (detailedProfile) {
+    byId('profile-form').addEventListener('input', renderProfileDetails);
+    byId('postpone-deadline').addEventListener('click', () => {
+        const today = dateKey(new Date());
+        const minDays = renderProfileDetails();
+        const previousDays = daysBetween(today, byId('weight-deadline').value);
+        const date = new Date(Date.parse(today) + Math.max(minDays, previousDays + 1) * dayMillis);
+        byId('weight-deadline').value = date.toISOString().slice(0, 10);
+        renderProfileDetails();
+        byId('weight-deadline').focus();
+    });
+    byId('adjust-weight').addEventListener('click', () => {
+        byId('target-weight').focus();
+        byId('target-weight').select();
+    });
+}
 
 categories.forEach(([id, name]) => {
     const button = document.createElement('button');

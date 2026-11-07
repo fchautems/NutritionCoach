@@ -5,7 +5,7 @@ on:
     branches: [main]
     tags: ['v*']
   pull_request:
-    branches: [main]
+    branches: [main, iteration/01-aujourdhui]
   workflow_dispatch:
 
 permissions:
@@ -37,6 +37,17 @@ jobs:
 
       - name: Unit tests
         run: gradle --no-daemon :app:testDebugUnitTest
+
+      - name: Configure Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Interface tests
+        run: |
+          test_deps="$(mktemp -d)"
+          npm install --prefix "$test_deps" --no-package-lock jsdom@26.1.0
+          NODE_PATH="$test_deps/node_modules" node --test tests/profile-ui.test.cjs
 
       - name: Build preview APK
         run: gradle --no-daemon :app:assemblePreview

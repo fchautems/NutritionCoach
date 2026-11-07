@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -182,6 +183,14 @@ public final class MainActivity extends Activity {
         @JavascriptInterface public boolean saveProfile(String name, String sex, String cm, String kg) {
             try {
                 return journal.saveProfile(name, sex, cm, kg);
+            } catch (JSONException e) {
+                return false;
+            }
+        }
+
+        @JavascriptInterface public boolean saveProfileDetails(String payload) {
+            try {
+                return journal.saveProfileDetails(payload, LocalDate.now());
             } catch (JSONException e) {
                 return false;
             }

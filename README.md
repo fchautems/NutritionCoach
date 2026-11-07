@@ -40,3 +40,7 @@ L’interface publiée vit sur [la branche ui-channel](https://github.com/fchaut
 Le catalogue initial rassemble 49 aliments extraits de la [Base de données suisse des valeurs nutritives de l’OSAV, V7.1](https://www.naehrwertdaten.ch/fr/telechargement/). Les valeurs sont exprimées par 100 g de partie comestible. Les identifiants d’origine sont conservés dans les données du catalogue.
 
 Pour rétablir une ancienne interface, publier son contenu sous un numéro supérieur. Le stockage Android est indépendant des versions de l’interface.
+
+## Profil et objectif de poids
+
+Le profil complet utilise le pont Android de l’aperçu V0.4. L’APK embarque l’interface 4 avec le catalogue de l’interface 3. Le document reste compatible avec le protocole 1 et affiche le profil historique si le pont est celui de la V0.3. La compilation et la procédure d’essai sur téléphone figurent dans [Profil et objectif de poids](docs/PROFIL_OBJECTIF.md).
