@@ -11,10 +11,10 @@ Livrer une APK Android réellement installable pour valider rapidement le suivi 
 - Code V0.1 ajouté : saisie aliment + kcal, total et objectif par jour, navigation entre jours, suppression, persistance locale.
 - Tests unitaires du calcul des totaux inclus.
 - Workflow GitHub Actions prévu pour tester, construire et publier la préversion `v0.1.0`.
-- Compilation **non encore vérifiée** à la rédaction de cet état : vérifier la première exécution GitHub Actions.
+- Tests unitaires et compilation Gradle **réussis** dans GitHub Actions (run 42369769381).\n- APK de préversion **publiée** : [NutritionCoach-v0.1.0-debug.apk](https://github.com/fchautems/NutritionCoach/releases/download/v0.1.0/NutritionCoach-v0.1.0-debug.apk) ; SHA-256 : `4494973fe49d30476935b5b11511d43a8c19f0ecdb8835664ad8611fc2af4896`.
 
 ## Modifications
-- 2026-11-07 : initialisation du dépôt et création du POC Android.
+- 2026-11-07 : initialisation du dépôt et création du POC Android.\n- 2026-11-07 : corrections du setup SDK GitHub Actions ; tests et build réussis ; APK v0.1.0 publiée.
 - Choix de la simplicité : saisie manuelle d'abord ; pas de backend ni de reconnaissance photo à ce stade.
 
 ## Contrôles
@@ -26,4 +26,4 @@ Livrer une APK Android réellement installable pour valider rapidement le suivi 
 - Permissions GitHub Actions pour publier une release : à confirmer.
 
 ## Prochaine action
-- Vérifier le workflow GitHub Actions et l'APK publiée ; corriger si nécessaire, puis tester la saisie, la conservation des données et la suppression sur téléphone.
+- Installer l'APK sur Android, valider les opérations et la conservation des données, puis prioriser la V0.2 avec les retours utilisateur.
