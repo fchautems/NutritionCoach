@@ -383,12 +383,17 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
                 <button id="postpone-deadline" type="button">Repousser l’échéance</button>
                 <button id="adjust-weight" type="button">Ajuster le poids cible</button>
             </div>
+            <div id="calorie-proposal" class="profile-results spaced" hidden>
+                <strong id="calorie-proposal-title">Objectif calorique proposé</strong>
+                <p id="calorie-proposal-detail" class="hint"></p>
+            </div>
           </section>
             <p class="hint">Ton profil et ton journal sont enregistrés sur ce téléphone.</p>
             <p id="profile-error" class="error" role="alert" hidden></p>
             <div class="actions">
                 <button id="cancel-profile" type="button" hidden>Annuler</button>
                 <button class="primary" type="submit">Enregistrer</button>
+                <button id="review-calorie-goal" type="submit" hidden>Enregistrer et revoir les calories</button>
             </div>
         </form>
     </section>
@@ -446,7 +451,7 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
                 <p id="food-empty" class="hint" hidden>Aucun aliment trouvé. Tu peux encore le saisir à la main.</p>
             </section>
             <p id="catalog-feedback" class="hint" role="status" hidden></p>
-            <p class="source">Valeurs pour la partie comestible. Source : Base de données suisse des valeurs nutritives, OSAV, V7.1.</p>
+            <p class="source">Valeurs pour la partie comestible. Base de données suisse des valeurs nutritives V7.1, OSAV, valeursnutritives.ch.</p>
             <button id="manual-open" class="link-button" type="button" aria-expanded="false" aria-controls="entry-form">Saisir un aliment à la main</button>
         </div>
         <form id="entry-form" class="card panel" hidden>
@@ -499,9 +504,14 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
     <h2 id="portion-title"></h2>
     <p id="portion-reference"></p>
     <form id="portion-form">
+        <div id="weighing-options" hidden>
+            <label for="weighing-state">Comment as-tu pesé l’aliment ?</label>
+            <select id="weighing-state"></select>
+        </div>
+        <p id="weighing-note" class="hint" hidden></p>
         <div id="portion-presets" class="presets" aria-label="Quantités proposées"></div>
         <label for="grams">Quantité (g)</label>
-        <input id="grams" type="number" inputmode="numeric" min="1" max="2000" step="1" required>
+        <input id="grams" type="number" inputmode="decimal" min="1" max="2000" step="0.1" required>
         <p id="portion-total" class="portion-total" aria-live="polite"></p>
         <p id="portion-error" class="error" role="alert" hidden></p>
         <div class="actions">
@@ -554,58 +564,66 @@ const categories = [
     ['other', 'Boissons et divers']
 ];
 // OSAV, Base de données suisse des valeurs nutritives V7.1, Generic Foods.
-// Each row is [source ID, category, French label, kcal per 100 g, suggested grams].
+// Each row gives the source ID, category, label, kcal per 100 g, default grams, shortcuts and weighing state.
+// Optional alternate state: source ID, kcal per 100 g, default grams, shortcuts and weighing state.
 const foods = [
-    [13276, "meat", "Blanc de poulet poêlé", 128, 150],
-    [13310, "meat", "Cuisse de poulet rôtie avec peau", 187, 150],
-    [13309, "meat", "Poulet rôti avec peau", 193, 150],
-    [13258, "meat", "Entrecôte de bœuf poêlée", 162, 150],
-    [13297, "meat", "Bœuf haché poêlé", 211, 125],
-    [691, "meat", "Jambon cuit", 104, 40],
-    [13354, "fish", "Saumon cuit à la vapeur", 200, 150],
-    [193, "fish", "Saumon fumé", 173, 50],
-    [417, "fish", "Thon au naturel égoutté", 109, 100],
-    [418, "fish", "Thon à l’huile égoutté", 199, 100],
-    [13350, "fish", "Cabillaud cuit à la vapeur", 74, 150],
-    [14293, "fish", "Crevettes cuites décortiquées", 86, 100],
-    [1005, "vegetables", "Brocoli vapeur", 35, 150],
-    [1002, "vegetables", "Carottes vapeur", 44, 150],
-    [1654, "vegetables", "Courgettes vapeur", 18, 150],
-    [348, "vegetables", "Tomate crue", 21, 120],
-    [354, "vegetables", "Concombre cru", 12, 100],
-    [448, "vegetables", "Laitue crue", 16, 50],
-    [1009, "vegetables", "Haricots verts vapeur", 33, 150],
-    [1066, "starches", "Riz blanc cuit", 117, 150],
-    [1063, "starches", "Pâtes cuites sans œufs", 158, 150],
-    [1064, "starches", "Pâtes complètes cuites", 152, 150],
-    [14259, "starches", "Pommes de terre nouvelles bouillies", 66, 150],
-    [823, "starches", "Pain blanc", 242, 50],
-    [198, "starches", "Flocons d’avoine", 381, 40],
-    [13396, "starches", "Quinoa cuit", 117, 150],
-    [1535, "starches", "Pizza Margherita", 238, 250],
-    [381, "fruit", "Banane", 90, 120],
-    [378, "fruit", "Pomme", 52, 150],
-    [382, "fruit", "Poire", 54, 150],
-    [405, "fruit", "Orange", 45, 150],
-    [385, "fruit", "Fraises", 38, 100],
-    [389, "fruit", "Myrtilles", 51, 100],
-    [395, "fruit", "Kiwi", 58, 75],
-    [380, "fruit", "Avocat", 158, 75],
-    [13399, "dairy", "Lait demi-écrémé 1,5 %", 46, 200],
-    [52, "dairy", "Yogourt nature", 66, 125],
-    [1192, "dairy", "Yogourt sucré", 105, 125],
-    [82, "dairy", "Mozzarella", 256, 60],
-    [505, "dairy", "Cottage cheese", 100, 100],
-    [1070, "eggs", "Œuf dur", 156, 50],
-    [1059, "eggs", "Pois chiches cuits", 131, 150],
-    [1060, "eggs", "Lentilles cuites", 111, 150],
-    [13437, "eggs", "Tofu ferme nature", 148, 100],
-    [273, "eggs", "Amandes", 624, 25],
-    [591, "other", "Huile d’olive", 900, 10],
-    [60, "other", "Beurre de fromagerie", 747, 10],
-    [196, "other", "Chocolat noir", 537, 20],
-    [576, "other", "Jus d’orange", 42, 200]
-].map(([id, group, name, kcal, portion]) => ({id, group, name, kcal, portion}));
+    [13276, "meat", "Blanc de poulet grillé", 128, 130, [80, 130, 160], "Cuit, sans peau ni gras ajouté"],
+    [13310, "meat", "Cuisse de poulet rôtie avec peau", 187, 120, [80, 120, 160], "Cuite, viande et peau consommées, sans os"],
+    [13309, "meat", "Poulet rôti avec peau", 193, 130, [75, 130, 180], "Cuit, chair et peau consommées, sans os"],
+    [13258, "meat", "Entrecôte de bœuf grillée", 162, 150, [100, 150, 200], "Cuite à point, sans gras ajouté"],
+    [13297, "meat", "Bœuf haché", 211, 120, [60, 120, 150], "Grillé · après cuisson", [14237, 208, 125, [75, 125, 200], "Cru · avant cuisson"]],
+    [691, "meat", "Jambon cuit", 104, 40, [20, 40, 60], "Tel que vendu, jambon de derrière"],
+    [13354, "fish", "Filet de saumon vapeur", 200, 120, [80, 120, 160], "Cuit, saumon d’élevage, sans arêtes ni gras ajouté"],
+    [193, "fish", "Saumon fumé", 173, 50, [25, 50, 80], "Tel que vendu, prêt à manger"],
+    [417, "fish", "Thon au naturel", 109, 100, [50, 100, 150], "En conserve, égoutté"],
+    [418, "fish", "Thon à l’huile", 199, 100, [50, 100, 150], "En conserve, égoutté"],
+    [13350, "fish", "Filet de cabillaud vapeur", 74, 120, [75, 120, 160], "Cuit, sans arêtes ni gras ajouté"],
+    [14293, "fish", "Crevettes cuites", 86, 75, [50, 75, 120], "Cuites, décortiquées, sans queue non consommée"],
+    [1005, "vegetables", "Brocoli vapeur", 35, 120, [80, 120, 180], "Cuit, sans sauce"],
+    [1002, "vegetables", "Carottes vapeur", 44, 100, [50, 100, 160], "Cuites, sans sauce"],
+    [1654, "vegetables", "Courgettes vapeur", 18, 100, [50, 100, 170], "Cuites, sans sauce"],
+    [348, "vegetables", "Tomate", 21, 100, [50, 100, 150], "Crue, partie mangée"],
+    [354, "vegetables", "Concombre", 12, 75, [50, 75, 150], "Cru, partie mangée"],
+    [448, "vegetables", "Laitue pommée", 16, 40, [20, 40, 60], "Crue, feuilles seules"],
+    [1009, "vegetables", "Haricots verts vapeur", 33, 100, [50, 100, 170], "Cuits, sans sauce"],
+    [1066, "starches", "Riz blanc cuit", 117, 120, [80, 120, 180], "Cuit à l’eau, sans sauce"],
+    [800, "starches", "Pâtes sans œufs", 353, 75, [50, 75, 100], "Sec · avant cuisson", [1063, 158, 170, [100, 170, 250], "Cuit · dans l’assiette"]],
+    [801, "starches", "Pâtes complètes", 338, 75, [50, 75, 100], "Sec · avant cuisson", [1064, 152, 170, [100, 170, 250], "Cuit · dans l’assiette"]],
+    [14259, "starches", "Pommes de terre nouvelles à l’eau", 66, 150, [100, 150, 250], "Cuites à l’eau, avec peau consommée, sans sel ajouté"],
+    [823, "starches", "Pain blanc", 242, 60, [30, 60, 100], "Tel que vendu"],
+    [198, "starches", "Flocons d’avoine", 381, 50, [30, 50, 75], "Secs, avant lait ou eau"],
+    [13396, "starches", "Quinoa cuit", 117, 120, [80, 120, 180], "Cuit, sans gras ni sel ajoutés"],
+    [1535, "starches", "Pizza margherita", 238, 200, [100, 200, 300], "Cuite au four, portion mangée"],
+    [381, "fruit", "Banane", 90, 120, [[60, "½ banane"], [120, "1 banane"], 150], "Crue, pelée"],
+    [378, "fruit", "Pomme", 52, 150, [75, 150, 200], "Crue, sans trognon"],
+    [382, "fruit", "Poire", 54, 140, [75, 140, 200], "Crue, sans trognon"],
+    [405, "fruit", "Orange", 45, 150, [75, 150, 180], "Crue, pelée"],
+    [385, "fruit", "Fraises", 38, 100, [60, 100, 150], "Crues, équeutées"],
+    [389, "fruit", "Myrtilles", 51, 60, [30, 60, 100], "Crues, partie mangée"],
+    [395, "fruit", "Kiwi", 58, 75, [50, 75, 150], "Cru, chair si pelé"],
+    [380, "fruit", "Avocat", 158, 75, [40, 75, 150], "Cru, chair sans peau ni noyau"],
+    [13399, "dairy", "Lait demi-écrémé 1,5 %", 46, 206, [[51.5, "50 ml"], [206, "200 ml"], [257.5, "250 ml"]], "Liquide UHT"],
+    [52, "dairy", "Yogourt nature", 66, 125, [100, 125, 180], "Tel que vendu, non sucré"],
+    [1192, "dairy", "Yogourt sucré", 105, 180, [100, 125, 180], "Tel que vendu, moyenne générique"],
+    [82, "dairy", "Mozzarella", 256, 60, [30, 60, 125], "Égouttée, prête à manger"],
+    [505, "dairy", "Cottage cheese nature", 100, 100, [50, 100, 150], "Tel que vendu, fromage frais granulé"],
+    [1070, "eggs", "Œuf dur", 156, 50, [[50, "1 œuf"], [100, "2 œufs"], [150, "3 œufs"]], "Cuit dur, sans coquille"],
+    [1059, "eggs", "Pois chiches cuits", 131, 100, [60, 100, 150], "Cuits, égouttés, sans gras ni sel ajoutés"],
+    [1060, "eggs", "Lentilles entières cuites", 111, 120, [60, 120, 150], "Cuites, égouttées, sans gras ni sel ajoutés"],
+    [13437, "eggs", "Tofu ferme nature", 148, 120, [50, 120, 200], "Tel que vendu, égoutté si liquide séparé, avant cuisson"],
+    [273, "eggs", "Amandes nature", 624, 20, [15, 20, 30], "Amandes décortiquées, sans assaisonnement"],
+    [591, "other", "Huile d’olive", 900, 10, [[4.6, "1 c. à café"], 10, 15], "Quantité utilisée pour la part mangée"],
+    [60, "other", "Beurre de fromagerie", 747, 10, [5, 10, 20], "Tel que vendu, quantité mangée ou attribuée à sa part"],
+    [196, "other", "Chocolat noir", 537, 20, [10, 20, 30], "Tel que vendu, tablette générique"],
+    [576, "other", "Jus d’orange", 42, 208, [[104, "100 ml"], [208, "200 ml"], [260, "250 ml"]], "Liquide, 100 % jus, sans dilution"]
+].map(([id, group, name, kcal, portion, presets, weighing, alternate]) => {
+    const states = [{id, kcal, portion, presets, weighing}];
+    if (alternate) {
+        const [id, kcal, portion, presets, weighing] = alternate;
+        states.push({id, kcal, portion, presets, weighing});
+    }
+    return {group, name, states};
+});
 const number = new Intl.NumberFormat('fr-CH', {useGrouping: false});
 const formatted = value => number.format(value).replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f');
 const dateFormat = new Intl.DateTimeFormat('fr-CH', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'});
@@ -675,7 +693,10 @@ function renderCatalog() {
 
     byId('results-title').textContent = query ? 'Résultats' : categories.find(([id]) => id === selectedCategory)[1];
     const matches = query
-        ? foods.filter(food => query.split(' ').every(word => searchKey(food.name).includes(word)))
+        ? foods.filter(food => {
+            const searchable = searchKey([food.name, ...food.states.map(state => state.weighing)].join(' '));
+            return query.split(' ').every(word => searchable.includes(word));
+        })
         : foods.filter(food => food.group === selectedCategory);
     const results = byId('food-results');
     results.textContent = '';
@@ -688,7 +709,9 @@ function renderCatalog() {
         const text = document.createElement('span');
         text.textContent = food.name;
         const density = document.createElement('small');
-        density.textContent = formatted(food.kcal) + ' kcal / 100 g';
+        const firstState = food.states[0];
+        density.textContent = formatted(firstState.kcal) + ' kcal / 100 g'
+            + (food.states.length > 1 ? ' · ' + firstState.weighing.split(' · ')[0].toLowerCase() : '');
         text.appendChild(density);
         const arrow = document.createElement('span');
         arrow.className = 'arrow';
@@ -722,29 +745,46 @@ function setManual(open) {
 function openPortion(food) {
     selectedFood = food;
     byId('portion-title').textContent = food.name;
-    byId('portion-reference').textContent = formatted(food.kcal) + ' kcal pour 100 g';
+    const select = byId('weighing-state');
+    byId('weighing-options').hidden = food.states.length === 1;
+    select.replaceChildren(...food.states.map((state, index) => new Option(state.weighing, index)));
+    select.value = '0';
+    setPortionState();
+    byId('portion-dialog').showModal();
+}
+
+function currentPortionState() {
+    return selectedFood?.states[Number(byId('weighing-state').value)];
+}
+
+function setPortionState() {
+    const state = currentPortionState();
+    byId('portion-reference').textContent = formatted(state.kcal) + ' kcal pour 100 g';
+    message('weighing-note', selectedFood.states.length === 1 ? state.weighing : '');
     const presets = byId('portion-presets');
     presets.textContent = '';
-    [Math.round(food.portion / 2), food.portion, food.portion * 2].forEach(grams => {
+    state.presets.forEach(preset => {
+        const [grams, label] = Array.isArray(preset) ? preset : [preset, ''];
         const button = document.createElement('button');
         button.type = 'button';
         button.dataset.grams = grams;
-        button.textContent = formatted(grams) + ' g';
+        button.textContent = (label ? label + ' ≈ ' : '') + formatted(grams) + ' g';
         button.addEventListener('click', () => {
             byId('grams').value = grams;
             renderPortion();
         });
         presets.appendChild(button);
     });
-    byId('grams').value = food.portion;
+    byId('grams').value = state.portion;
     renderPortion();
-    byId('portion-dialog').showModal();
 }
 
 function renderPortion() {
-    const grams = byId('grams').valueAsNumber;
-    const valid = Number.isInteger(grams) && grams >= 1 && grams <= 2000;
-    const kcal = valid ? Math.round(selectedFood.kcal * grams / 100) : 0;
+    const input = byId('grams');
+    const grams = input.valueAsNumber;
+    const state = currentPortionState();
+    const valid = !!state && input.validity.valid;
+    const kcal = valid ? Math.round(state.kcal * grams / 100) : 0;
     byId('portion-total').textContent = valid ? '≈ ' + formatted(kcal) + ' kcal' : 'Indique une quantité.';
     byId('add-portion').disabled = !valid || kcal < 1 || kcal > 10000;
     byId('portion-presets').querySelectorAll('button').forEach(button => {
@@ -892,7 +932,7 @@ function renderEnergy(draft, age, cm, kg) {
         link.textContent = (age !== null && age < 18 ? 'L’estimation est prévue pour les adultes. '
             : 'Complète la date de naissance, les mesures et l’activité pour obtenir une estimation. ')
             + 'Objectif du journal · ' + goal + '.';
-        return;
+        return null;
     }
     // Mifflin–St Jeor at rest, approximate daily movement, then net cost of moderate sport.
     const base = 10 * kg + 6.25 * cm - 5 * age;
@@ -902,12 +942,50 @@ function renderEnergy(draft, age, cm, kg) {
     const high = estimate(draft.sex === 'female' ? -161 : 5);
     if (low <= 0) {
         link.textContent = 'Estimation indisponible pour ces mesures. Objectif du journal · ' + goal + '.';
-        return;
+        return null;
     }
     energy.textContent += ' · ≈ ' + formatted(low) + (high === low ? '' : ' à ' + formatted(high)) + ' kcal/j';
     const comparison = state.goal < low ? 'en dessous de' : state.goal > high ? 'au-dessus de' : 'proche de';
     link.textContent = 'Ton objectif de ' + goal + ' se situe ' + comparison
         + ' cette estimation de maintien. Manger en dessous tend à faire baisser le poids, et manger au-dessus tend à le faire monter.';
+    return {low, high};
+}
+
+function renderCalorieProposal(draft, energy, cm, kg, today) {
+    const section = byId('calorie-proposal');
+    const title = byId('calorie-proposal-title');
+    const detail = byId('calorie-proposal-detail');
+    const review = byId('review-calorie-goal');
+    const target = draft.goalMode === 'target' ? weightValue(draft.targetWeight) : kg;
+    section.hidden = !energy || !draft.goalMode || target === null;
+    review.hidden = true;
+    delete review.dataset.goal;
+    if (section.hidden) return;
+
+    title.textContent = 'Objectif calorique proposé';
+    const difference = target - kg;
+    const days = daysBetween(today, draft.deadline);
+    if (difference !== 0 && draft.deadline && !(days > 0)) {
+        detail.textContent = 'Choisis une date future ou laisse l’échéance vide.';
+        return;
+    }
+    const requested = draft.deadline && difference !== 0 ? 7700 * difference / days : 250 * Math.sign(difference);
+    const adjustment = Math.max(-500, Math.min(300, requested));
+    const maintenance = (energy.low + energy.high) / 2;
+    const proposed = Math.round((maintenance + adjustment) / 50) * 50;
+    if ((difference < 0 && (target / (cm / 100) ** 2 < 18.5 || proposed < 1500)) || proposed < 500 || proposed > 10000) {
+        detail.textContent = 'Aucune cible proposée pour ces paramètres. Tu peux revoir ton objectif de poids.';
+        return;
+    }
+
+    title.textContent += ' · ' + formatted(proposed) + ' kcal/j';
+    detail.textContent = (energy.low === energy.high ? 'Basé sur ta dépense de maintien estimée.'
+        : 'Basé sur le milieu de ta fourchette de maintien.')
+        + (adjustment !== requested ? ' L’ajustement est limité. Il faudra peut-être plus de temps pour atteindre le poids cible.'
+            : difference !== 0 ? ' C’est un point de départ à ajuster selon l’évolution de ton poids.' : '')
+        + ' Objectif actuel du journal · ' + formatted(state.goal) + ' kcal/j.';
+    review.hidden = proposed === state.goal;
+    review.dataset.goal = proposed;
 }
 
 function observedWeight(today) {
@@ -984,7 +1062,8 @@ function renderProfileDetails() {
     byId('birth-age').textContent = age === null ? 'Elle sert à calculer ton âge et à te souhaiter ton anniversaire.'
         : 'Âge · ' + age + ' ans';
     message('profile-bmi', cm && kg !== null ? 'IMC · ' + number.format(Math.round(10 * kg / (cm / 100) ** 2) / 10) : '');
-    renderEnergy(draft, age, cm, kg);
+    const energy = renderEnergy(draft, age, cm, kg);
+    renderCalorieProposal(draft, energy, cm, kg, today);
     return renderWeightGoal(draft, age, cm, kg, today);
 }
 
@@ -1062,6 +1141,7 @@ byId('profile-form').addEventListener('submit', event => {
         byId('target-weight').focus();
         return;
     }
+    const proposedGoal = event.submitter === byId('review-calorie-goal') ? event.submitter.dataset.goal : null;
     const saved = detailedProfile ? host.saveProfileDetails(JSON.stringify(draft))
         : host.saveProfile(draft.name, draft.sex, draft.height, String(weight));
     if (!saved) {
@@ -1071,6 +1151,7 @@ byId('profile-form').addEventListener('submit', event => {
     readState();
     renderToday();
     byId('today-title').focus();
+    if (proposedGoal) openCalorieGoal(proposedGoal);
 });
 if (detailedProfile) {
     byId('profile-form').addEventListener('input', renderProfileDetails);
@@ -1111,13 +1192,15 @@ byId('manual-open').addEventListener('click', () => {
     setManual(open);
     if (open) byId('food').focus();
 });
+byId('weighing-state').addEventListener('change', setPortionState);
 byId('grams').addEventListener('input', renderPortion);
 byId('portion-form').addEventListener('submit', event => {
     event.preventDefault();
     const kcal = renderPortion();
     if (byId('add-portion').disabled) return;
     const grams = byId('grams').valueAsNumber;
-    const name = selectedFood.name + ' · ' + grams + ' g';
+    const stateLabel = selectedFood.states.length > 1 ? ' · ' + currentPortionState().weighing.split(' · ')[0].toLowerCase() : '';
+    const name = selectedFood.name + stateLabel + ' · ' + formatted(grams) + ' g';
     if (!host.addEntry(dateKey(date), currentMeal.id, name, String(kcal))) {
         message('portion-error', 'L’aliment n’a pas été enregistré. Réessaie.');
         return;
@@ -1159,11 +1242,12 @@ byId('goal-form').addEventListener('submit', event => {
     byId('goal-dialog').close();
     renderToday();
 });
-byId('goal-button').addEventListener('click', () => {
-    byId('goal-input').value = state.goal;
+function openCalorieGoal(goal) {
+    byId('goal-input').value = goal;
     message('goal-error', '');
     byId('goal-dialog').showModal();
-});
+}
+byId('goal-button').addEventListener('click', () => openCalorieGoal(state.goal));
 byId('previous').addEventListener('click', () => { date.setDate(date.getDate() - 1); renderToday(); });
 byId('next').addEventListener('click', () => { date.setDate(date.getDate() + 1); renderToday(); });
 byId('return-today').addEventListener('click', () => { date = new Date(); renderToday(); });

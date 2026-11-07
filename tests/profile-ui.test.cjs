@@ -195,3 +195,58 @@ test('un premier profil peut ouvrir le journal sans date de naissance ni échéa
     assert.equal(app.visible('birthday'), false);
     assert.equal(app.data.profile.weight, 78.5);
 });
+
+test('la proposition calorique modifie le journal seulement après confirmation', t => {
+    const data = {...structuredClone(oldState), profile: {...oldState.profile,
+        birthDate: '1988-11-07', movement: 'mixed', sport: 'regular', goalMode: 'target', targetWeight: 73}};
+    const app = openApp(t, {data});
+    app.editProfile();
+    assert.match(app.text('calorie-proposal-title'), /2\s300 kcal\/j/);
+    app.fill('weight-deadline', '2026-11-14');
+    assert.match(app.text('calorie-proposal-title'), /2\s050 kcal\/j/);
+    assert.match(app.text('calorie-proposal-detail'), /ajustement est limité/);
+    app.fill('weight-deadline', today);
+    assert.equal(app.visible('review-calorie-goal'), false);
+    app.fill('weight-deadline', '');
+    app.fill('target-weight', '55');
+    assert.equal(app.visible('review-calorie-goal'), false);
+    app.fill('target-weight', '73');
+    app.click('review-calorie-goal');
+    assert.equal(app.field('goal-dialog').open, true);
+    assert.equal(app.field('goal-input').value, '2300');
+    assert.equal(data.goal, 2175);
+    app.field('goal-dialog').querySelector('.close').click();
+    assert.equal(data.goal, 2175);
+    app.editProfile();
+    app.click('review-calorie-goal');
+    app.submit('goal-form');
+    assert.equal(data.goal, 2300);
+    assert.match(app.text('goal-button'), /2\s300 kcal/);
+    assert.match(app.text('total'), /^247 kcal$/);
+});
+
+test('les portions utilisent les valeurs propres à l’état et acceptent une quantité décimale', t => {
+    const app = openApp(t);
+    app.field('meals').querySelectorAll('button')[1].click();
+    app.fill('food-search', 'pâtes sans œufs');
+    const results = app.field('food-results').querySelectorAll('button');
+    assert.equal(results.length, 1);
+    results[0].click();
+    assert.match(app.text('weighing-state'), /Sec · avant cuisson/);
+    assert.equal(app.field('grams').value, '75');
+    assert.match(app.text('portion-total'), /265 kcal/);
+    app.field('weighing-state').value = '1';
+    app.field('weighing-state').dispatchEvent(new app.document.defaultView.Event('change'));
+    assert.equal(app.field('grams').value, '170');
+    assert.match(app.text('portion-total'), /269 kcal/);
+    app.submit('portion-form');
+    assert.equal(app.data.entries.at(-1).name, 'Pâtes sans œufs · cuit · 170 g');
+    assert.equal(app.data.entries.at(-1).kcal, 269);
+    app.fill('food-search', 'huile olive');
+    app.field('food-results').querySelector('button').click();
+    app.field('portion-presets').querySelector('button').click();
+    assert.equal(app.field('grams').value, '4.6');
+    assert.match(app.text('portion-total'), /41 kcal/);
+    app.submit('portion-form');
+    assert.equal(app.data.entries.at(-1).kcal, 41);
+});

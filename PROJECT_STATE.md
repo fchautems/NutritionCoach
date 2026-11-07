@@ -29,9 +29,12 @@ Dernière mise à jour : 2026-11-07
 
 - 2026-11-07. Les estimations utilisent la [base suisse des valeurs nutritives de l’OSAV V7.1](https://www.naehrwertdaten.ch/fr/telechargement/). L’interface 3 conserve le protocole 1 et enregistre le libellé avec la portion et les kcal calculées via le pont existant.
 
-- 2026-11-07. L’objectif de poids est indépendant de l’objectif calorique. La tendance utilise des pesées datées et le poids issu d’un profil ancien reste disponible. [Méthode et essai sur téléphone](docs/PROFIL_OBJECTIF.md).
+- 2026-11-07. L’objectif calorique du journal reste modifiable et toute proposition issue du poids cible demande une confirmation. La tendance utilise des pesées datées et le poids issu d’un profil ancien reste disponible. [Méthode et essai sur téléphone](docs/PROFIL_OBJECTIF.md).
 
-- 2026-11-07. [Profil intégré](https://github.com/fchautems/NutritionCoach/pull/4), puis [branche d’itération fusionnée dans `main`](https://github.com/fchautems/NutritionCoach/pull/1). L’APK V0.4 signée avec le certificat d’aperçu a été fournie pour l’essai. Le canal HTTPS sert actuellement l’interface 3.
+- 2026-11-07. [Profil intégré](https://github.com/fchautems/NutritionCoach/pull/4), puis [branche d’itération fusionnée dans `main`](https://github.com/fchautems/NutritionCoach/pull/1). L’APK V0.4 signée a été installée sur le Pixel, où le profil détaillé s’ouvre.
+
+- 2026-11-07. Interface 5 préparée pour le canal intégré. L’objectif calorique du profil est proposé à partir de la dépense estimée, du poids cible et de l’échéance éventuelle, puis appliqué au journal sur confirmation. Les 49 fiches adoptent des portions propres à chaque aliment et trois états de pesée complémentaires. [Audit des portions](docs/CATALOGUE_PORTIONS.md).
+- 2026-11-07. [Étude Withings](docs/WITHINGS.md) intégrée à la documentation. Le premier essai porte sur le transfert des pesées de Withings vers Health Connect sur le Pixel.
 
 ## Contrôles et limites
 
@@ -44,9 +47,11 @@ Dernière mise à jour : 2026-11-07
 - CI V0.3 réussie : tests, compilation Gradle et artefact dans le [run 42373121667](https://github.com/fchautems/NutritionCoach/actions/runs/42373121667). Le canal HTTPS sert l’interface 2 et le SHA-256 téléchargé correspond au manifeste.
 - Interface 3 : manifeste HTTPS et empreinte vérifiés sur le canal public. Test DOM avec pont simulé dans les deux sens, 2 → 3 → 2, avec le même profil, le même objectif, une entrée historique et une saisie manuelle de la V2. La V2 relit aussi l’ajout fait par le catalogue de la V3. Le chargement de la V3 sur téléphone reste à confirmer.
 
-- Profil V0.4 : neuf tests JUnit et quatre tests DOM réussis. [CI de la PR #4 réussie](https://github.com/fchautems/NutritionCoach/actions/runs/42378225698). Compilation locale avec le SDK Android 35 et certificat vérifié identique à celui de l’aperçu V0.3 distribué. L’essai physique de la mise à niveau reste à effectuer.
+- Profil V0.4 : neuf tests JUnit et quatre tests DOM réussis. [CI de la PR #4 réussie](https://github.com/fchautems/NutritionCoach/actions/runs/42378225698). Compilation locale avec le SDK Android 35 et certificat vérifié identique à celui de l’aperçu V0.3 distribué. L’ouverture du profil détaillé sur le Pixel a été confirmée. Le scénario complet de conservation du journal reste à vérifier.
+
+- Interface 5 : six tests DOM réussis, y compris maintien de l’ancien journal, confirmation de l’objectif, pâtes sèches et cuites, et saisie décimale. Le pont Android existant est utilisé.
 
 ## Prochaine action
 
-- Essayer l’APK V0.4 par-dessus la V0.3 sur le Pixel et vérifier le profil, le catalogue et les données du journal. [Procédure d’essai](docs/PROFIL_OBJECTIF.md).
-- Relire l’audit des portions et l’étude Withings dans leurs PR respectives.
+- Sur le Pixel, appliquer l’interface 5 depuis les paramètres et essayer la cible calorique et les portions.
+- Vérifier le transfert des pesées dans Health Connect selon [la procédure Withings](docs/WITHINGS.md).
