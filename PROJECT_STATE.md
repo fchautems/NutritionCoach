@@ -27,6 +27,8 @@ Dernière mise à jour : 2026-11-07
 
 - 2026-11-07. Les estimations utilisent la [base suisse des valeurs nutritives de l’OSAV V7.1](https://www.naehrwertdaten.ch/fr/telechargement/). L’interface 3 conserve le protocole 1 et enregistre le libellé avec la portion et les kcal calculées via le pont existant.
 
+- 2026-11-07. [Audit documentaire du catalogue et des portions](docs/CATALOGUE_PORTIONS.md). Propositions à valider : privilégier les pâtes pesées sèches avec état cuit distinct, définir les raccourcis par aliment et garder la saisie libre en grammes.
+
 ## Contrôles et limites
 
 - La V0.1 est signée avec une clé debug générée par le runner CI. Une nouvelle APK signée avec une autre clé ne peut pas la remplacer en conservant son journal.
@@ -38,6 +40,9 @@ Dernière mise à jour : 2026-11-07
 - CI V0.3 réussie : tests, compilation Gradle et artefact dans le [run 42373121667](https://github.com/fchautems/NutritionCoach/actions/runs/42373121667). Le canal HTTPS sert l’interface 2 et le SHA-256 téléchargé correspond au manifeste.
 - Interface 3 : manifeste HTTPS et empreinte vérifiés sur le canal public. Test DOM avec pont simulé dans les deux sens, 2 → 3 → 2, avec le même profil, le même objectif, une entrée historique et une saisie manuelle de la V2. La V2 relit aussi l’ajout fait par le catalogue de la V3. Le chargement de la V3 sur téléphone reste à confirmer.
 
+- 2026-11-07. Audit V3 : manifeste public et SHA-256 concordants, 49 identifiants et valeurs kcal/100 g vérifiés sur OSAV V7.1. Les deux fiches de pâtes sèches et la fiche de bœuf haché cru sont vérifiées. Les conditions propres au classeur agrégé menuCH restent à confirmer avant redistribution.
+
 ## Prochaine action
 
 - Confirmer le passage à l’interface 3 sur téléphone et l’affichage des saisies existantes. Poursuivre avec récents et favoris.
+- Faire relire l’audit et valider les états, portions et unités avant le lot d’intégration à l’écran.
