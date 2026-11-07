@@ -27,6 +27,8 @@ Dernière mise à jour : 2026-11-07
 
 - 2026-11-07. Les estimations utilisent la [base suisse des valeurs nutritives de l’OSAV V7.1](https://www.naehrwertdaten.ch/fr/telechargement/). L’interface 3 conserve le protocole 1 et enregistre le libellé avec la portion et les kcal calculées via le pont existant.
 
+- 2026-11-07. [Étude Withings](docs/WITHINGS.md). Health Connect est proposé pour un premier essai de lecture du poids sur Pixel. L’API directe donne accès à l’historique cloud et ajoute un service OAuth. Les deux voies peuvent être soumises à Withings+ selon la date de création du compte.
+
 ## Contrôles et limites
 
 - La V0.1 est signée avec une clé debug générée par le runner CI. Une nouvelle APK signée avec une autre clé ne peut pas la remplacer en conservant son journal.
@@ -38,6 +40,9 @@ Dernière mise à jour : 2026-11-07
 - CI V0.3 réussie : tests, compilation Gradle et artefact dans le [run 42373121667](https://github.com/fchautems/NutritionCoach/actions/runs/42373121667). Le canal HTTPS sert l’interface 2 et le SHA-256 téléchargé correspond au manifeste.
 - Interface 3 : manifeste HTTPS et empreinte vérifiés sur le canal public. Test DOM avec pont simulé dans les deux sens, 2 → 3 → 2, avec le même profil, le même objectif, une entrée historique et une saisie manuelle de la V2. La V2 relit aussi l’ajout fait par le catalogue de la V3. Le chargement de la V3 sur téléphone reste à confirmer.
 
+- Étude Withings vérifiée sur les sources Android et Withings et sur le stockage de la branche. Le profil ne contient qu’un poids sans date. L’export réel, son délai et la profondeur de l’historique restent à vérifier sur le Pixel.
+
 ## Prochaine action
 
 - Confirmer le passage à l’interface 3 sur téléphone et l’affichage des saisies existantes. Poursuivre avec récents et favoris.
+- Pour le lot Withings, vérifier une nouvelle pesée et une pesée ancienne dans Health Connect sur le Pixel avant de préparer un APK de test.
