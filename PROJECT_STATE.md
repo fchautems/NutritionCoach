@@ -15,8 +15,7 @@ Dernière mise à jour : 2026-11-07
 - Premier lot implémenté : bilan plus visible, journal compact et saisie manuelle dans un dialogue. Les repas par type, les portions et les favoris sont des lots séparés.
 - Variante `preview` avec son propre identifiant Android. La CI construit les aperçus et publie uniquement sur tag afin de conserver les anciens APK.
 - 2026-11-07. Priorité confirmée avant les repas et portions : une installation Android de départ, mises à jour courantes automatiques et bouton « Vérifier les mises à jour ». Socle Android et interface web versionnée proposés.
-
-- 2026-11-07. Direction visuelle précisée : fourchette seule pour l’icône, palette vive à choisir parmi six pistes, tuiles illustrées et libellées pour les catégories alimentaires. Deux écrans ont été maquettés pour explorer le parcours.
+- 2026-11-07. Direction visuelle affinée : fourchette cerclée, couleurs adoucies, tuiles alimentaires illustrées et relief léger sur les commandes. Nouvelle maquette des deux écrans avec une palette bleu denim, crème et abricot proposée. La date et le réglage de l’objectif sont représentés.
 
 ## Contrôles et limites
 
@@ -27,4 +26,4 @@ Dernière mise à jour : 2026-11-07
 
 ## Prochaine action
 
-- Choisir la palette et valider la direction visuelle. Valider le lot de mise à jour en installant le socle une seule fois, en publiant deux interfaces successives et en vérifiant le journal après mise à jour et hors ligne. Vérifier la transition de signature ou l’export/import avant tout remplacement du POC.
+- Valider la maquette affinée. Valider le lot de mise à jour en installant le socle une seule fois, en publiant deux interfaces successives et en vérifiant le journal après mise à jour et hors ligne. Vérifier la transition de signature ou l’export/import avant tout remplacement du POC.

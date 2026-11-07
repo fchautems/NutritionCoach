@@ -17,7 +17,7 @@ Le POC V0.1 a été essayé avec succès sur téléphone. La cible est une APK A
 | Action principale | « Ajouter un aliment » ouvre un dialogue avec le nom et les kcal. Le clavier numérique est proposé pour les kcal. Annuler ou revenir en arrière ferme la saisie. |
 | Journal | Entrées de la date affichée, les plus récentes en premier. Chaque ligne montre le nom et les kcal. La suppression demande confirmation. Une journée vide invite à ajouter un aliment. |
 
-La V0.2 d’aperçu utilise l’ivoire, le vert forêt et la menthe. La palette définitive sera vive, sans vert comme couleur de marque. Six pistes sont proposées : cobalt et mangue, violet et pêche, framboise et rose clair, corail et bleu nuit, safran et aubergine, azur et bleu encre. L’icône Android représente une fourchette seule, lisible en petit format. Une seule carte dominante. Les lignes du journal partagent une surface plutôt que de multiplier les encadrés. Cibles tactiles d’au moins 48 dp, libellés pour les icônes, contenu défilable et tailles de texte adaptables.
+La V0.2 d’aperçu utilise l’ivoire, le vert forêt et la menthe. La direction proposée pour la suite associe un bleu denim adouci, un fond crème et un accent abricot. L’icône Android reprend la fourchette au centre d’un cercle fin qui évoque une assiette. Un léger relief souligne les boutons et les tuiles interactives. Les illustrations restent petites et servent de repères. Une seule carte dominante présente le bilan, la date et l’objectif restent accessibles. Les lignes du journal partagent une surface plutôt que de multiplier les encadrés. Cibles tactiles d’au moins 48 dp, libellés pour les icônes, contenu défilable et tailles de texte adaptables.
 
 ### Critères d’acceptation
 
