@@ -6,12 +6,18 @@ import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.ClipDrawable;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
+import android.graphics.drawable.RippleDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -40,11 +46,13 @@ public final class MainActivity extends Activity {
     private static final String PREFS_NAME = "nutrition_coach";
     private static final String ENTRIES_KEY = "entries_v1";
     private static final String GOAL_KEY = "daily_goal_v1";
-    private static final int PRIMARY = Color.rgb(36, 92, 80);
-    private static final int INK = Color.rgb(27, 48, 42);
-    private static final int MUTED = Color.rgb(103, 117, 110);
-    private static final int BACKGROUND = Color.rgb(246, 249, 246);
-    private static final int BORDER = Color.rgb(220, 231, 223);
+    private static final int PRIMARY = 0xff214b3b;
+    private static final int INK = 0xff1e3129;
+    private static final int MUTED = 0xff51645b;
+    private static final int BACKGROUND = 0xfff8f6f0;
+    private static final int BORDER = 0xffdedfd5;
+    private static final int FOREST = 0xff173b31;
+    private static final int MINT = 0xffc4ead6;
 
     private final List<FoodEntry> entries = new ArrayList<>();
     private final DateTimeFormatter dateFormat =
@@ -53,18 +61,35 @@ public final class MainActivity extends Activity {
     private SharedPreferences prefs;
     private LocalDate selectedDate;
     private int goal;
+    private AlertDialog addDialog;
+    private EditText draftName;
+    private EditText draftCalories;
 
     @Override
     public void onCreate(Bundle state) {
         super.onCreate(state);
-        getWindow().setStatusBarColor(PRIMARY);
+        getWindow().setStatusBarColor(BACKGROUND);
         getWindow().setNavigationBarColor(BACKGROUND);
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
         prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        selectedDate = LocalDate.now();
+        selectedDate = state == null ? LocalDate.now() : LocalDate.parse(state.getString("day", LocalDate.now().toString()));
         goal = prefs.getInt(GOAL_KEY, 2000);
         loadEntries();
         render();
+        if (state != null && state.containsKey("draftName")) {
+            showAddDialog(state.getString("draftName"), state.getString("draftCalories"));
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle state) {
+        super.onSaveInstanceState(state);
+        state.putString("day", selectedDate.toString());
+        if (addDialog != null && addDialog.isShowing()) {
+            state.putString("draftName", draftName.getText().toString());
+            state.putString("draftCalories", draftCalories.getText().toString());
+        }
     }
 
     private void render() {
@@ -73,145 +98,233 @@ public final class MainActivity extends Activity {
         scroll.setBackgroundColor(BACKGROUND);
         setContentView(scroll);
 
-        LinearLayout page = new LinearLayout(this);
-        page.setOrientation(LinearLayout.VERTICAL);
-        page.setPadding(dp(20), dp(26), dp(20), dp(30));
+        LinearLayout page = column();
+        page.setPadding(dp(20), dp(12), dp(20), dp(28));
         scroll.addView(page);
 
-        TextView heading = text("NutritionCoach", 29, INK, true);
-        page.addView(heading);
-        TextView tagline = text("Ton journal alimentaire, en toute simplicité.", 14, MUTED, false);
-        addBelow(page, tagline, 2, 22);
+        page.addView(text("NutritionCoach", 15, PRIMARY, true));
+        boolean today = selectedDate.equals(LocalDate.now());
+        renderDate(page, today);
+        renderSummary(page);
 
-        LinearLayout dateRow = new LinearLayout(this);
-        dateRow.setGravity(Gravity.CENTER_VERTICAL);
-        page.addView(dateRow, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        Button add = button("+  Ajouter un aliment", true);
+        add.setContentDescription("Ajouter un aliment");
+        add.setMinHeight(dp(54));
+        addBelow(page, add, 14, 22);
+        add.setOnClickListener(v -> showAddDialog("", ""));
 
-        Button previous = button("‹", false);
-        dateRow.addView(previous, new LinearLayout.LayoutParams(dp(48), dp(48)));
-        previous.setContentDescription("Jour précédent");
-        previous.setOnClickListener(v -> {
-            selectedDate = selectedDate.minusDays(1);
-            render();
-        });
+        renderJournal(page);
+    }
 
-        TextView dateLabel = text(capitalize(selectedDate.format(dateFormat)), 15, INK, true);
-        dateLabel.setGravity(Gravity.CENTER);
-        dateRow.addView(dateLabel, new LinearLayout.LayoutParams(0, dp(48), 1));
+    private void renderDate(LinearLayout page, boolean today) {
+        LinearLayout row = new LinearLayout(this);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        addBelow(page, row, 14, 0);
 
-        Button next = button("›", false);
-        dateRow.addView(next, new LinearLayout.LayoutParams(dp(48), dp(48)));
-        next.setContentDescription("Jour suivant");
-        next.setOnClickListener(v -> {
-            selectedDate = selectedDate.plusDays(1);
-            render();
-        });
+        row.addView(dayButton("‹", "Jour précédent", -1),
+                new LinearLayout.LayoutParams(dp(48), dp(48)));
 
-        if (!selectedDate.equals(LocalDate.now())) {
-            Button today = button("Revenir à aujourd'hui", false);
-            addBelow(page, today, 8, 6);
-            today.setOnClickListener(v -> {
+        LinearLayout center = column();
+        center.setGravity(Gravity.CENTER_HORIZONTAL);
+        center.setPadding(dp(4), 0, dp(4), 0);
+        if (today) {
+            TextView heading = text("Aujourd’hui", 26, INK, true);
+            heading.setGravity(Gravity.CENTER);
+            markHeading(heading);
+            center.addView(heading);
+        }
+        TextView date = text(capitalize(selectedDate.format(dateFormat)), today ? 13 : 19,
+                today ? MUTED : INK, !today);
+        date.setGravity(Gravity.CENTER);
+        if (!today) markHeading(date);
+        center.addView(date);
+        row.addView(center, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+
+        row.addView(dayButton("›", "Jour suivant", 1),
+                new LinearLayout.LayoutParams(dp(48), dp(48)));
+
+        if (!today) {
+            Button back = button("Revenir à aujourd’hui", false);
+            addBelow(page, back, 8, 0);
+            back.setOnClickListener(v -> {
                 selectedDate = LocalDate.now();
                 render();
             });
         }
+    }
 
-        LinearLayout summary = card(page);
-        int total = CalorieMath.totalForDate(entries, selectedDate.toString());
-        summary.addView(text("CALORIES DU JOUR", 12, MUTED, true));
-        TextView amount = text(formatted(total) + " kcal", 33, INK, true);
-        addBelow(summary, amount, 8, 7);
-        ProgressBar progress = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
-        progress.setMax(Math.max(goal, 1));
-        progress.setProgress(Math.min(total, Math.max(goal, 1)));
-        progress.setProgressTintList(ColorStateList.valueOf(PRIMARY));
-        progress.setProgressBackgroundTintList(ColorStateList.valueOf(BORDER));
-        summary.addView(progress, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(10)));
-        String remaining = total <= goal
-                ? formatted(goal - total) + " kcal restantes"
-                : formatted(total - goal) + " kcal au-dessus de l'objectif";
-        TextView remainder = text(remaining, 14, total > goal ? Color.rgb(174, 68, 54) : PRIMARY, true);
-        addBelow(summary, remainder, 12, 0);
-
-        Button editGoal = button("Objectif : " + formatted(goal) + " kcal  ·  Modifier", false);
-        addBelow(summary, editGoal, 12, 0);
-        editGoal.setOnClickListener(v -> changeGoal());
-
-        TextView addTitle = text("Ajouter un aliment", 20, INK, true);
-        addBelow(page, addTitle, 8, 12);
-        LinearLayout addCard = card(page);
-
-        addCard.addView(text("Aliment ou plat", 13, MUTED, true));
-        EditText name = editField("Ex. : salade de pâtes", InputType.TYPE_CLASS_TEXT |
-                InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-        addBelow(addCard, name, 6, 15);
-
-        addCard.addView(text("Calories (kcal)", 13, MUTED, true));
-        EditText calories = editField("Ex. : 420", InputType.TYPE_CLASS_NUMBER);
-        addBelow(addCard, calories, 6, 18);
-
-        Button add = button("Ajouter au journal", true);
-        addCard.addView(add, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(52)));
-        add.setOnClickListener(v -> {
-            String food = name.getText().toString().trim();
-            String number = calories.getText().toString().trim();
-            if (food.isEmpty() || food.length() > 80) {
-                name.setError("Indique un nom de 1 à 80 caractères.");
-                return;
-            }
-            final int kcal;
-            try {
-                kcal = Integer.parseInt(number);
-            } catch (NumberFormatException e) {
-                calories.setError("Entre un nombre de calories valide.");
-                return;
-            }
-            if (kcal < 1 || kcal > 10000) {
-                calories.setError("Entre 1 et 10 000 kcal.");
-                return;
-            }
-            entries.add(new FoodEntry(UUID.randomUUID().toString(),
-                    selectedDate.toString(), food, kcal));
-            saveEntries();
-            Toast.makeText(this, "Aliment ajouté", Toast.LENGTH_SHORT).show();
+    private Button dayButton(String symbol, String description, int offset) {
+        Button button = button(symbol, false);
+        button.setTextSize(25);
+        button.setContentDescription(description);
+        button.setOnClickListener(v -> {
+            selectedDate = selectedDate.plusDays(offset);
             render();
         });
+        return button;
+    }
 
-        TextView logTitle = text("Journal du jour", 20, INK, true);
-        addBelow(page, logTitle, 8, 12);
+    private void renderSummary(LinearLayout page) {
+        LinearLayout summary = column();
+        summary.setPadding(dp(20), dp(17), dp(20), dp(11));
+        summary.setBackground(background(FOREST, 24, FOREST));
+        addBelow(page, summary, 16, 0);
 
+        int total = CalorieMath.totalForDate(entries, selectedDate.toString());
+        summary.addView(text("CALORIES DU JOUR", 12, MINT, true));
+        addBelow(summary, text(formatted(total) + " kcal", 38, Color.WHITE, true), 3, 11);
+
+        ProgressBar progress = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        LayerDrawable track = new LayerDrawable(new Drawable[]{
+                background(0xff436658, 5, 0xff436658),
+                new ClipDrawable(background(MINT, 5, MINT), Gravity.START, ClipDrawable.HORIZONTAL)
+        });
+        track.setId(0, android.R.id.background);
+        track.setId(1, android.R.id.progress);
+        progress.setProgressDrawable(track);
+        progress.setMax(Math.max(goal, 1));
+        progress.setProgress(Math.min(total, Math.max(goal, 1)));
+        progress.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        summary.addView(progress, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(8)));
+
+        String balance;
+        if (total < goal) {
+            balance = formatted(goal - total) + " kcal restantes";
+        } else if (total == goal) {
+            balance = "Objectif atteint";
+        } else {
+            balance = formatted(total - goal) + " kcal au-dessus de l’objectif";
+        }
+        addBelow(summary, text(balance, 15, Color.WHITE, true), 10, 2);
+
+        Button editGoal = button("Objectif " + formatted(goal) + " kcal  ·  Modifier", false);
+        editGoal.setTextColor(MINT);
+        editGoal.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+        editGoal.setPadding(dp(8), dp(7), dp(8), dp(7));
+        editGoal.setBackground(ripple(0xff25493e, 11, 0xff25493e, 0x36ffffff));
+        addBelow(summary, editGoal, 9, 3);
+        editGoal.setOnClickListener(v -> changeGoal());
+    }
+
+    private void renderJournal(LinearLayout page) {
+        TextView title = text("Journal du jour", 22, INK, true);
+        markHeading(title);
+        addBelow(page, title, 0, 10);
+
+        LinearLayout journal = column();
+        journal.setBackground(background(Color.WHITE, 18, BORDER));
+        journal.setPadding(dp(14), dp(4), dp(10), dp(4));
+        page.addView(journal);
+
+        String day = selectedDate.toString();
         boolean found = false;
         for (int i = entries.size() - 1; i >= 0; i--) {
             FoodEntry entry = entries.get(i);
-            if (!selectedDate.toString().equals(entry.date)) continue;
+            if (!day.equals(entry.date)) continue;
+            if (found) {
+                View divider = new View(this);
+                divider.setBackgroundColor(BORDER);
+                journal.addView(divider, new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, dp(1)));
+            }
             found = true;
-            LinearLayout item = card(page);
-            LinearLayout itemRow = new LinearLayout(this);
-            itemRow.setGravity(Gravity.CENTER_VERTICAL);
-            item.addView(itemRow);
 
-            LinearLayout info = new LinearLayout(this);
-            info.setOrientation(LinearLayout.VERTICAL);
+            LinearLayout row = new LinearLayout(this);
+            row.setGravity(Gravity.CENTER_VERTICAL);
+            row.setPadding(0, dp(6), 0, dp(6));
+            journal.addView(row, new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+            LinearLayout info = column();
+            info.setPadding(0, 0, dp(6), 0);
             info.addView(text(entry.name, 16, INK, true));
-            addBelow(info, text(formatted(entry.kcal) + " kcal", 14, MUTED, false), 4, 0);
-            itemRow.addView(info, new LinearLayout.LayoutParams(0,
-                    ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+            addBelow(info, text(formatted(entry.kcal) + " kcal", 14, MUTED, false), 2, 0);
+            row.addView(info, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
 
             Button delete = button("×", false);
+            delete.setTextSize(20);
             delete.setContentDescription("Supprimer " + entry.name);
-            itemRow.addView(delete, new LinearLayout.LayoutParams(dp(48), dp(48)));
+            row.addView(delete, new LinearLayout.LayoutParams(dp(48), dp(48)));
             delete.setOnClickListener(v -> confirmDelete(entry));
         }
         if (!found) {
-            TextView empty = text("Aucun aliment enregistré pour cette journée.", 14, MUTED, false);
-            addBelow(page, empty, 4, 10);
+            addBelow(journal, text("Aucun aliment enregistré", 16, INK, true), 9, 2);
+            addBelow(journal, text("Ajoute un aliment pour commencer ce journal.", 14, MUTED, false),
+                    0, 10);
         }
+    }
 
-        TextView note = text("Données sauvegardées uniquement sur cet appareil. Les calories sont saisies manuellement.", 12, MUTED, false);
-        addBelow(page, note, 16, 0);
+    private void showAddDialog(String name, String calories) {
+        LinearLayout fields = column();
+        fields.setPadding(dp(24), dp(12), dp(24), dp(4));
+
+        draftName = editField("Ex. salade de pâtes",
+                InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+        draftName.setText(name);
+        addInput(fields, "Aliment ou plat", draftName);
+
+        draftCalories = editField("Ex. 420", InputType.TYPE_CLASS_NUMBER);
+        draftCalories.setText(calories);
+        addInput(fields, "Calories (kcal)", draftCalories);
+
+        ScrollView scroll = new ScrollView(this);
+        scroll.addView(fields);
+        addDialog = new AlertDialog.Builder(this)
+                .setTitle("Ajouter un aliment")
+                .setView(scroll)
+                .setNegativeButton("Annuler", null)
+                .setPositiveButton("Ajouter", null)
+                .create();
+        draftName.requestFocus();
+        draftName.setSelection(draftName.length());
+        addDialog.getWindow().setSoftInputMode(
+                WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE
+                        | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        addDialog.show();
+        addDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> addEntry());
+        addDialog.setOnDismissListener(dialog -> {
+            addDialog = null;
+            draftName = null;
+            draftCalories = null;
+        });
+    }
+
+    private void addInput(LinearLayout fields, String label, EditText input) {
+        input.setId(View.generateViewId());
+        TextView caption = text(label, 14, INK, true);
+        caption.setLabelFor(input.getId());
+        fields.addView(caption);
+        addBelow(fields, input, 4, 12);
+    }
+
+    private void addEntry() {
+        String food = draftName.getText().toString().trim();
+        if (food.isEmpty() || food.length() > 80) {
+            showInputError(draftName, "Indique un nom de 1 à 80 caractères.");
+            return;
+        }
+        final int kcal;
+        try {
+            kcal = Integer.parseInt(draftCalories.getText().toString().trim());
+        } catch (NumberFormatException e) {
+            showInputError(draftCalories, "Entre un nombre de calories valide.");
+            return;
+        }
+        if (kcal < 1 || kcal > 10000) {
+            showInputError(draftCalories, "Indique une valeur de 1 à 10 000 kcal.");
+            return;
+        }
+        entries.add(new FoodEntry(UUID.randomUUID().toString(), selectedDate.toString(), food, kcal));
+        saveEntries();
+        addDialog.dismiss();
+        Toast.makeText(this, "Aliment ajouté", Toast.LENGTH_SHORT).show();
+        render();
+    }
+
+    private void showInputError(EditText field, String error) {
+        field.requestFocus();
+        field.setError(error);
     }
 
     private void changeGoal() {
@@ -296,16 +409,16 @@ public final class MainActivity extends Activity {
         prefs.edit().putString(ENTRIES_KEY, data.toString()).apply();
     }
 
-    private LinearLayout card(LinearLayout parent) {
+    private LinearLayout column() {
         LinearLayout view = new LinearLayout(this);
         view.setOrientation(LinearLayout.VERTICAL);
-        view.setPadding(dp(17), dp(17), dp(17), dp(17));
-        view.setBackground(background(Color.WHITE, 18, BORDER));
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.bottomMargin = dp(12);
-        parent.addView(view, lp);
         return view;
+    }
+
+    private void markHeading(View view) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            view.setAccessibilityHeading(true);
+        }
     }
 
     private TextView text(String value, int size, int color, boolean bold) {
@@ -323,8 +436,13 @@ public final class MainActivity extends Activity {
         view.setAllCaps(false);
         view.setTextSize(14);
         view.setTextColor(filled ? Color.WHITE : PRIMARY);
-        view.setBackground(background(filled ? PRIMARY : Color.WHITE, 12, BORDER));
-        view.setPadding(dp(8), 0, dp(8), 0);
+        int fill = filled ? PRIMARY : Color.WHITE;
+        view.setBackground(ripple(fill, 13, filled ? PRIMARY : BORDER,
+                filled ? 0x36ffffff : 0x22214b3b));
+        view.setStateListAnimator(null);
+        view.setMinWidth(0);
+        view.setMinHeight(dp(48));
+        view.setPadding(dp(8), dp(7), dp(8), dp(7));
         return view;
     }
 
@@ -338,6 +456,11 @@ public final class MainActivity extends Activity {
         field.setPadding(dp(12), dp(12), dp(12), dp(12));
         field.setBackground(background(BACKGROUND, 10, BORDER));
         return field;
+    }
+
+    private RippleDrawable ripple(int fill, int radius, int border, int highlight) {
+        return new RippleDrawable(ColorStateList.valueOf(highlight), background(fill, radius, border),
+                background(Color.WHITE, radius, Color.WHITE));
     }
 
     private GradientDrawable background(int fill, int radius, int border) {

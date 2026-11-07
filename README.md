@@ -16,3 +16,9 @@ Après la compilation GitHub Actions, retrouver l'APK de test dans la [release v
 Projet Android Java / Gradle, minSdk 26. Construire avec `gradle assembleDebug` dans un environnement doté du SDK Android 35.
 
 **Attention** : POC de saisie manuelle, sans estimation automatique des calories par photo ni sauvegarde cloud. Les données sont locales et peuvent être perdues en cas de désinstallation.
+
+## Aperçu V0.2
+
+L’aperçu refait l’écran Aujourd’hui et ouvre la saisie manuelle à la demande. Voir les [spécifications et les lots suivants](docs/SPECIFICATIONS.md).
+
+Construire avec `gradle :app:assemblePreview` ou récupérer l’APK dans les artefacts GitHub Actions. L’aperçu s’installe sous le nom **NutritionCoach Aperçu** et ouvre un journal indépendant. Garde la V0.1 installée pour conserver son journal.

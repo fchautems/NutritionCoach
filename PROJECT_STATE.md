@@ -12,13 +12,15 @@ Dernière mise à jour : 2026-11-07
 ## Décisions et changements
 
 - 2026-11-07. Passage du POC à de petites itérations testables. [Spécifications et lots](docs/SPECIFICATIONS.md).
-- Premier lot : refaire l’écran Aujourd’hui et déplacer la saisie manuelle dans un dialogue. Les repas par type, les portions et les favoris sont des lots séparés.
+- Premier lot implémenté : bilan plus visible, journal compact et saisie manuelle dans un dialogue. Les repas par type, les portions et les favoris sont des lots séparés.
+- Variante `preview` avec son propre identifiant Android. La CI construit les aperçus et publie uniquement sur tag afin de conserver les anciens APK.
 
 ## Contrôles et limites
 
 - La V0.1 est signée avec une clé debug générée par le runner CI. Une nouvelle APK signée avec une autre clé ne peut pas la remplacer en conservant son journal.
-- L’aperçu V0.2 doit être installable en parallèle avec un journal indépendant.
+- Les 2 tests unitaires du calcul quotidien passent. APK d’aperçu compilée localement avec le SDK Android 35, archive et signature vérifiées. Identifiant vérifié : `ch.nutritioncoach.preview`.
+- L’aperçu V0.2 est distinct de la V0.1 et ouvre un journal indépendant. L’interface et les scénarios d’installation, d’ajout et de navigation restent à vérifier sur téléphone.
 
 ## Prochaine action
 
-- Coder et vérifier le premier lot avant l’essai sur téléphone.
+- Essayer la V0.2 sur téléphone selon les critères du lot 01. Utiliser le retour pour lancer le lot 02, repas et portions.
