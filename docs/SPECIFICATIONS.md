@@ -6,7 +6,7 @@ Version de travail du 7 novembre 2026
 
 NutritionCoach aide à noter ce qu’on mange et à suivre ses habitudes sur Android. L’écran d’accueil répond à deux questions dès l’ouverture : « Où en suis-je aujourd’hui ? » et « Comment ajouter ce que je viens de manger ? ». Le journal et ses fonctions de base sont utilisables hors ligne et sans compte.
 
-Le POC V0.1 a été essayé avec succès sur téléphone. L’objectif de la V0.2 est de rendre le journal plus agréable à consulter et la saisie moins encombrante. Les calories restent saisies à la main pendant cette première itération.
+Le POC V0.1 a été essayé avec succès sur téléphone. La cible est une APK Android installée une fois, puis des itérations courantes déployées dans l’app sans téléchargement manuel d’APK. L’objectif de la V0.2 est de rendre le journal plus agréable à consulter et la saisie moins encombrante. Les calories restent saisies à la main pendant cette première itération.
 
 ## 2. Première itération · L’écran Aujourd’hui
 
@@ -17,7 +17,7 @@ Le POC V0.1 a été essayé avec succès sur téléphone. L’objectif de la V0.
 | Action principale | « Ajouter un aliment » ouvre un dialogue avec le nom et les kcal. Le clavier numérique est proposé pour les kcal. Annuler ou revenir en arrière ferme la saisie. |
 | Journal | Entrées de la date affichée, les plus récentes en premier. Chaque ligne montre le nom et les kcal. La suppression demande confirmation. Une journée vide invite à ajouter un aliment. |
 
-Direction visuelle proposée : fond ivoire, carte bilan vert forêt, accent menthe et texte sombre. Une seule carte dominante. Les lignes du journal partagent une surface plutôt que de multiplier les encadrés. Cibles tactiles d’au moins 48 dp, libellés pour les icônes, contenu défilable et tailles de texte adaptables.
+La V0.2 d’aperçu utilise l’ivoire, le vert forêt et la menthe. La palette définitive reste à choisir parmi des pistes sans vert. Une seule carte dominante. Les lignes du journal partagent une surface plutôt que de multiplier les encadrés. Cibles tactiles d’au moins 48 dp, libellés pour les icônes, contenu défilable et tailles de texte adaptables.
 
 ### Critères d’acceptation
 
@@ -41,6 +41,7 @@ La photo est une entrée facultative vers le même parcours. Les aliments, les p
 | Lot | Ce qu’on pourra tester | Critère de fin |
 |---|---|---|
 | 01 · Aujourd’hui | Bilan, journal compact et ajout manuel à la demande | Le scénario V0.2 ci-dessus passe. |
+| Priorité avant le lot 02 · Mise à jour | L’app récupère une nouvelle version de l’interface au démarrage et propose « Vérifier les mises à jour » dans les paramètres. | Avec une seule APK installée, la version suivante de l’interface apparaît et les entrées restent accessibles. En mode avion ou si le paquet est invalide, la dernière version utilisable s’ouvre. |
 | 02 · Repas et portions | Type de repas, petit catalogue hors ligne, portions et correction des entrées | Un poulet ajouté à midi avec une portion ajustée apparaît sous « Midi » avec le total attendu. |
 | 03 · Récents et favoris | Réutiliser un aliment sans parcourir le catalogue | Un aliment récemment utilisé ou mis en favori peut être repris et sa portion corrigée. |
 | 04 · Profil et progression | Profil avec sexe, taille, poids actuel et visé, objectifs modifiables, pesées et historique | Une pesée manuelle apparaît dans la courbe et un changement d’objectif se reflète au bon endroit. |
@@ -52,8 +53,8 @@ Chaque lot est livré dès qu’il est vérifiable, puis ajusté d’après le r
 
 ## 5. Architecture et distribution
 
-- **Interface.** Android Java natif pour la première refonte. Un essai web indépendant sur GitHub Pages évaluera plus tard les évolutions d’interface sans réinstallation d’APK. Le mode hors ligne, les limites d’accès aux données locales et le retour à une version stable doivent être validés avant de retenir cette option.
+- **Interface.** L’aperçu actuel est en Android Java natif. Architecture proposée pour la suite : socle Android avec une interface web intégrée et une version de secours embarquée. GitHub Pages peut servir les paquets d’interface versionnés. Le socle vérifie le paquet avant activation, attend la fin d’une saisie en cours et conserve la dernière version utilisable. La connexion entre l’interface et le journal reste locale et limitée aux fonctions nécessaires. [Contenu local Android](https://developer.android.com/develop/ui/views/layout/webapps/load-local-content) · [GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages).
 - **Moteur.** Garder les calculs séparés de l’interface. La cible calorique reste modifiable. Les estimations, leur provenance et leurs corrections doivent être distinguables.
 - **Données.** Le stockage actuel utilise les préférences Android. Passer à une base locale versionnée (SQLite) quand les données de repas, de portions ou de progression le nécessitent, avec migration et export/import vérifiés. Aucune donnée personnelle dans le dépôt public.
 - **Connexions.** Isoler photo/IA, pas et Withings. Toute transmission externe exige un choix explicite. Une intégration qui requiert un secret, comme l’échange OAuth Withings, passe par un service sécurisé et séparé. Les fournisseurs et le périmètre de synchronisation restent à décider.
-- **APK.** La première refonte peut être essayée à côté de la V0.1 via un identifiant Android d’aperçu distinct. Pour une mise à jour conservant le journal de la V0.1, il faut vérifier la compatibilité de signature ou fournir un chemin d’export/import avant de demander son remplacement. [Règles de mise à jour Android](https://developer.android.com/google/play/app-updates).
+- **APK.** L’aperçu actuel a un identifiant Android distinct. La première APK avec le nouveau socle inclura l’icône adaptative choisie. Les changements du socle, dont l’icône du lanceur et les permissions Android, passent par une mise à jour d’APK signée. Pour une mise à jour conservant le journal de la V0.1, il faut vérifier la compatibilité de signature ou fournir un chemin d’export/import avant de demander son remplacement. [Règles de mise à jour Android](https://developer.android.com/google/play/app-updates).
