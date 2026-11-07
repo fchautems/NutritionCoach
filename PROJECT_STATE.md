@@ -33,7 +33,7 @@ Dernière mise à jour : 2026-11-07
 
 - 2026-11-07. [Profil intégré](https://github.com/fchautems/NutritionCoach/pull/4), puis [branche d’itération fusionnée dans `main`](https://github.com/fchautems/NutritionCoach/pull/1). L’APK V0.4 signée a été installée sur le Pixel, où le profil détaillé s’ouvre.
 
-- 2026-11-07. Interface 5 préparée pour le canal intégré. L’objectif calorique du profil est proposé à partir de la dépense estimée, du poids cible et de l’échéance éventuelle, puis appliqué au journal sur confirmation. Les 49 fiches adoptent des portions propres à chaque aliment et trois états de pesée complémentaires. [Audit des portions](docs/CATALOGUE_PORTIONS.md).
+- 2026-11-07. [Interface 5 publiée sur le canal intégré](https://github.com/fchautems/NutritionCoach/commit/9880935899f74519473be856b951c3b58c1f7d99). L’objectif calorique du profil est proposé à partir de la dépense estimée, du poids cible et de l’échéance éventuelle, puis appliqué au journal sur confirmation. Les 49 fiches adoptent des portions propres à chaque aliment et trois états de pesée complémentaires. [Audit des portions](docs/CATALOGUE_PORTIONS.md).
 - 2026-11-07. [Étude Withings](docs/WITHINGS.md) intégrée à la documentation. Le premier essai porte sur le transfert des pesées de Withings vers Health Connect sur le Pixel.
 
 ## Contrôles et limites
