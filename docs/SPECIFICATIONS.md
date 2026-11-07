@@ -17,7 +17,7 @@ Le POC V0.1 a été essayé avec succès sur téléphone. La cible est une APK A
 | Action principale | « Ajouter un aliment » ouvre un dialogue avec le nom et les kcal. Le clavier numérique est proposé pour les kcal. Annuler ou revenir en arrière ferme la saisie. |
 | Journal | Entrées de la date affichée, les plus récentes en premier. Chaque ligne montre le nom et les kcal. La suppression demande confirmation. Une journée vide invite à ajouter un aliment. |
 
-La V0.2 d’aperçu utilise l’ivoire, le vert forêt et la menthe. La palette définitive reste à choisir parmi des pistes sans vert. Une seule carte dominante. Les lignes du journal partagent une surface plutôt que de multiplier les encadrés. Cibles tactiles d’au moins 48 dp, libellés pour les icônes, contenu défilable et tailles de texte adaptables.
+La V0.2 d’aperçu utilise l’ivoire, le vert forêt et la menthe. La palette définitive sera vive, sans vert comme couleur de marque. Six pistes sont proposées : cobalt et mangue, violet et pêche, framboise et rose clair, corail et bleu nuit, safran et aubergine, azur et bleu encre. L’icône Android représente une fourchette seule, lisible en petit format. Une seule carte dominante. Les lignes du journal partagent une surface plutôt que de multiplier les encadrés. Cibles tactiles d’au moins 48 dp, libellés pour les icônes, contenu défilable et tailles de texte adaptables.
 
 ### Critères d’acceptation
 
@@ -30,7 +30,7 @@ La V0.2 d’aperçu utilise l’ivoire, le vert forêt et la menthe. La palette 
 ## 3. Cible · Ajouter un repas en quatre actions
 
 1. **Choisir le repas.** Petit-déjeuner, midi, soir ou collation, avec de grandes cibles et des libellés.
-2. **Choisir l’aliment.** Récents et favoris en tête. Les catégories aident à parcourir la liste, par exemple « Viandes » puis « Poulet ». Recherche et saisie manuelle restent possibles.
+2. **Choisir l’aliment.** Récents et favoris en tête. Les catégories aident à parcourir la liste, par exemple « Viandes » puis « Poulet ». Les catégories sont de grandes tuiles illustrées et libellées. Exemples de repères visuels : steak pour Viandes, poisson pour Poissons, carotte et brocoli pour Légumes. Utiliser un style d’illustration cohérent et des ressources disponibles hors ligne. Recherche et saisie manuelle restent possibles.
 3. **Ajuster la portion.** Portions usuelles ou quantité personnalisée. Afficher l’estimation de kcal et permettre de la corriger.
 4. **Valider.** Afficher le total estimé du repas et le jour avant enregistrement. Un repas peut contenir plusieurs aliments.
 
@@ -42,7 +42,7 @@ La photo est une entrée facultative vers le même parcours. Les aliments, les p
 |---|---|---|
 | 01 · Aujourd’hui | Bilan, journal compact et ajout manuel à la demande | Le scénario V0.2 ci-dessus passe. |
 | Priorité avant le lot 02 · Mise à jour | L’app récupère une nouvelle version de l’interface au démarrage et propose « Vérifier les mises à jour » dans les paramètres. | Avec une seule APK installée, la version suivante de l’interface apparaît et les entrées restent accessibles. En mode avion ou si le paquet est invalide, la dernière version utilisable s’ouvre. |
-| 02 · Repas et portions | Type de repas, petit catalogue hors ligne, portions et correction des entrées | Un poulet ajouté à midi avec une portion ajustée apparaît sous « Midi » avec le total attendu. |
+| 02 · Repas et portions | Type de repas, catégories illustrées, petit catalogue hors ligne, portions et correction des entrées | Un poulet ajouté à midi avec une portion ajustée apparaît sous « Midi » avec le total attendu. |
 | 03 · Récents et favoris | Réutiliser un aliment sans parcourir le catalogue | Un aliment récemment utilisé ou mis en favori peut être repris et sa portion corrigée. |
 | 04 · Profil et progression | Profil avec sexe, taille, poids actuel et visé, objectifs modifiables, pesées et historique | Une pesée manuelle apparaît dans la courbe et un changement d’objectif se reflète au bon endroit. |
 | 05 · Activité et menus | Suivre les pas et les exercices, proposer des idées de menus | Une activité enregistrée apparaît dans le suivi. Les idées de menus restent facultatives. |
