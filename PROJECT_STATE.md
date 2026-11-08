@@ -4,6 +4,8 @@ Dernière mise à jour : 2026-11-08
 
 ## État vérifié
 
+- 2026-11-08. [Interface 12 publiée sur le canal intégré](https://github.com/fchautems/NutritionCoach/commit/440000305825cc0a165904e01ddc3b7eb92d7ef2) après fusion de la PR #7. La livraison assemble les aliments récents et les écrans des pas et de la sauvegarde du profil à partir de l’interface de la V0.7. Les fonctions natives s’affichent selon les capacités du pont Android installé. Le canal utilise le protocole 1 et dépasse les versions embarquées 10 et 11. Les PR Android #5 et #6 suivent leur revue séparée.
+
 - V0.1.0 Android Java, minSdk 26, sans compte ni permission Internet.
 - Le POC sait enregistrer un aliment et ses kcal, afficher le total par jour, naviguer par date, modifier l’objectif et supprimer une entrée. Le journal reste local.
 - Tests et compilation V0.1 réussis dans le [run 42369769381](https://github.com/fchautems/NutritionCoach/actions/runs/42369769381). [APK V0.1 publiée](https://github.com/fchautems/NutritionCoach/releases/tag/v0.1.0).
@@ -46,6 +48,8 @@ Dernière mise à jour : 2026-11-08
 
 ## Contrôles et limites
 
+- 2026-11-08. Interface 12. Les 14 tests DOM passent avec le HTML diffusé, dont les pas, les entrées récentes et la sauvegarde/restauration via pont simulé. Deux contrôles de relecture hors ligne couvrent les passages 9 → 12 → 9 et 11 → 12 → 11 avec conservation du journal, du profil, de l’objectif et des pesées. Le manifeste et le HTML sont servis en HTTP 200 sans redirection par l’URL utilisée par l’APK. L’empreinte SHA-256 concorde. Le lancement de Chromium tactile est bloqué par l’environnement. L’application réelle de la mise à jour reste à confirmer sur le Pixel.
+
 - 2026-11-08. Le manifeste HTTPS du canal indique l’interface 9, protocole 1. Le SHA-256 du HTML correspond au manifeste et les octets correspondent à l’interface de départ sur `main`. Dix tests DOM passent avec les récents, dont un test sur le pont V0.3 qui vérifie le tri, la déduplication, l’état cuit, l’annulation, l’ajout et la suppression. Un contrôle hors ligne avec pont simulé valide le passage interface 9 → candidate → 9 avec le même profil, objectif et historique. L’application locale du changement sur la branche de la PR #6 réussit avec ses 14 tests DOM, y compris les pas et la sauvegarde. Le rendu et le toucher restent à vérifier sur le Pixel. Les tests Android Gradle relèvent de la CI, le SDK étant absent de cet environnement.
 
 - La V0.1 est signée avec une clé debug générée par le runner CI. Une nouvelle APK signée avec une autre clé ne peut pas la remplacer en conservant son journal.
@@ -77,5 +81,5 @@ Dernière mise à jour : 2026-11-08
 
 ## Prochaine action
 
-- Après intégration, préparer une livraison de canal qui conserve les écrans des préversions Android retenues (#5 et #6). Pour atteindre les APK V0.6 et V0.7 existantes, choisir un numéro de canal supérieur aux versions embarquées 10 et 11 ainsi qu’à la version diffusée au moment de publier. Sur le Pixel, ouvrir un repas, reprendre une portion cuite récente, l’ajuster et confirmer que le profil et le journal sont toujours accessibles hors ligne.
+- Sur le Pixel, ouvrir Paramètres, vérifier et appliquer l’interface 12. Ouvrir un repas, reprendre une portion récente, l’ajuster et confirmer que le profil et le journal sont accessibles hors ligne. Vérifier aussi les pas et les commandes de sauvegarde du profil sur V0.7.
 - Withings en pause. À la reprise, tester une pesée prise après la reconnexion, d’abord dans Withings puis dans Santé Connect, et vérifier la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).
