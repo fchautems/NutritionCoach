@@ -728,6 +728,7 @@ function icon(id) {
 function searchKey(value) {
     return value.toLocaleLowerCase('fr').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
         .replace(/œ/g, 'oe').replace(/[^a-z0-9]+/g, ' ').trim()
+        .replace(/\b(cuit|cru)e?s?\b/g, '$1').replace(/\b(?:secs?|seches?)\b/g, 'sec')
         .replace(/\byaourts?\b/g, 'yogourt');
 }
 
@@ -794,21 +795,24 @@ function renderCatalog() {
     byId('recent-foods').hidden = true;
 
     byId('results-title').textContent = query ? 'Résultats' : categories.find(([id]) => id === selectedCategory)[1];
-    const matches = query
-        ? foods.filter(food => {
-            const searchable = searchKey([food.name, ...food.states.map(state => state.weighing)].join(' '));
-            return query.split(' ').every(word => searchable.includes(word));
-        })
-        : foods.filter(food => food.group === selectedCategory);
+    const words = query ? query.split(' ') : [];
+    const matches = foods.flatMap(food => {
+        if (!query && food.group !== selectedCategory) return [];
+        const index = food.states.findIndex(state => {
+            const searchable = searchKey(food.name + ' ' + state.weighing);
+            return words.every(word => searchable.includes(word));
+        });
+        return index < 0 ? [] : [{food, index}];
+    });
     const results = byId('food-results');
     results.textContent = '';
     results.hidden = !matches.length;
     byId('food-empty').hidden = !!matches.length;
-    matches.forEach(food => {
-        const firstState = food.states[0];
-        const detail = formatted(firstState.kcal) + ' kcal / 100 g'
-            + (food.states.length > 1 ? ' · ' + firstState.weighing.split(' · ')[0].toLowerCase() : '');
-        results.appendChild(foodRow(food.name, detail, () => openPortion(food)));
+    matches.forEach(({food, index}) => {
+        const weighing = food.states[index];
+        const detail = formatted(weighing.kcal) + ' kcal / 100 g'
+            + (food.states.length > 1 ? ' · ' + weighing.weighing.split(' · ')[0].toLowerCase() : '');
+        results.appendChild(foodRow(food.name, detail, () => openPortion(food, index)));
     });
 }
 

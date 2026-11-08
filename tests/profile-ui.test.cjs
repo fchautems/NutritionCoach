@@ -324,6 +324,39 @@ test('les portions utilisent les valeurs propres à l’état et acceptent une q
     assert.equal(app.data.entries.at(-1).kcal, 41);
 });
 
+test('ouvre directement l’état de pesée recherché et garde les valeurs du journal', t => {
+    const data = structuredClone(oldState);
+    const before = structuredClone(data);
+    const app = openApp(t, {data});
+    app.field('meals').querySelectorAll('button')[1].click();
+    app.fill('food-search', 'pates sans oeufs cuit');
+    const cooked = app.field('food-results').querySelector('button');
+    assert.match(cooked.textContent, /158 kcal \/ 100 g · cuit/);
+    cooked.click();
+    assert.equal(app.field('weighing-state').value, '1');
+    assert.equal(app.field('grams').value, '170');
+    assert.deepEqual(data, before);
+
+    app.fill('grams', '150');
+    app.submit('portion-form');
+    assert.deepEqual(data, {...before, entries: [...before.entries, {
+        id: 'added', date: today, meal: 'lunch', name: 'Pâtes sans œufs · cuit · 150 g', kcal: 237
+    }]});
+
+    app.fill('food-search', 'pâtes cuites');
+    assert.equal(app.field('food-results').querySelectorAll('button').length, 2);
+    app.fill('food-search', 'pâtes sèches assiette');
+    assert.equal(app.visible('food-empty'), true);
+    app.fill('food-search', 'boeuf hache cru');
+    const raw = app.field('food-results').querySelector('button');
+    assert.match(raw.textContent, /208 kcal \/ 100 g · cru/);
+    raw.click();
+    assert.equal(app.field('weighing-state').value, '1');
+    assert.equal(app.field('grams').value, '125');
+    app.field('portion-dialog').querySelector('.close').click();
+    assert.equal(data.entries.length, before.entries.length + 1);
+});
+
 test('importe les pesées, affiche la tendance et propose de reprendre le dernier poids', t => {
     const data = {...structuredClone(oldState), profile: {...oldState.profile, goalMode: 'maintain',
         weighIns: {[today]: 76.12}}};
