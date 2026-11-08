@@ -54,8 +54,8 @@ Dernière mise à jour : 2026-11-08
 
 - Interface 5 : six tests DOM réussis, y compris maintien de l’ancien journal, confirmation de l’objectif, pâtes sèches et cuites, et saisie décimale. Le pont Android existant est utilisé.
 
-- Interface 6 et V0.5. Sept tests DOM et dix tests JUnit réussis. APK compilée avec le SDK 35. L’identifiant, le certificat de l’aperçu V0.4 et les permissions de lecture sont vérifiés. Le transfert d’une pesée Withings réelle et l’installation par-dessus la V0.4 restent à valider sur le Pixel.
+- Interface 6 et V0.5. Sept tests DOM et dix tests JUnit réussis. APK compilée avec le SDK 35. L’identifiant, le certificat de l’aperçu V0.4 et les permissions de lecture sont vérifiés. L’utilisateur confirme que l’import a abouti sur son Pixel. L’attribution des mesures dans le cas d’une balance partagée reste à vérifier.
 
 ## Prochaine action
 
-- Installer l’aperçu V0.5 par-dessus la V0.4, tester la confirmation des calories et importer une pesée réelle. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).
+- Comparer quelques dates et poids importés à l’historique du profil Withings utilisé sur le Pixel. Vérifier aussi la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).
