@@ -45,6 +45,12 @@ function openApp(t, {data = structuredClone(oldState), detailed = true, day = to
                 addEntry: (date, meal, name, kcal) => {
                     data.entries.push({id: 'added', date, meal, name, kcal: Number(kcal)});
                     return true;
+                },
+                deleteEntry: id => {
+                    const index = data.entries.findIndex(entry => entry.id === id);
+                    if (index === -1) return false;
+                    data.entries.splice(index, 1);
+                    return true;
                 }
             };
             if (withings) {
@@ -217,6 +223,47 @@ test('un premier profil peut ouvrir le journal sans date de naissance ni échéa
     assert.equal(app.visible('today'), true);
     assert.equal(app.visible('birthday'), false);
     assert.equal(app.data.profile.weight, 78.5);
+});
+
+test('reprend les trois derniers aliments reconnus avec leur portion et leur état de pesée', t => {
+    const data = structuredClone(oldState);
+    data.entries.push(
+        {id: 'apple', date: today, meal: 'breakfast', name: 'Pomme · 150 g', kcal: 78},
+        {id: 'pasta-dry', date: today, meal: 'lunch', name: 'Pâtes sans œufs · sec · 75 g', kcal: 265},
+        {id: 'yogourt', date: today, meal: 'breakfast', name: 'Yogourt nature · 125 g', kcal: 83},
+        {id: 'chocolate', date: today, meal: 'dinner', name: 'Chocolat noir · 20 g', kcal: 107},
+        {id: 'pasta-cooked', date: '2026-11-06', meal: 'lunch', name: 'Pâtes sans œufs · cuit · 170,5 g', kcal: 269},
+        {id: 'manual', date: today, meal: 'lunch', name: 'Pâtes sans œufs · sec · 80 g', kcal: 400}
+    );
+    const before = structuredClone(data);
+    const app = openApp(t, {data, detailed: false});
+    app.field('meals').querySelectorAll('button')[2].click();
+    const recent = () => [...app.field('recent-food-list').querySelectorAll('button')];
+    assert.equal(app.visible('recent-foods'), true);
+    assert.deepEqual(recent().map(button => button.querySelector('span').firstChild.textContent),
+        ['Pâtes sans œufs · cuit', 'Chocolat noir', 'Yogourt nature']);
+
+    app.fill('food-search', 'pomme');
+    assert.equal(app.visible('recent-foods'), false);
+    assert.match(app.text('food-results'), /Pomme/);
+    app.click('reset-catalog');
+    recent()[0].click();
+    assert.equal(app.field('weighing-state').value, '1');
+    assert.equal(app.field('grams').value, '170.5');
+    assert.match(app.text('portion-total'), /269 kcal/);
+    app.field('portion-dialog').querySelector('.close').click();
+    assert.deepEqual(data, before);
+
+    recent()[0].click();
+    app.fill('grams', '150');
+    app.submit('portion-form');
+    assert.deepEqual(data, {...before, entries: [...before.entries,
+        {id: 'added', date: today, meal: 'dinner', name: 'Pâtes sans œufs · cuit · 150 g', kcal: 237}]});
+    assert.equal(recent()[0].querySelector('small').textContent, '150 g');
+    app.field('meal-entries').querySelector('button').click();
+    app.click('delete-confirm');
+    assert.deepEqual(data, before);
+    assert.equal(recent()[0].querySelector('small').textContent, '170,5 g');
 });
 
 test('la proposition calorique modifie le journal seulement après confirmation', t => {

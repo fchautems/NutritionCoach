@@ -450,6 +450,10 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
                 <svg aria-hidden="true"><use href="#nav-search"/></svg>
                 <input id="food-search" type="search" aria-label="Rechercher un aliment" placeholder="Rechercher un aliment" autocomplete="off">
             </label>
+            <section id="recent-foods" class="spaced" hidden aria-labelledby="recent-foods-title">
+                <h2 id="recent-foods-title" tabindex="-1">Aliments récents</h2>
+                <div id="recent-food-list" class="card catalog-list"></div>
+            </section>
             <div id="food-categories" class="category-grid spaced"></div>
             <section id="catalog-results" class="spaced" hidden aria-labelledby="results-title">
                 <div class="catalog-heading">
@@ -727,12 +731,67 @@ function searchKey(value) {
         .replace(/\byaourts?\b/g, 'yogourt');
 }
 
+function portionLabel(food, weighing) {
+    return food.name + (food.states.length > 1
+        ? ' · ' + weighing.weighing.split(' · ')[0].toLowerCase() : '');
+}
+
+const foodByPortionLabel = new Map(foods.flatMap(food => food.states.map((weighing, index) =>
+    [portionLabel(food, weighing), {food, weighing, index}])));
+
+function foodRow(label, detail, open) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'food-row';
+    const text = document.createElement('span');
+    text.textContent = label;
+    const description = document.createElement('small');
+    description.textContent = detail;
+    text.appendChild(description);
+    const arrow = document.createElement('span');
+    arrow.className = 'arrow';
+    arrow.setAttribute('aria-hidden', 'true');
+    arrow.textContent = '›';
+    button.append(text, arrow);
+    button.addEventListener('click', open);
+    return button;
+}
+
+function renderRecentFoods() {
+    const section = byId('recent-foods');
+    const list = byId('recent-food-list');
+    const hadFocus = list.contains(document.activeElement);
+    const seen = new Set();
+    const rows = [];
+    // The bridge appends entries. Read the newest additions first, even when backdated.
+    for (let i = state.entries.length - 1; i >= 0 && rows.length < 3; i--) {
+        const entry = state.entries[i];
+        const match = entry?.name?.match(/^(.+) · (\d[\d\u202f]*(?:,\d)?) g$/);
+        if (!match) continue;
+        const [, label, amount] = match;
+        const recipe = foodByPortionLabel.get(label);
+        if (!recipe || seen.has(recipe.food)) continue;
+        const grams = Number(amount.replace(/\u202f/g, '').replace(',', '.'));
+        if (grams < 1 || grams > 2000 || amount !== formatted(grams)
+                || Math.round(recipe.weighing.kcal * grams / 100) !== Number(entry.kcal)) continue;
+        seen.add(recipe.food);
+        rows.push(foodRow(label, amount + ' g', () => openPortion(recipe.food, recipe.index, grams)));
+    }
+    list.replaceChildren(...rows);
+    section.hidden = rows.length === 0;
+    if (hadFocus) (rows.length ? byId('recent-foods-title') : byId('food-search')).focus();
+}
+
 function renderCatalog() {
     const query = searchKey(byId('food-search').value);
     const showingResults = !!(query || selectedCategory);
     byId('food-categories').hidden = showingResults;
     byId('catalog-results').hidden = !showingResults;
-    if (!showingResults) return;
+    if (!showingResults) {
+        renderRecentFoods();
+        return;
+    }
+    byId('recent-foods').hidden = true;
 
     byId('results-title').textContent = query ? 'Résultats' : categories.find(([id]) => id === selectedCategory)[1];
     const matches = query
@@ -746,23 +805,10 @@ function renderCatalog() {
     results.hidden = !matches.length;
     byId('food-empty').hidden = !!matches.length;
     matches.forEach(food => {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'food-row';
-        const text = document.createElement('span');
-        text.textContent = food.name;
-        const density = document.createElement('small');
         const firstState = food.states[0];
-        density.textContent = formatted(firstState.kcal) + ' kcal / 100 g'
+        const detail = formatted(firstState.kcal) + ' kcal / 100 g'
             + (food.states.length > 1 ? ' · ' + firstState.weighing.split(' · ')[0].toLowerCase() : '');
-        text.appendChild(density);
-        const arrow = document.createElement('span');
-        arrow.className = 'arrow';
-        arrow.setAttribute('aria-hidden', 'true');
-        arrow.textContent = '›';
-        button.append(text, arrow);
-        button.addEventListener('click', () => openPortion(food));
-        results.appendChild(button);
+        results.appendChild(foodRow(food.name, detail, () => openPortion(food)));
     });
 }
 
@@ -785,14 +831,14 @@ function setManual(open) {
     byId('manual-open').textContent = open ? 'Masquer la saisie manuelle' : 'Saisir un aliment à la main';
 }
 
-function openPortion(food) {
+function openPortion(food, index = 0, grams = food.states[index].portion) {
     selectedFood = food;
     byId('portion-title').textContent = food.name;
     const select = byId('weighing-state');
     byId('weighing-options').hidden = food.states.length === 1;
     select.replaceChildren(...food.states.map((state, index) => new Option(state.weighing, index)));
-    select.value = '0';
-    setPortionState();
+    select.value = String(index);
+    setPortionState(grams);
     byId('portion-dialog').showModal();
 }
 
@@ -800,7 +846,7 @@ function currentPortionState() {
     return selectedFood?.states[Number(byId('weighing-state').value)];
 }
 
-function setPortionState() {
+function setPortionState(grams = currentPortionState().portion) {
     const state = currentPortionState();
     byId('portion-reference').textContent = formatted(state.kcal) + ' kcal pour 100 g';
     message('weighing-note', selectedFood.states.length === 1 ? state.weighing : '');
@@ -818,7 +864,7 @@ function setPortionState() {
         });
         presets.appendChild(button);
     });
-    byId('grams').value = state.portion;
+    byId('grams').value = grams;
     renderPortion();
 }
 
@@ -1280,15 +1326,14 @@ byId('manual-open').addEventListener('click', () => {
     setManual(open);
     if (open) byId('food').focus();
 });
-byId('weighing-state').addEventListener('change', setPortionState);
+byId('weighing-state').addEventListener('change', () => setPortionState());
 byId('grams').addEventListener('input', renderPortion);
 byId('portion-form').addEventListener('submit', event => {
     event.preventDefault();
     const kcal = renderPortion();
     if (byId('add-portion').disabled) return;
     const grams = byId('grams').valueAsNumber;
-    const stateLabel = selectedFood.states.length > 1 ? ' · ' + currentPortionState().weighing.split(' · ')[0].toLowerCase() : '';
-    const name = selectedFood.name + stateLabel + ' · ' + formatted(grams) + ' g';
+    const name = portionLabel(selectedFood, currentPortionState()) + ' · ' + formatted(grams) + ' g';
     if (!host.addEntry(dateKey(date), currentMeal.id, name, String(kcal))) {
         message('portion-error', 'L’aliment n’a pas été enregistré. Réessaie.');
         return;
@@ -1296,6 +1341,7 @@ byId('portion-form').addEventListener('submit', event => {
     readState();
     byId('portion-dialog').close();
     renderMealEntries();
+    if (byId('catalog-results').hidden) renderRecentFoods();
     message('catalog-feedback', name + ' ajouté au repas.');
 });
 
@@ -1317,8 +1363,10 @@ byId('delete-confirm').addEventListener('click', () => {
     }
     readState();
     byId('delete-dialog').close();
-    if (screen === 'meal') renderMealEntries();
-    else renderToday();
+    if (screen === 'meal') {
+        renderMealEntries();
+        if (byId('catalog-results').hidden) renderRecentFoods();
+    } else renderToday();
 });
 byId('goal-form').addEventListener('submit', event => {
     event.preventDefault();
