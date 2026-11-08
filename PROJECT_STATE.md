@@ -48,7 +48,7 @@ Dernière mise à jour : 2026-11-08
 
 ## Contrôles et limites
 
-- 2026-11-08. Interface 12. Les 14 tests DOM passent avec le HTML diffusé, dont les pas, les entrées récentes et la sauvegarde/restauration via pont simulé. Deux contrôles de relecture hors ligne couvrent les passages 9 → 12 → 9 et 11 → 12 → 11 avec conservation du journal, du profil, de l’objectif et des pesées. Le manifeste et le HTML sont servis en HTTP 200 sans redirection par l’URL utilisée par l’APK. L’empreinte SHA-256 concorde. Le lancement de Chromium tactile est bloqué par l’environnement. L’application réelle de la mise à jour reste à confirmer sur le Pixel.
+- 2026-11-08. Interface 12. Les 14 tests DOM passent avec le HTML diffusé, dont les pas, les entrées récentes et la sauvegarde/restauration via pont simulé. Deux contrôles de relecture hors ligne couvrent les passages 9 → 12 → 9 et 11 → 12 → 11 avec conservation du journal, du profil, de l’objectif et des pesées. Le manifeste et le HTML sont servis en HTTP 200 sans redirection par l’URL utilisée par l’APK. L’empreinte SHA-256 concorde. Le lancement de Chromium tactile est bloqué par l’environnement. Une capture du Pixel confirme que l’interface 12 est active, que les paramètres la signalent à jour et que les commandes de sauvegarde et de restauration sont visibles. La capture ne valide ni leur exécution ni la reprise d’une portion.
 
 - 2026-11-08. Le manifeste HTTPS du canal indique l’interface 9, protocole 1. Le SHA-256 du HTML correspond au manifeste et les octets correspondent à l’interface de départ sur `main`. Dix tests DOM passent avec les récents, dont un test sur le pont V0.3 qui vérifie le tri, la déduplication, l’état cuit, l’annulation, l’ajout et la suppression. Un contrôle hors ligne avec pont simulé valide le passage interface 9 → candidate → 9 avec le même profil, objectif et historique. L’application locale du changement sur la branche de la PR #6 réussit avec ses 14 tests DOM, y compris les pas et la sauvegarde. Le rendu et le toucher restent à vérifier sur le Pixel. Les tests Android Gradle relèvent de la CI, le SDK étant absent de cet environnement.
 
@@ -81,5 +81,5 @@ Dernière mise à jour : 2026-11-08
 
 ## Prochaine action
 
-- Sur le Pixel, ouvrir Paramètres, vérifier et appliquer l’interface 12. Ouvrir un repas, reprendre une portion récente, l’ajuster et confirmer que le profil et le journal sont accessibles hors ligne. Vérifier aussi les pas et les commandes de sauvegarde du profil sur V0.7.
+- Sur le Pixel, ouvrir un repas, reprendre une portion récente, l’ajuster et confirmer que le profil et le journal sont accessibles hors ligne. Vérifier aussi les pas et l’exécution de la sauvegarde et de la restauration sur V0.7.
 - Withings en pause. À la reprise, tester une pesée prise après la reconnexion, d’abord dans Withings puis dans Santé Connect, et vérifier la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).
