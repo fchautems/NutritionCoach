@@ -79,6 +79,12 @@ Dernière mise à jour : 2026-11-08
 
 - 2026-11-08. L’interface 9 n’est pas apparue sur le Pixel au premier essai. Le manifeste et le fichier HTML ont été téléchargés en HTTP 200, sans redirection, depuis l’URL utilisée par l’APK. Le protocole 1 et l’empreinte SHA-256 concordent. Une capture du Pixel confirme ensuite que l’interface 9 est active et que la vérification indique que l’interface est à jour. Le message d’import indique toujours qu’aucune nouvelle pesée Withings n’a été trouvée.
 
+## Accès direct à une date du journal
+
+- 2026-11-08. Un appui sur la date ouvre un sélecteur prérempli avec le jour affiché. La confirmation ouvre directement le journal choisi et les saisies suivantes sont enregistrées pour ce jour. Les flèches, le raccourci vers aujourd’hui et l’annulation restent disponibles. Le changement passe par le protocole 1 du canal intégré.
+- Onze tests DOM passent sur les sources, quinze sur le candidat construit à partir du HTML 12 servi par le canal, et dix-sept avec les PR d’interface #8 et #9 en plus. Les suites passent avec les fuseaux Europe/Zurich et America/Los_Angeles. Un contrôle hors ligne avec le pont Android simulé, dans les deux fuseaux, relit la saisie antidatée après un retour de l’interface candidate à la 12 et vérifie le journal, le profil, l’objectif et les pesées. Le SHA-256 du HTML 12 téléchargé concorde avec le manifeste.
+- Prochaine étape. Lors de la diffusion coordonnée, appliquer le changement au HTML du canal courant. Sur Pixel, ouvrir une date passée, ajouter un aliment puis revenir à aujourd’hui. Vérifier le sélecteur natif et le rendu tactile, le lancement de Chromium étant bloqué dans cet environnement.
+
 ## Prochaine action
 
 - Sur le Pixel, ouvrir un repas, reprendre une portion récente, l’ajuster et confirmer que le profil et le journal sont accessibles hors ligne. Vérifier aussi les pas et l’exécution de la sauvegarde et de la restauration sur V0.7.

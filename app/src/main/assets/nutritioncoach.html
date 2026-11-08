@@ -40,7 +40,7 @@ button:active { transform: translateY(2px); box-shadow: none; }
 .brand button { margin-left: auto; min-width: 3rem; padding: .35rem; font-size: 1.35rem; }
 .date-row { margin: .85rem 0; text-align: center; justify-content: space-between; }
 .date-row button { min-width: 3rem; font-size: 1.35rem; }
-.date-row time { font-weight: 650; }
+.date-row .date-picker { flex: 1; min-width: 0; padding-inline: .4rem; font-size: 1rem; overflow-wrap: anywhere; }
 .return { width: 100%; margin: 0 0 .75rem; }
 .summary {
     border-radius: 1.25rem; color: var(--surface); padding: .9rem 1rem;
@@ -412,7 +412,9 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
         <p id="birthday" class="card panel" role="status" hidden></p>
         <nav class="date-row" aria-label="Date du journal">
             <button id="previous" type="button" aria-label="Jour précédent">‹</button>
-            <time id="day"></time>
+            <button id="choose-day" class="date-picker" type="button" aria-haspopup="dialog">
+                <time id="day"></time>
+            </button>
             <button id="next" type="button" aria-label="Jour suivant">›</button>
         </nav>
         <button id="return-today" class="return" type="button" hidden>Revenir à aujourd’hui</button>
@@ -565,6 +567,17 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
         </div>
     </form>
 </dialog>
+<dialog id="day-dialog" aria-labelledby="day-title">
+    <h2 id="day-title">Choisir un jour</h2>
+    <form id="day-form">
+        <label for="day-input">Date du journal</label>
+        <input id="day-input" type="date" min="0001-01-01" max="9999-12-31" required>
+        <div class="actions">
+            <button class="close" type="button">Annuler</button>
+            <button class="primary" type="submit">Afficher ce jour</button>
+        </div>
+    </form>
+</dialog>
 <dialog id="goal-dialog" aria-labelledby="goal-title">
     <h2 id="goal-title">Objectif quotidien</h2>
     <p id="goal-proposal-note" hidden></p>
@@ -674,7 +687,7 @@ const number = new Intl.NumberFormat('fr-CH', {useGrouping: false});
 const formatted = value => number.format(value).replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f');
 const dateFormat = new Intl.DateTimeFormat('fr-CH', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'});
 const two = value => String(value).padStart(2, '0');
-const dateKey = date => date.getFullYear() + '-' + two(date.getMonth() + 1) + '-' + two(date.getDate());
+const dateKey = date => String(date.getFullYear()).padStart(4, '0') + '-' + two(date.getMonth() + 1) + '-' + two(date.getDate());
 const capital = value => value.charAt(0).toUpperCase() + value.slice(1);
 const dayMillis = 86400000;
 const movementFactors = {seated: 1.4, mixed: 1.6, active: 1.8};
@@ -914,8 +927,10 @@ function renderToday() {
     const birth = state.profile && state.profile.birthDate;
     message('birthday', detailedProfile && isToday && birth && birth.slice(5) === today.slice(5)
         ? 'Joyeux anniversaire, ' + state.profile.name + ' !' : '');
+    const dayLabel = capital(dateFormat.format(date));
     byId('day').dateTime = dateKey(date);
-    byId('day').textContent = capital(dateFormat.format(date));
+    byId('day').textContent = dayLabel;
+    byId('choose-day').setAttribute('aria-label', dayLabel + ' · Choisir la date du journal');
     byId('return-today').hidden = isToday;
     const entries = dayEntries();
     const total = sum(entries);
@@ -1391,6 +1406,18 @@ byId('goal-button').addEventListener('click', () => openCalorieGoal(state.goal))
 byId('previous').addEventListener('click', () => { date.setDate(date.getDate() - 1); renderToday(); });
 byId('next').addEventListener('click', () => { date.setDate(date.getDate() + 1); renderToday(); });
 byId('return-today').addEventListener('click', () => { date = new Date(); renderToday(); });
+byId('choose-day').addEventListener('click', () => {
+    byId('day-input').value = dateKey(date);
+    byId('day-dialog').showModal();
+    byId('day-input').focus();
+});
+byId('day-form').addEventListener('submit', event => {
+    event.preventDefault();
+    // Use local time so the selected day also holds west of UTC and across clock changes.
+    date = new Date(byId('day-input').value + 'T12:00:00');
+    byId('day-dialog').close();
+    renderToday();
+});
 byId('cancel-profile').addEventListener('click', renderToday);
 byId('back').addEventListener('click', renderToday);
 byId('add').addEventListener('click', () => {

@@ -183,6 +183,57 @@ test('compare les rythmes et permet de modifier une échéance serrée ou le poi
     assert.equal(app.field('weight-deadline').value, '');
 });
 
+test('ouvre directement une date du journal et saisit dans le jour sélectionné', t => {
+    const data = structuredClone(oldState);
+    const past = '2026-10-25';
+    const previousDay = '2026-10-24';
+    data.entries.push({id: 'past', date: past, meal: 'lunch', name: 'Poire', kcal: 75});
+    data.profile.targetWeight = 74;
+    data.profile.weighIns = {[past]: 79.2, [today]: 78.5};
+    const before = structuredClone(data);
+    const app = openApp(t, {data, detailed: false});
+
+    app.click('choose-day');
+    assert.equal(app.field('day-dialog').open, true);
+    assert.equal(app.field('day-input').value, today);
+    assert.equal(app.document.activeElement.id, 'day-input');
+    app.fill('day-input', past);
+    assert.equal(app.back(), true);
+    assert.equal(app.field('day-dialog').open, false);
+    assert.equal(app.field('day').dateTime, today);
+
+    app.click('choose-day');
+    assert.equal(app.field('day-input').value, today);
+    app.fill('day-input', '');
+    app.submit('day-form');
+    assert.equal(app.field('day-dialog').open, true);
+    assert.equal(app.field('day').dateTime, today);
+    app.fill('day-input', past);
+    app.submit('day-form');
+    assert.equal(app.field('day-dialog').open, false);
+    assert.equal(app.field('day').dateTime, past);
+    assert.equal(app.text('total'), '75 kcal');
+    app.click('previous');
+    assert.equal(app.field('day').dateTime, previousDay);
+    app.click('next');
+    assert.equal(app.field('day').dateTime, past);
+    assert.deepEqual(data, before);
+
+    app.field('meals').querySelectorAll('button')[1].click();
+    assert.match(app.text('meal-entries'), /Poire/);
+    app.click('manual-open');
+    app.fill('food', 'Soupe');
+    app.fill('kcal', '120');
+    app.submit('entry-form');
+    app.click('back');
+    assert.equal(app.text('total'), '195 kcal');
+    app.click('return-today');
+    assert.equal(app.field('day').dateTime, today);
+    assert.equal(app.text('total'), '247 kcal');
+    assert.deepEqual(data, {...before, entries: [...before.entries,
+        {id: 'added', date: past, meal: 'lunch', name: 'Soupe', kcal: 120}]});
+});
+
 test('garde le journal et le catalogue utilisables avec le pont de la V0.3', t => {
     const app = openApp(t, {detailed: false});
     app.editProfile();
