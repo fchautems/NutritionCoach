@@ -16,7 +16,8 @@ const oldState = {
     ]
 };
 
-function openApp(t, {data = structuredClone(oldState), detailed = true, day = today, withings = false} = {}) {
+function openApp(t, {data = structuredClone(oldState), detailed = true, day = today, withings = false,
+    readWithings} = {}) {
     const errors = [];
     const virtualConsole = new VirtualConsole();
     virtualConsole.on('jsdomError', error => errors.push(error));
@@ -51,12 +52,17 @@ function openApp(t, {data = structuredClone(oldState), detailed = true, day = to
                     available: true, status: data.withingsStatus || 'idle', added: data.withingsAdded ?? 1
                 });
                 window.NutritionHost.importWithings = () => {
+                    const notify = () => window.dispatchEvent(new window.Event('nutrition-withings'));
+                    if (readWithings) {
+                        readWithings(notify);
+                        return;
+                    }
                     data.withingsStatus = 'done';
                     data.withingsWeights = {
                         old: {id: 'old', time: Date.UTC(2026, 9, 24, 8), day: '2026-10-24', kg: 78.12},
                         latest: {id: 'latest', time: Date.UTC(2026, 10, 7, 8), day: today, kg: 76.12}
                     };
-                    window.dispatchEvent(new window.Event('nutrition-withings'));
+                    notify();
                 };
             }
             if (detailed) {
@@ -290,4 +296,39 @@ test('importe les pesées, affiche la tendance et propose de reprendre le dernie
     app.submit('profile-form');
     assert.equal(app.data.profile.withingsId, 'latest');
     assert.equal(app.data.profile.weight, 76.12);
+});
+
+test('distingue le résultat de la lecture Withings de l’historique enregistré', t => {
+    const data = {...structuredClone(oldState), withingsStatus: 'done', withingsAdded: 1, withingsWeights: {
+        old: {id: 'old', time: Date.UTC(2026, 1, 1, 8), day: '2026-02-01', kg: 63.531}
+    }};
+    let notify;
+    const app = openApp(t, {data, withings: true, readWithings: callback => { notify = callback; }});
+    app.click('settings-button');
+    app.click('withings-diagnostic');
+    assert.equal(app.field('settings').open, false);
+    assert.equal(app.field('withings-diagnostic-dialog').open, true);
+    assert.match(app.text('withings-diagnostic-result'), /en cours/);
+    assert.equal(app.field('withings-diagnostic-retry').disabled, true);
+    const history = app.text('withings-diagnostic-history');
+    assert.match(history, /1 pesée enregistrée.*01\.02\.2026/);
+
+    data.withingsStatus = 'empty';
+    notify();
+    assert.match(app.text('withings-diagnostic-result'), /Aucune pesée Withings lisible/);
+    assert.equal(app.text('withings-diagnostic-history'), history);
+
+    app.click('withings-diagnostic-retry');
+    data.withingsStatus = 'done';
+    data.withingsAdded = 0;
+    notify();
+    assert.match(app.text('withings-diagnostic-result'), /a renvoyé des pesées.*Aucune nouvelle/);
+    assert.equal(app.text('withings-diagnostic-history'), history);
+
+    app.click('withings-diagnostic-retry');
+    data.withingsAdded = 1;
+    data.withingsWeights.latest = {id: 'latest', time: Date.UTC(2026, 10, 7, 8), day: today, kg: 65};
+    notify();
+    assert.match(app.text('withings-diagnostic-result'), /1 nouvelle pesée ajoutée/);
+    assert.match(app.text('withings-diagnostic-history'), /2 pesées enregistrées.*07\.11\.2026/);
 });

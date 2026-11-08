@@ -509,9 +509,25 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
             <span class="row-icon"><svg aria-hidden="true"><use href="#nav-update"/></svg></span>
             <span>Importer les pesées Withings</span><span class="arrow" aria-hidden="true">›</span>
         </button>
+        <button id="withings-diagnostic" class="settings-row" type="button" hidden>
+            <span class="row-icon"><svg aria-hidden="true"><use href="#nav-update"/></svg></span>
+            <span>Diagnostic Withings</span><span class="arrow" aria-hidden="true">›</span>
+        </button>
     </div>
     <p id="withings-status" class="hint" role="status" hidden></p>
     <p id="update-status" class="hint" aria-live="polite" hidden></p>
+</dialog>
+<dialog id="withings-diagnostic-dialog" aria-labelledby="withings-diagnostic-title">
+    <h2 id="withings-diagnostic-title">Diagnostic Withings</h2>
+    <p><strong>Lecture de Santé Connect</strong></p>
+    <p id="withings-diagnostic-result" role="status"></p>
+    <p><strong>Historique dans NutritionCoach</strong></p>
+    <p id="withings-diagnostic-history"></p>
+    <p class="hint">Santé Connect indique que les pesées viennent de Withings. NutritionCoach ne reçoit pas le nom de la personne à qui elles sont attribuées.</p>
+    <div class="actions">
+        <button class="close" type="button">Fermer</button>
+        <button id="withings-diagnostic-retry" class="primary" type="button">Relancer</button>
+    </div>
 </dialog>
 <dialog id="portion-dialog" aria-labelledby="portion-title">
     <h2 id="portion-title"></h2>
@@ -1004,19 +1020,22 @@ function withingsMeasurements() {
     return Object.values(state.withingsWeights || {}).sort((left, right) => right.time - left.time);
 }
 
+function withingsWeightLabel(record) {
+    return number.format(record.kg) + ' kg · ' + record.day.split('-').reverse().join('.');
+}
+
 function renderWithingsProfile() {
     const measurements = withingsMeasurements();
     const latest = measurements[0];
     byId('withings-profile').hidden = !latest;
     if (!latest) return;
 
-    const label = record => number.format(record.kg) + ' kg · ' + record.day.split('-').reverse().join('.');
-    byId('withings-latest').textContent = 'Dernière pesée importée de Withings · ' + label(latest);
+    byId('withings-latest').textContent = 'Dernière pesée importée de Withings · ' + withingsWeightLabel(latest);
     byId('withings-history-title').textContent = measurements.length + ' pesée(s) Withings'
         + (measurements.length > 30 ? ' · 30 dernières affichées' : '');
     byId('withings-weights').replaceChildren(...measurements.slice(0, 30).map(record => {
         const item = document.createElement('li');
-        item.textContent = label(record);
+        item.textContent = withingsWeightLabel(record);
         return item;
     }));
 }
@@ -1313,10 +1332,43 @@ byId('check-update').addEventListener('click', () => {
 document.querySelectorAll('.close').forEach(button => {
     button.addEventListener('click', () => button.closest('dialog').close());
 });
+function renderWithingsDiagnostic(info) {
+    const messages = {
+        reading: 'Vérification des pesées Withings en cours…',
+        denied: 'Santé Connect a refusé la lecture du poids pour NutritionCoach.',
+        empty: 'Aucune pesée Withings lisible lors de cette vérification.',
+        done: info.added ? formatted(info.added) + (info.added === 1 ? ' nouvelle pesée ajoutée.' : ' nouvelles pesées ajoutées.')
+            : 'Santé Connect a renvoyé des pesées Withings. Aucune nouvelle pesée ajoutée.',
+        error: 'La lecture ou l’enregistrement des pesées a échoué.'
+    };
+    byId('withings-diagnostic-result').textContent = info.available
+        ? messages[info.status] || 'Vérification prête à démarrer.'
+        : 'Santé Connect est indisponible sur ce téléphone.';
+    byId('withings-diagnostic-retry').disabled = !info.available || info.status === 'reading';
+
+    const measurements = withingsMeasurements();
+    const latest = measurements[0];
+    byId('withings-diagnostic-history').textContent = latest
+        ? formatted(measurements.length) + (measurements.length === 1 ? ' pesée enregistrée.' : ' pesées enregistrées.')
+            + ' Dernière enregistrée ici · ' + withingsWeightLabel(latest)
+        : 'Aucune pesée Withings enregistrée ici.';
+}
+
+function runWithingsDiagnostic() {
+    const info = JSON.parse(host.withingsInfo());
+    if (info.available && info.status !== 'reading') {
+        renderWithingsDiagnostic({...info, status: 'reading'});
+        host.importWithings();
+    } else {
+        renderWithingsDiagnostic(info);
+    }
+}
+
 function updateWithingsStatus() {
     const button = byId('import-withings');
     if (typeof host?.withingsInfo !== 'function') return;
     const info = JSON.parse(host.withingsInfo());
+    byId('withings-diagnostic').hidden = false;
     button.hidden = !info.available;
     button.disabled = info.status === 'reading';
     const messages = {
@@ -1335,9 +1387,17 @@ function updateWithingsStatus() {
             renderProfileDetails();
         }
     }
+    if (byId('withings-diagnostic-dialog').open) renderWithingsDiagnostic(info);
 }
 
 byId('import-withings').addEventListener('click', () => host.importWithings());
+byId('withings-diagnostic').addEventListener('click', () => {
+    byId('settings').close();
+    readState();
+    byId('withings-diagnostic-dialog').showModal();
+    runWithingsDiagnostic();
+});
+byId('withings-diagnostic-retry').addEventListener('click', runWithingsDiagnostic);
 byId('use-withings-weight').addEventListener('click', () => {
     const latest = withingsMeasurements()[0];
     if (!latest) return;

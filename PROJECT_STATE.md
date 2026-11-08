@@ -60,6 +60,8 @@ Dernière mise à jour : 2026-11-08
 
 - 2026-11-08. Le lecteur Android a été testé avec Santé Connect simulé et un historique réparti sur plusieurs pages. Une pesée récente de source Withings est lue avec ou sans l’autorisation d’historique. Une pesée récente d’une autre source est exclue par le filtre prévu. Il reste à identifier les données écrites sur le Pixel, auxquelles le test n’a pas accès.
 
+- 2026-11-08. L’interface 8 ajoute un diagnostic Withings dans les paramètres, compatible avec le pont de l’APK V0.5. Il distingue une nouvelle lecture de Santé Connect de l’historique importé. Huit tests d’interface passent, dont une lecture vide malgré l’historique, une lecture sans ajout et l’arrivée d’une pesée récente. Le pont expose la source Withings sans identifiant de profil ni détail sur le lot lu.
+
 ## Prochaine action
 
-- Vérifier si une pesée récente apparaît dans Health Connect sous la source Withings avant de modifier le filtre d’import. Vérifier aussi la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).
+- Relever le résultat du diagnostic Withings sur le Pixel. Si la pesée récente manque encore, vérifier sa présence dans Santé Connect et sa source avant de modifier le filtre d’import. Vérifier aussi la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).
