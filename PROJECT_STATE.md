@@ -62,6 +62,10 @@ Dernière mise à jour : 2026-11-08
 
 - 2026-11-08. L’interface 8 ajoute un diagnostic Withings dans les paramètres, compatible avec le pont de l’APK V0.5. Il distingue une nouvelle lecture de Santé Connect de l’historique importé. Huit tests d’interface passent, dont une lecture vide malgré l’historique, une lecture sans ajout et l’arrivée d’une pesée récente. Le pont expose la source Withings sans identifiant de profil ni détail sur le lot lu.
 
+- 2026-11-08. Sur le Pixel, le diagnostic de l’interface 8 indique que Santé Connect renvoie des pesées Withings sans nouvel ajout. L’historique local contient 243 mesures et s’arrête au 1er février 2026. Une pesée du 7 novembre est visible dans Withings. La présence de cette pesée dans Santé Connect et l’attribution des mesures importées à un profil restent à vérifier.
+
+- 2026-11-08. L’interface 9 permet d’ouvrir la liste complète des pesées Withings importées depuis le profil et le diagnostic, de la plus récente à la plus ancienne. Neuf tests d’interface passent, dont l’affichage et le tri de 243 pesées reçues dans le désordre.
+
 ## Prochaine action
 
-- Relever le résultat du diagnostic Withings sur le Pixel. Si la pesée récente manque encore, vérifier sa présence dans Santé Connect et sa source avant de modifier le filtre d’import. Vérifier aussi la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).
+- Vérifier la présence de la pesée du 7 novembre dans Santé Connect et sa source avant de modifier le filtre d’import. Vérifier aussi la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).

@@ -85,6 +85,7 @@ function openApp(t, {data = structuredClone(oldState), detailed = true, day = to
     const field = id => document.getElementById(id);
     return {
         field, data, document,
+        back: () => dom.window.nutritionBack(),
         visible: id => !field(id).closest('[hidden]'),
         text: id => field(id).textContent,
         click: id => field(id).click(),
@@ -331,4 +332,33 @@ test('distingue le résultat de la lecture Withings de l’historique enregistr�
     notify();
     assert.match(app.text('withings-diagnostic-result'), /1 nouvelle pesée ajoutée/);
     assert.match(app.text('withings-diagnostic-history'), /2 pesées enregistrées.*07\.11\.2026/);
+});
+
+test('affiche les 243 pesées importées par date depuis le diagnostic et le profil', t => {
+    const data = structuredClone(oldState);
+    const days = Array.from({length: 243}, (_, index) => {
+        const time = Date.UTC(2026, 1, 1 - index, 8);
+        return {id: 'record-' + index, time, day: new Date(time).toISOString().slice(0, 10), kg: 65};
+    });
+    const unordered = [...days.slice(100), ...days.slice(0, 100).reverse()];
+    data.withingsWeights = Object.fromEntries(unordered.map(record => [record.id, record]));
+    const app = openApp(t, {data, withings: true, readWithings: () => {}});
+
+    app.click('settings-button');
+    app.click('withings-diagnostic');
+    app.click('diagnostic-withings-history');
+    assert.equal(app.field('withings-history').open, true);
+    assert.match(app.text('withings-history-count'), /243 pesées enregistrées/);
+    const visibleDays = () => Array.from(app.field('withings-weights').querySelectorAll('time'), item => item.dateTime);
+    assert.deepEqual(visibleDays(), days.map(record => record.day));
+    assert.match(app.field('withings-weights').firstElementChild.textContent, /01\.02\.2026.*65 kg/);
+
+    assert.equal(app.back(), true);
+    assert.equal(app.field('withings-history').open, false);
+    assert.equal(app.field('withings-diagnostic-dialog').open, true);
+    app.back();
+    app.editProfile();
+    app.click('profile-withings-history');
+    assert.equal(app.field('withings-history').open, true);
+    assert.deepEqual(visibleDays(), days.map(record => record.day));
 });

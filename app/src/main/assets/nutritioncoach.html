@@ -178,7 +178,11 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
 .weight-check input { width: 1.15rem; height: 1.15rem; min-height: 0; margin: 0; flex: none; }
 #weight-guide summary { color: var(--deep); cursor: pointer; font-weight: 650; }
 #deadline-actions { display: flex; flex-wrap: wrap; gap: .55rem; }
-#withings-history ul { padding-left: 1.3rem; max-height: 12rem; overflow: auto; }
+#withings-weights {
+    max-height: 55vh; overflow: auto; overscroll-behavior: contain;
+    margin: .65rem 0 0; padding: 0; list-style: none;
+}
+#withings-weights li { justify-content: space-between; }
 #birthday { margin-top: .75rem; background: #f7eddb; color: var(--ink); }
 
 @media (max-width: 350px) { .pair { grid-template-columns: 1fr; gap: 0; } }
@@ -337,10 +341,7 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
                 <div id="withings-profile" hidden>
                     <p id="withings-latest" class="hint"></p>
                     <button id="use-withings-weight" class="link-button" type="button">Utiliser cette pesée</button>
-                    <details id="withings-history">
-                        <summary id="withings-history-title"></summary>
-                        <ul id="withings-weights"></ul>
-                    </details>
+                    <button id="profile-withings-history" class="link-button" type="button">Voir toutes les pesées Withings</button>
                 </div>
             </div>
           </div>
@@ -523,11 +524,22 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
     <p id="withings-diagnostic-result" role="status"></p>
     <p><strong>Historique dans NutritionCoach</strong></p>
     <p id="withings-diagnostic-history"></p>
+    <button id="diagnostic-withings-history" class="link-button" type="button" hidden>Voir toutes les pesées</button>
     <p class="hint">Santé Connect indique que les pesées viennent de Withings. NutritionCoach ne reçoit pas le nom de la personne à qui elles sont attribuées.</p>
     <div class="actions">
         <button class="close" type="button">Fermer</button>
         <button id="withings-diagnostic-retry" class="primary" type="button">Relancer</button>
     </div>
+</dialog>
+<dialog id="withings-history" aria-labelledby="withings-history-title">
+    <header class="settings-header">
+        <h2 id="withings-history-title">Pesées Withings importées</h2>
+        <button class="close icon-button" type="button" aria-label="Fermer">
+            <svg aria-hidden="true"><use href="#nav-close"/></svg>
+        </button>
+    </header>
+    <p id="withings-history-count"></p>
+    <ul id="withings-weights" role="list" aria-label="Pesées, de la plus récente à la plus ancienne" tabindex="0"></ul>
 </dialog>
 <dialog id="portion-dialog" aria-labelledby="portion-title">
     <h2 id="portion-title"></h2>
@@ -1021,23 +1033,43 @@ function withingsMeasurements() {
 }
 
 function withingsWeightLabel(record) {
-    return number.format(record.kg) + ' kg · ' + record.day.split('-').reverse().join('.');
+    return number.format(record.kg) + ' kg · ' + withingsDateLabel(record);
+}
+
+function withingsDateLabel(record) {
+    return record.day.split('-').reverse().join('.');
 }
 
 function renderWithingsProfile() {
-    const measurements = withingsMeasurements();
-    const latest = measurements[0];
+    const [latest] = withingsMeasurements();
     byId('withings-profile').hidden = !latest;
-    if (!latest) return;
+    if (latest) byId('withings-latest').textContent = 'Dernière pesée importée de Withings · ' + withingsWeightLabel(latest);
+}
 
-    byId('withings-latest').textContent = 'Dernière pesée importée de Withings · ' + withingsWeightLabel(latest);
-    byId('withings-history-title').textContent = measurements.length + ' pesée(s) Withings'
-        + (measurements.length > 30 ? ' · 30 dernières affichées' : '');
-    byId('withings-weights').replaceChildren(...measurements.slice(0, 30).map(record => {
+function renderWithingsHistory() {
+    const measurements = withingsMeasurements();
+    byId('withings-history-count').textContent = formatted(measurements.length)
+        + (measurements.length === 1 ? ' pesée enregistrée' : ' pesées enregistrées');
+    const list = document.createDocumentFragment();
+    for (const record of measurements) {
         const item = document.createElement('li');
-        item.textContent = withingsWeightLabel(record);
-        return item;
-    }));
+        item.className = 'entry row';
+        const date = document.createElement('time');
+        date.dateTime = record.day;
+        date.textContent = withingsDateLabel(record);
+        const weight = document.createElement('strong');
+        weight.textContent = number.format(record.kg) + ' kg';
+        item.append(date, weight);
+        list.append(item);
+    }
+    byId('withings-weights').replaceChildren(list);
+}
+
+function openWithingsHistory() {
+    readState();
+    renderWithingsHistory();
+    byId('withings-history').showModal();
+    byId('withings-weights').scrollTop = 0;
 }
 
 function observedWeight(today) {
@@ -1141,7 +1173,6 @@ function openProfile() {
         byId('target-weight').value = profile?.targetWeight ? String(profile.targetWeight).replace('.', ',') : '';
         byId('weight-deadline').value = profile?.deadline || '';
         byId('weight-guide').open = false;
-        byId('withings-history').open = false;
         renderWithingsProfile();
         renderProfileDetails();
     }
@@ -1348,6 +1379,7 @@ function renderWithingsDiagnostic(info) {
 
     const measurements = withingsMeasurements();
     const latest = measurements[0];
+    byId('diagnostic-withings-history').hidden = !latest;
     byId('withings-diagnostic-history').textContent = latest
         ? formatted(measurements.length) + (measurements.length === 1 ? ' pesée enregistrée.' : ' pesées enregistrées.')
             + ' Dernière enregistrée ici · ' + withingsWeightLabel(latest)
@@ -1382,6 +1414,7 @@ function updateWithingsStatus() {
     message('withings-status', messages[info.status] || '');
     if (info.status === 'done') {
         readState();
+        if (byId('withings-history').open) renderWithingsHistory();
         if (screen === 'profile' && detailedProfile) {
             renderWithingsProfile();
             renderProfileDetails();
@@ -1398,6 +1431,8 @@ byId('withings-diagnostic').addEventListener('click', () => {
     runWithingsDiagnostic();
 });
 byId('withings-diagnostic-retry').addEventListener('click', runWithingsDiagnostic);
+byId('profile-withings-history').addEventListener('click', openWithingsHistory);
+byId('diagnostic-withings-history').addEventListener('click', openWithingsHistory);
 byId('use-withings-weight').addEventListener('click', () => {
     const latest = withingsMeasurements()[0];
     if (!latest) return;
@@ -1409,7 +1444,8 @@ byId('use-withings-weight').addEventListener('click', () => {
 window.addEventListener('nutrition-withings', updateWithingsStatus);
 window.addEventListener('nutrition-update', updateStatus);
 window.nutritionBack = () => {
-    const dialog = document.querySelector('dialog[open]');
+    const dialogs = document.querySelectorAll('dialog[open]');
+    const dialog = dialogs[dialogs.length - 1];
     if (dialog) { dialog.close(); return true; }
     if (screen === 'meal' && !byId('catalog-results').hidden) {
         resetCatalog();
