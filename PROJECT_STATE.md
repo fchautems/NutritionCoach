@@ -66,6 +66,9 @@ Dernière mise à jour : 2026-11-08
 
 - 2026-11-08. L’interface 9 permet d’ouvrir la liste complète des pesées Withings importées depuis le profil et le diagnostic, de la plus récente à la plus ancienne. Neuf tests d’interface passent, dont l’affichage et le tri de 243 pesées reçues dans le désordre.
 
+- 2026-11-08. L’interface 9 n’est pas apparue sur le Pixel au premier essai. Le manifeste et le fichier HTML ont été téléchargés en HTTP 200, sans redirection, depuis l’URL utilisée par l’APK. Le protocole 1 et l’empreinte SHA-256 concordent. Le statut de la vérification ou de l’application sur le Pixel reste inconnu.
+
 ## Prochaine action
 
+- Confirmer que l’interface 9 est active sur le Pixel. Si la vérification intégrée échoue, relever son statut et la version affichée.
 - Vérifier la présence de la pesée du 7 novembre dans Santé Connect et sa source avant de modifier le filtre d’import. Vérifier aussi la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).
