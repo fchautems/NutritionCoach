@@ -14,7 +14,7 @@ Le maintien reprend la dépense estimée. Pour un poids cible, l’application p
 
 Les limites sont des choix de l’application. Pour une perte de poids, la proposition est masquée sous 1 500 kcal/j ou pour un poids cible sous le repère d’IMC adulte de 18,5. Une échéance atteinte ou passée demande une date future ou un champ vide. Si la dépense est une fourchette, l’application utilise son milieu et l’indique. Le profil doit être complet et adulte. [Repères cliniques pour les adultes](https://pmc.ncbi.nlm.nih.gov/articles/PMC5819889/)
 
-« Enregistrer et revoir les calories » enregistre le profil et ouvre le réglage existant prérempli. La cible du journal change uniquement à la validation de ce réglage, où le chiffre reste modifiable.
+Depuis l’interface 6, « Enregistrer » sauvegarde le profil. Si la cible calculée diffère de l’objectif du journal, une confirmation affiche l’objectif actuel et la proposition modifiable. « Appliquer au journal » valide le nouveau chiffre. « Garder l’objectif actuel » conserve celui qui était déjà utilisé.
 
 ## Tests
 

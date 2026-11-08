@@ -1,6 +1,6 @@
 # NutritionCoach — état du projet
 
-Dernière mise à jour : 2026-11-07
+Dernière mise à jour : 2026-11-08
 
 ## État vérifié
 
@@ -36,6 +36,9 @@ Dernière mise à jour : 2026-11-07
 - 2026-11-07. [Interface 5 publiée sur le canal intégré](https://github.com/fchautems/NutritionCoach/commit/9880935899f74519473be856b951c3b58c1f7d99). L’objectif calorique du profil est proposé à partir de la dépense estimée, du poids cible et de l’échéance éventuelle, puis appliqué au journal sur confirmation. Les 49 fiches adoptent des portions propres à chaque aliment et trois états de pesée complémentaires. [Audit des portions](docs/CATALOGUE_PORTIONS.md).
 - 2026-11-07. [Étude Withings](docs/WITHINGS.md) intégrée à la documentation. Le premier essai porte sur le transfert des pesées de Withings vers Health Connect sur le Pixel.
 
+- 2026-11-08. Interface 6. Un seul bouton enregistre le profil. Si une cible calculée diffère de celle du journal, la confirmation affiche les deux valeurs et propose d’appliquer ou de garder l’objectif actuel.
+- 2026-11-08. Aperçu Android V0.5. Import local en lecture seule du poids Withings via Health Connect sur Android 14 et plus, à l’ouverture après autorisation et sur demande. L’utilisateur choisit si la dernière pesée doit servir de poids actuel. La tendance rassemble les pesées importées et manuelles.
+
 ## Contrôles et limites
 
 - La V0.1 est signée avec une clé debug générée par le runner CI. Une nouvelle APK signée avec une autre clé ne peut pas la remplacer en conservant son journal.
@@ -51,7 +54,8 @@ Dernière mise à jour : 2026-11-07
 
 - Interface 5 : six tests DOM réussis, y compris maintien de l’ancien journal, confirmation de l’objectif, pâtes sèches et cuites, et saisie décimale. Le pont Android existant est utilisé.
 
+- Interface 6 et V0.5. Sept tests DOM et dix tests JUnit réussis. APK compilée avec le SDK 35. L’identifiant, le certificat de l’aperçu V0.4 et les permissions de lecture sont vérifiés. Le transfert d’une pesée Withings réelle et l’installation par-dessus la V0.4 restent à valider sur le Pixel.
+
 ## Prochaine action
 
-- Sur le Pixel, appliquer l’interface 5 depuis les paramètres et essayer la cible calorique et les portions.
-- Vérifier le transfert des pesées dans Health Connect selon [la procédure Withings](docs/WITHINGS.md).
+- Installer l’aperçu V0.5 par-dessus la V0.4, tester la confirmation des calories et importer une pesée réelle. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).

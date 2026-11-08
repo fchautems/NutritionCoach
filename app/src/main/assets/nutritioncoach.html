@@ -178,6 +178,7 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
 .weight-check input { width: 1.15rem; height: 1.15rem; min-height: 0; margin: 0; flex: none; }
 #weight-guide summary { color: var(--deep); cursor: pointer; font-weight: 650; }
 #deadline-actions { display: flex; flex-wrap: wrap; gap: .55rem; }
+#withings-history ul { padding-left: 1.3rem; max-height: 12rem; overflow: auto; }
 #birthday { margin-top: .75rem; background: #f7eddb; color: var(--ink); }
 
 @media (max-width: 350px) { .pair { grid-template-columns: 1fr; gap: 0; } }
@@ -333,6 +334,14 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
                     <input id="record-weight" type="checkbox">Enregistrer une pesée aujourd’hui
                 </label>
                 <p id="profile-bmi" class="hint" hidden></p>
+                <div id="withings-profile" hidden>
+                    <p id="withings-latest" class="hint"></p>
+                    <button id="use-withings-weight" class="link-button" type="button">Utiliser cette pesée</button>
+                    <details id="withings-history">
+                        <summary id="withings-history-title"></summary>
+                        <ul id="withings-weights"></ul>
+                    </details>
+                </div>
             </div>
           </div>
           <section class="card panel spaced" data-detailed-profile hidden aria-labelledby="activity-title">
@@ -393,7 +402,6 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
             <div class="actions">
                 <button id="cancel-profile" type="button" hidden>Annuler</button>
                 <button class="primary" type="submit">Enregistrer</button>
-                <button id="review-calorie-goal" type="submit" hidden>Enregistrer et revoir les calories</button>
             </div>
         </form>
     </section>
@@ -497,7 +505,12 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
             <span class="row-icon"><svg aria-hidden="true"><use href="#nav-update"/></svg></span>
             <span id="update-label">Vérifier les mises à jour</span><span class="arrow" aria-hidden="true">›</span>
         </button>
+        <button id="import-withings" class="settings-row" type="button" hidden>
+            <span class="row-icon"><svg aria-hidden="true"><use href="#nav-update"/></svg></span>
+            <span>Importer les pesées Withings</span><span class="arrow" aria-hidden="true">›</span>
+        </button>
     </div>
+    <p id="withings-status" class="hint" role="status" hidden></p>
     <p id="update-status" class="hint" aria-live="polite" hidden></p>
 </dialog>
 <dialog id="portion-dialog" aria-labelledby="portion-title">
@@ -522,13 +535,14 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
 </dialog>
 <dialog id="goal-dialog" aria-labelledby="goal-title">
     <h2 id="goal-title">Objectif quotidien</h2>
+    <p id="goal-proposal-note" hidden></p>
     <form id="goal-form">
         <label for="goal-input">Calories (kcal)</label>
         <input id="goal-input" type="number" min="500" max="10000" inputmode="numeric" required>
         <p id="goal-error" class="error" role="alert" hidden></p>
         <div class="actions">
-            <button class="close" type="button">Annuler</button>
-            <button class="primary" type="submit">Enregistrer</button>
+            <button id="goal-cancel" class="close" type="button">Annuler</button>
+            <button id="goal-save" class="primary" type="submit">Enregistrer</button>
         </div>
     </form>
 </dialog>
@@ -639,6 +653,7 @@ let date = new Date();
 let currentMeal;
 let selectedCategory;
 let selectedFood;
+let selectedWithingsId = "";
 let pendingDelete;
 let screen;
 
@@ -919,7 +934,8 @@ function profileDraft() {
         goalMode: byId('weight-goal-mode').value,
         targetWeight: byId('target-weight').value,
         deadline: byId('weight-deadline').value,
-        recordWeight: byId('record-weight').checked
+        recordWeight: byId('record-weight').checked,
+        withingsId: selectedWithingsId
     };
 }
 
@@ -955,19 +971,16 @@ function renderCalorieProposal(draft, energy, cm, kg, today) {
     const section = byId('calorie-proposal');
     const title = byId('calorie-proposal-title');
     const detail = byId('calorie-proposal-detail');
-    const review = byId('review-calorie-goal');
     const target = draft.goalMode === 'target' ? weightValue(draft.targetWeight) : kg;
     section.hidden = !energy || !draft.goalMode || target === null;
-    review.hidden = true;
-    delete review.dataset.goal;
-    if (section.hidden) return;
+    if (section.hidden) return null;
 
     title.textContent = 'Objectif calorique proposé';
     const difference = target - kg;
     const days = daysBetween(today, draft.deadline);
     if (difference !== 0 && draft.deadline && !(days > 0)) {
         detail.textContent = 'Choisis une date future ou laisse l’échéance vide.';
-        return;
+        return null;
     }
     const requested = draft.deadline && difference !== 0 ? 7700 * difference / days : 250 * Math.sign(difference);
     const adjustment = Math.max(-500, Math.min(300, requested));
@@ -975,7 +988,7 @@ function renderCalorieProposal(draft, energy, cm, kg, today) {
     const proposed = Math.round((maintenance + adjustment) / 50) * 50;
     if ((difference < 0 && (target / (cm / 100) ** 2 < 18.5 || proposed < 1500)) || proposed < 500 || proposed > 10000) {
         detail.textContent = 'Aucune cible proposée pour ces paramètres. Tu peux revoir ton objectif de poids.';
-        return;
+        return null;
     }
 
     title.textContent += ' · ' + formatted(proposed) + ' kcal/j';
@@ -984,13 +997,34 @@ function renderCalorieProposal(draft, energy, cm, kg, today) {
         + (adjustment !== requested ? ' L’ajustement est limité. Il faudra peut-être plus de temps pour atteindre le poids cible.'
             : difference !== 0 ? ' C’est un point de départ à ajuster selon l’évolution de ton poids.' : '')
         + ' Objectif actuel du journal · ' + formatted(state.goal) + ' kcal/j.';
-    review.hidden = proposed === state.goal;
-    review.dataset.goal = proposed;
+    return proposed;
+}
+
+function withingsMeasurements() {
+    return Object.values(state.withingsWeights || {}).sort((left, right) => right.time - left.time);
+}
+
+function renderWithingsProfile() {
+    const measurements = withingsMeasurements();
+    const latest = measurements[0];
+    byId('withings-profile').hidden = !latest;
+    if (!latest) return;
+
+    const label = record => number.format(record.kg) + ' kg · ' + record.day.split('-').reverse().join('.');
+    byId('withings-latest').textContent = 'Dernière pesée Withings · ' + label(latest);
+    byId('withings-history-title').textContent = measurements.length + ' pesée(s) Withings'
+        + (measurements.length > 30 ? ' · 30 dernières affichées' : '');
+    byId('withings-weights').replaceChildren(...measurements.slice(0, 30).map(record => {
+        const item = document.createElement('li');
+        item.textContent = label(record);
+        return item;
+    }));
 }
 
 function observedWeight(today) {
-    const weighIns = state.profile && state.profile.weighIns;
-    if (!weighIns) return null;
+    const weighIns = {};
+    withingsMeasurements().reverse().forEach(record => { weighIns[record.day] = record.kg; });
+    Object.assign(weighIns, state.profile?.weighIns);
     const days = Object.keys(weighIns).filter(day => {
         const elapsed = daysBetween(day, today);
         return elapsed >= 0 && elapsed < 90;
@@ -1063,13 +1097,15 @@ function renderProfileDetails() {
         : 'Âge · ' + age + ' ans';
     message('profile-bmi', cm && kg !== null ? 'IMC · ' + number.format(Math.round(10 * kg / (cm / 100) ** 2) / 10) : '');
     const energy = renderEnergy(draft, age, cm, kg);
-    renderCalorieProposal(draft, energy, cm, kg, today);
-    return renderWeightGoal(draft, age, cm, kg, today);
+    const proposedGoal = renderCalorieProposal(draft, energy, cm, kg, today);
+    const postponeDays = renderWeightGoal(draft, age, cm, kg, today);
+    return {proposedGoal, postponeDays};
 }
 
 function openProfile() {
     const profile = state.profile;
     byId('profile-form').reset();
+    selectedWithingsId = '';
     if (profile) {
         byId('first-name').value = profile.name;
         byId('sex').value = profile.sex;
@@ -1086,6 +1122,8 @@ function openProfile() {
         byId('target-weight').value = profile?.targetWeight ? String(profile.targetWeight).replace('.', ',') : '';
         byId('weight-deadline').value = profile?.deadline || '';
         byId('weight-guide').open = false;
+        byId('withings-history').open = false;
+        renderWithingsProfile();
         renderProfileDetails();
     }
     byId('cancel-profile').hidden = !profile;
@@ -1141,7 +1179,7 @@ byId('profile-form').addEventListener('submit', event => {
         byId('target-weight').focus();
         return;
     }
-    const proposedGoal = event.submitter === byId('review-calorie-goal') ? event.submitter.dataset.goal : null;
+    const proposedGoal = detailedProfile ? renderProfileDetails().proposedGoal : null;
     const saved = detailedProfile ? host.saveProfileDetails(JSON.stringify(draft))
         : host.saveProfile(draft.name, draft.sex, draft.height, String(weight));
     if (!saved) {
@@ -1151,13 +1189,13 @@ byId('profile-form').addEventListener('submit', event => {
     readState();
     renderToday();
     byId('today-title').focus();
-    if (proposedGoal) openCalorieGoal(proposedGoal);
+    if (proposedGoal !== null && proposedGoal !== state.goal) openCalorieGoal(proposedGoal, true);
 });
 if (detailedProfile) {
     byId('profile-form').addEventListener('input', renderProfileDetails);
     byId('postpone-deadline').addEventListener('click', () => {
         const today = dateKey(new Date());
-        const minDays = renderProfileDetails();
+        const minDays = renderProfileDetails().postponeDays;
         const previousDays = daysBetween(today, byId('weight-deadline').value);
         const date = new Date(Date.parse(today) + Math.max(minDays, previousDays + 1) * dayMillis);
         byId('weight-deadline').value = date.toISOString().slice(0, 10);
@@ -1242,7 +1280,11 @@ byId('goal-form').addEventListener('submit', event => {
     byId('goal-dialog').close();
     renderToday();
 });
-function openCalorieGoal(goal) {
+function openCalorieGoal(goal, proposed = false) {
+    byId('goal-title').textContent = proposed ? 'Appliquer l’objectif calculé ?' : 'Objectif quotidien';
+    message('goal-proposal-note', proposed ? 'Ton journal utilise actuellement ' + formatted(state.goal) + ' kcal/j.' : '');
+    byId('goal-cancel').textContent = proposed ? 'Garder l’objectif actuel' : 'Annuler';
+    byId('goal-save').textContent = proposed ? 'Appliquer au journal' : 'Enregistrer';
     byId('goal-input').value = goal;
     message('goal-error', '');
     byId('goal-dialog').showModal();
@@ -1260,6 +1302,7 @@ byId('add').addEventListener('click', () => {
 });
 byId('settings-button').addEventListener('click', () => {
     updateStatus();
+    updateWithingsStatus();
     byId('settings').showModal();
 });
 byId('edit-profile').addEventListener('click', () => { byId('settings').close(); openProfile(); });
@@ -1270,6 +1313,40 @@ byId('check-update').addEventListener('click', () => {
 document.querySelectorAll('.close').forEach(button => {
     button.addEventListener('click', () => button.closest('dialog').close());
 });
+function updateWithingsStatus() {
+    const button = byId('import-withings');
+    if (typeof host?.withingsInfo !== 'function') return;
+    const info = JSON.parse(host.withingsInfo());
+    button.hidden = !info.available;
+    button.disabled = info.status === 'reading';
+    const messages = {
+        reading: 'Lecture des pesées Withings…',
+        denied: 'Autorise NutritionCoach à lire le poids dans Health Connect, puis réessaie.',
+        empty: 'Aucune pesée Withings accessible. Dans Withings, active l’export du poids vers Health Connect.',
+        done: info.added ? info.added + (info.added === 1 ? ' nouvelle pesée importée.' : ' nouvelles pesées importées.')
+            : 'Les pesées Withings sont à jour.',
+        error: 'L’import a échoué. Réessaie après avoir ouvert Health Connect.'
+    };
+    message('withings-status', messages[info.status] || '');
+    if (info.status === 'done') {
+        readState();
+        if (screen === 'profile' && detailedProfile) {
+            renderWithingsProfile();
+            renderProfileDetails();
+        }
+    }
+}
+
+byId('import-withings').addEventListener('click', () => host.importWithings());
+byId('use-withings-weight').addEventListener('click', () => {
+    const latest = withingsMeasurements()[0];
+    if (!latest) return;
+    selectedWithingsId = latest.id;
+    byId('weight').value = String(Math.round(latest.kg * 100) / 100).replace('.', ',');
+    byId('record-weight').checked = false;
+    renderProfileDetails();
+});
+window.addEventListener('nutrition-withings', updateWithingsStatus);
 window.addEventListener('nutrition-update', updateStatus);
 window.nutritionBack = () => {
     const dialog = document.querySelector('dialog[open]');

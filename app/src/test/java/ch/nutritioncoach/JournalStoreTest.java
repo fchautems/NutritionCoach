@@ -2,6 +2,7 @@ package ch.nutritioncoach;
 
 import android.content.SharedPreferences;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -102,6 +103,28 @@ public class JournalStoreTest {
         assertFalse(store.saveProfileDetails(details().put("movement", "unknown").toString(), TODAY));
         assertFalse(store.saveProfileDetails(details().put("deadline", "2026-04-31").toString(), TODAY));
         assertEquals(before, store.read());
+    }
+
+    @Test public void preservesManualHistoryAndDeduplicatesRepeatedWithingsImports() throws Exception {
+        assertTrue(store.saveProfileDetails(details().put("recordWeight", true).toString(), TODAY.minusDays(1)));
+        JSONObject record = new JSONObject().put("id", "first").put("kg", 77.123)
+                .put("time", 1794038400000L).put("day", TODAY.toString())
+                .put("offset", "+01:00").put("source", "com.withings.wiscale2");
+        JSONArray batch = new JSONArray().put(record);
+        assertEquals(1, store.mergeWithings(batch));
+        assertEquals(0, store.mergeWithings(batch));
+        record.put("id", "replacement");
+        assertEquals(0, store.mergeWithings(batch));
+        assertEquals(1, new JSONObject(store.read()).getJSONObject("withingsWeights").length());
+
+        assertTrue(store.saveProfileDetails(details().put("weight", "77.12")
+                .put("withingsId", "replacement").toString(), TODAY));
+        JSONObject after = new JSONObject(store.read());
+        assertEquals(77.12, after.getJSONObject("profile").getDouble("weight"), 0);
+        assertFalse(after.getJSONObject("profile").getJSONObject("weighIns").has(TODAY.toString()));
+        assertEquals(1, after.getJSONObject("profile").getJSONObject("weighIns").length());
+        assertEquals(2175, after.getInt("goal"));
+        assertEquals(new JSONArray(OLD_ENTRIES).toString(), after.getJSONArray("entries").toString());
     }
 
     private JSONObject profile() throws Exception {

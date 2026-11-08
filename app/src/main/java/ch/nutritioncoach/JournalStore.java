@@ -8,7 +8,9 @@ import org.json.JSONObject;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.UUID;
 
 /** Stores the journal outside the replaceable interface. Existing V0.2 entries keep their IDs. */
@@ -16,6 +18,7 @@ final class JournalStore {
     private static final String ENTRIES = "entries_v1";
     private static final String GOAL = "daily_goal_v1";
     private static final String PROFILE = "profile_v1";
+    private static final String WITHINGS = "withings_weights_v1";
     private final SharedPreferences prefs;
 
     JournalStore(SharedPreferences prefs) {
@@ -28,6 +31,7 @@ final class JournalStore {
                 .put("profile", storedProfile == null ? JSONObject.NULL : new JSONObject(storedProfile))
                 .put("goal", prefs.getInt(GOAL, 2000))
                 .put("entries", entries())
+                .put("withingsWeights", withingsWeights())
                 .toString();
     }
 
@@ -78,6 +82,13 @@ final class JournalStore {
             }
             profile.put("birthDate", birthDate).put("movement", movement)
                     .put("sport", sport).put("goalMode", goalMode);
+            String importId = details.optString("withingsId");
+            if (!importId.isEmpty()) {
+                JSONObject imported = withingsWeights().optJSONObject(importId);
+                if (imported != null && Math.round(imported.getDouble("kg") * 100) / 100.0 == weight) {
+                    recordWeight = false;
+                }
+            }
             recordWeight |= details.getBoolean("recordWeight");
         }
         if (recordWeight && (details != null || profile.has("weighIns"))) {
@@ -93,6 +104,42 @@ final class JournalStore {
         }
         profile.put("name", name).put("sex", sex).put("height", height).put("weight", weight);
         return prefs.edit().putString(PROFILE, profile.toString()).commit();
+    }
+
+    int mergeWithings(JSONArray records) throws JSONException {
+        synchronized (prefs) {
+            JSONObject stored = withingsWeights();
+            Map<String, String> byMeasurement = new HashMap<>();
+            for (Iterator<String> ids = stored.keys(); ids.hasNext();) {
+                String id = ids.next();
+                byMeasurement.put(measurementKey(stored.getJSONObject(id)), id);
+            }
+            int added = 0;
+            boolean changed = false;
+            for (int index = 0; index < records.length(); index++) {
+                JSONObject record = records.getJSONObject(index);
+                String id = record.getString("id");
+                String key = measurementKey(record);
+                JSONObject prior = stored.optJSONObject(id);
+                if (prior != null && prior.toString().equals(record.toString())) continue;
+                if (prior != null) byMeasurement.remove(measurementKey(prior));
+                String duplicate = byMeasurement.put(key, id);
+                if (duplicate != null && !id.equals(duplicate)) stored.remove(duplicate);
+                if (prior == null && duplicate == null) added++;
+                stored.put(id, record);
+                changed = true;
+            }
+            if (changed && !prefs.edit().putString(WITHINGS, stored.toString()).commit()) return -1;
+            return added;
+        }
+    }
+
+    private JSONObject withingsWeights() throws JSONException {
+        return new JSONObject(prefs.getString(WITHINGS, "{}"));
+    }
+
+    private static String measurementKey(JSONObject record) throws JSONException {
+        return record.getLong("time") + ":" + record.getDouble("kg");
     }
 
     boolean addEntry(String day, String meal, String food, String amount) throws JSONException {

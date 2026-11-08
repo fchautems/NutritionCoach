@@ -16,7 +16,7 @@ const oldState = {
     ]
 };
 
-function openApp(t, {data = structuredClone(oldState), detailed = true, day = today} = {}) {
+function openApp(t, {data = structuredClone(oldState), detailed = true, day = today, withings = false} = {}) {
     const errors = [];
     const virtualConsole = new VirtualConsole();
     virtualConsole.on('jsdomError', error => errors.push(error));
@@ -46,6 +46,19 @@ function openApp(t, {data = structuredClone(oldState), detailed = true, day = to
                     return true;
                 }
             };
+            if (withings) {
+                window.NutritionHost.withingsInfo = () => JSON.stringify({
+                    available: true, status: data.withingsStatus || 'idle', added: 1
+                });
+                window.NutritionHost.importWithings = () => {
+                    data.withingsStatus = 'done';
+                    data.withingsWeights = {
+                        latest: {id: 'latest', time: Date.UTC(2026, 10, 7, 8), day: today, kg: 76.12},
+                        old: {id: 'old', time: Date.UTC(2026, 9, 24, 8), day: '2026-10-24', kg: 78.12}
+                    };
+                    window.dispatchEvent(new window.Event('nutrition-withings'));
+                };
+            }
             if (detailed) {
                 window.NutritionHost.saveProfileDetails = payload => {
                     const draft = JSON.parse(payload);
@@ -160,6 +173,9 @@ test('compare les rythmes et permet de modifier une échéance serrée ou le poi
 test('garde le journal et le catalogue utilisables avec le pont de la V0.3', t => {
     const app = openApp(t, {detailed: false});
     app.editProfile();
+    app.click('settings-button');
+    assert.equal(app.visible('import-withings'), false);
+    app.field('settings').querySelector('.close').click();
     assert.equal(app.visible('birth-date'), false);
     assert.equal(app.visible('weight-goal-mode'), false);
     app.fill('first-name', 'Camille bis');
@@ -206,19 +222,22 @@ test('la proposition calorique modifie le journal seulement après confirmation'
     assert.match(app.text('calorie-proposal-title'), /2\s050 kcal\/j/);
     assert.match(app.text('calorie-proposal-detail'), /ajustement est limité/);
     app.fill('weight-deadline', today);
-    assert.equal(app.visible('review-calorie-goal'), false);
+    assert.doesNotMatch(app.text('calorie-proposal-title'), /kcal/);
     app.fill('weight-deadline', '');
     app.fill('target-weight', '55');
-    assert.equal(app.visible('review-calorie-goal'), false);
+    assert.doesNotMatch(app.text('calorie-proposal-title'), /kcal/);
     app.fill('target-weight', '73');
-    app.click('review-calorie-goal');
+    app.submit('profile-form');
     assert.equal(app.field('goal-dialog').open, true);
     assert.equal(app.field('goal-input').value, '2300');
+    assert.match(app.text('goal-proposal-note'), /2\s175 kcal\/j/);
+    assert.equal(app.text('goal-save'), 'Appliquer au journal');
+    assert.equal(app.text('goal-cancel'), 'Garder l’objectif actuel');
     assert.equal(data.goal, 2175);
     app.field('goal-dialog').querySelector('.close').click();
     assert.equal(data.goal, 2175);
     app.editProfile();
-    app.click('review-calorie-goal');
+    app.submit('profile-form');
     app.submit('goal-form');
     assert.equal(data.goal, 2300);
     assert.match(app.text('goal-button'), /2\s300 kcal/);
@@ -249,4 +268,23 @@ test('les portions utilisent les valeurs propres à l’état et acceptent une q
     assert.match(app.text('portion-total'), /41 kcal/);
     app.submit('portion-form');
     assert.equal(app.data.entries.at(-1).kcal, 41);
+});
+
+test('importe les pesées, affiche la tendance et propose de reprendre le dernier poids', t => {
+    const data = {...structuredClone(oldState), profile: {...oldState.profile, goalMode: 'maintain',
+        weighIns: {[today]: 76.12}}};
+    const app = openApp(t, {data, withings: true});
+    app.click('settings-button');
+    assert.equal(app.visible('import-withings'), true);
+    app.click('import-withings');
+    assert.match(app.text('withings-status'), /nouvelle pesée importée/);
+    app.click('edit-profile');
+    assert.match(app.text('withings-latest'), /76[.,]12 kg/);
+    assert.match(app.text('observed-pace'), /−1 kg\/semaine/);
+    assert.equal(app.field('weight').value, '78,5');
+    app.click('use-withings-weight');
+    assert.equal(app.field('weight').value, '76,12');
+    app.submit('profile-form');
+    assert.equal(app.data.profile.withingsId, 'latest');
+    assert.equal(app.data.profile.weight, 76.12);
 });

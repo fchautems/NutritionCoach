@@ -2,7 +2,9 @@ package ch.nutritioncoach;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -30,6 +32,7 @@ public final class MainActivity extends Activity {
     private final Handler ui = new Handler(Looper.getMainLooper());
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
 
+    private static final int WITHINGS_PERMISSION = 42;
     private static final String REJECTED_VERSION = "rejected_interface_v1";
 
     private WebView web;
@@ -44,6 +47,10 @@ public final class MainActivity extends Activity {
     private volatile int loadId;
     private volatile String status = "idle";
     private String bundledHtml;
+    private volatile boolean withingsSupported;
+    private volatile String withingsStatus = "idle";
+    private volatile int withingsAdded;
+    private boolean requestingWithings;
 
     @Override
     @SuppressWarnings("deprecation")
@@ -56,6 +63,7 @@ public final class MainActivity extends Activity {
         prefs = getSharedPreferences("nutrition_coach", MODE_PRIVATE);
         journal = new JournalStore(prefs);
         channel = new UiChannel(getFilesDir());
+        withingsSupported = Build.VERSION.SDK_INT >= 34 && WithingsReader.available(this);
         try (InputStream stream = getAssets().open("nutritioncoach.html")) {
             bundledHtml = new String(UiChannel.readLimited(stream, 512 * 1024), StandardCharsets.UTF_8);
         } catch (IOException e) {
@@ -153,6 +161,72 @@ public final class MainActivity extends Activity {
         web.evaluateJavascript("window.dispatchEvent(new Event('nutrition-update'))", null);
     }
 
+    @Override protected void onResume() {
+        super.onResume();
+        if (withingsSupported && hasWeightPermission()) importWithings(false);
+    }
+
+    private boolean hasWeightPermission() {
+        return checkSelfPermission(WithingsReader.WEIGHT) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private boolean supportsHistoryPermission() {
+        try {
+            getPackageManager().getPermissionInfo(WithingsReader.HISTORY, 0);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
+    }
+
+    private void importWithings(boolean interactive) {
+        if (!withingsSupported || isDestroyed() || requestingWithings || "reading".equals(withingsStatus)) return;
+        if (!hasWeightPermission()) {
+            if (!interactive) return;
+            requestingWithings = true;
+            requestPermissions(supportsHistoryPermission()
+                    ? new String[]{WithingsReader.WEIGHT, WithingsReader.HISTORY}
+                    : new String[]{WithingsReader.WEIGHT}, WITHINGS_PERMISSION);
+            return;
+        }
+
+        withingsAdded = 0;
+        setWithingsStatus("reading");
+        boolean history = checkSelfPermission(WithingsReader.HISTORY) == PackageManager.PERMISSION_GRANTED;
+        WithingsReader.read(this, history, getMainExecutor(), records -> {
+            if (isDestroyed()) return;
+            worker.execute(() -> {
+                int added;
+                try {
+                    added = journal.mergeWithings(records);
+                } catch (JSONException e) {
+                    added = -1;
+                }
+                int count = added;
+                ui.post(() -> {
+                    if (isDestroyed()) return;
+                    withingsAdded = Math.max(0, count);
+                    setWithingsStatus(count < 0 ? "error" : records.length() == 0 ? "empty" : "done");
+                });
+            });
+        }, result -> {
+            if (!isDestroyed()) setWithingsStatus(result);
+        });
+    }
+
+    private void setWithingsStatus(String status) {
+        withingsStatus = status;
+        web.evaluateJavascript("window.dispatchEvent(new Event('nutrition-withings'))", null);
+    }
+
+    @Override public void onRequestPermissionsResult(int request, String[] permissions, int[] grants) {
+        super.onRequestPermissionsResult(request, permissions, grants);
+        if (request != WITHINGS_PERMISSION) return;
+        requestingWithings = false;
+        if (hasWeightPermission()) importWithings(false);
+        else setWithingsStatus("denied");
+    }
+
     @Override
     @SuppressWarnings("deprecation")
     public void onBackPressed() {
@@ -214,6 +288,15 @@ public final class MainActivity extends Activity {
 
         @JavascriptInterface public boolean saveGoal(String kcal) {
             return journal.saveGoal(kcal);
+        }
+
+        @JavascriptInterface public String withingsInfo() {
+            return "{\"available\":" + withingsSupported + ",\"status\":" + JSONObject.quote(withingsStatus)
+                    + ",\"added\":" + withingsAdded + "}";
+        }
+
+        @JavascriptInterface public void importWithings() {
+            ui.post(() -> MainActivity.this.importWithings(true));
         }
 
         @JavascriptInterface public void ready(int opening) {

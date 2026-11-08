@@ -4,6 +4,16 @@
 
 **Décision proposée.** Tester d’abord **Withings → Health Connect → NutritionCoach** sur le Pixel. Si une pesée arrive dans Health Connect, faire un import local du poids en lecture seule, à l’ouverture et sur demande. Reconsidérer l’API directe si l’historique exporté ou le délai constaté est insuffisant.
 
+## Pilote Android V0.5
+
+1. Dans **Withings → Profil → Réglages → Exporter les données de santé vers Health Connect**, autorise l’écriture du poids.
+2. Dans **NutritionCoach → Paramètres → Importer les pesées Withings**, accorde la lecture du poids. Accorde aussi l’historique si Android le propose et si tu veux les anciennes pesées disponibles.
+3. Dans **Modifier mon profil**, vérifie la date et le poids de la dernière pesée. **Utiliser cette pesée** renseigne le poids actuel. **Enregistrer** confirme le profil et permet de revoir l’objectif calorique.
+
+Le pilote utilise l’API native d’Android 14 et plus. Après autorisation, il relit les pesées Withings à l’ouverture ou sur demande. Il prend les trente derniers jours, ou tout l’historique accessible quand la permission correspondante est accordée. Les valeurs lues sont copiées localement avec leur date, leur heure et leur provenance. Le profil affiche les trente dernières.
+
+Un second import rapproche les mesures par identifiant et par instant et poids identiques. Une saisie manuelle est conservée séparément. Pour la tendance, une journée compte une fois et une saisie manuelle du jour est prioritaire. Utiliser un poids importé ne crée pas de saisie manuelle supplémentaire. Retirer la permission Health Connect arrête les lectures suivantes. Les copies déjà importées restent dans l’aperçu.
+
 ## Socle au moment de l’étude
 
 [`JournalStore`][store] conserve un poids de profil en kg (`profile_v1.weight`, dans les préférences privées `nutrition_coach`). Il est remplacé à chaque modification, sans date ni historique. [`MainActivity`][activity] expose `NutritionHost.state()` et `saveProfile()` à la WebView. L’[interface 3 publiée][ui] utilise ce même pont. Le [manifeste][manifest] a la permission Internet pour le canal de mise à jour natif. La WebView bloque ses requêtes réseau. Depuis cette étude, la V0.4 conserve aussi des pesées manuelles datées à raison d’une valeur par jour. L’intégration Health Connect demande un APK signé avec la permission native. Pour le pilote, garder l’import et son diagnostic côté Android, puis limiter le pont aux champs nécessaires à l’affichage en conservant la compatibilité.
