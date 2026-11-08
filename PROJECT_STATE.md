@@ -19,6 +19,8 @@ Dernière mise à jour : 2026-11-08
 
 ## Décisions et changements
 
+- 2026-11-08. La conservation du profil, de l’objectif et du journal est un critère de livraison. Utiliser le canal intégré pour les changements d’interface. Si une APK est nécessaire, vérifier l’identifiant, le certificat et le code de version, puis tester l’installation par-dessus la version distribuée avec des données existantes. V0.5 et V0.6 ont le même identifiant d’aperçu et le même certificat. Les deux APK désactivent la sauvegarde Android. Avant toute procédure nécessitant une désinstallation, livrer et vérifier un export et une restauration du profil, de l’objectif et du journal.
+
 - 2026-11-07. Passage du POC à de petites itérations testables. [Spécifications et lots](docs/SPECIFICATIONS.md).
 - Premier lot implémenté : bilan plus visible, journal compact et saisie manuelle dans un dialogue. Les repas par type, les portions et les favoris sont des lots séparés.
 - Variante `preview` avec son propre identifiant Android. La CI construit les aperçus et publie uniquement sur tag afin de conserver les anciens APK.
