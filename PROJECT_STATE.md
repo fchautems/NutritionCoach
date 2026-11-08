@@ -76,10 +76,10 @@ Dernière mise à jour : 2026-11-08
 
 - 2026-11-08. Sur le téléphone cible, l’utilisateur confirme l’affichage des pas NOLATR dans la V0.6 après la synchronisation depuis NOLATR. L’envoi automatique en arrière-plan reste à vérifier.
 
-- 2026-11-08. V0.7 compilée avec le SDK 35. Douze tests JUnit et treize tests DOM passent. Ils couvrent la reprise et la restauration d’un profil ancien et d’un profil détaillé, l’objectif calorique, la conservation du journal, le rejet de sauvegardes invalides et les accès depuis les paramètres et le premier lancement. L’identifiant et la signature de la V0.6 sont conservés. Le sélecteur de fichiers et l’installation par-dessus la V0.6 restent à valider sur téléphone. Le fichier de sauvegarde contient des données personnelles en clair. La sauvegarde Android reste désactivée.
+- 2026-11-08. V0.7 compilée avec le SDK 35. Douze tests JUnit et treize tests DOM passent. Ils couvrent la reprise et la restauration d’un profil ancien et d’un profil détaillé, l’objectif calorique, la conservation du journal, le rejet de sauvegardes invalides et les accès depuis les paramètres et le premier lancement. L’identifiant et la signature de la V0.6 sont conservés. L’utilisateur confirme avoir installé la V0.7 sur téléphone. La conservation effective des données, le sélecteur de fichiers et la restauration restent à vérifier. Le fichier de sauvegarde contient des données personnelles en clair. La sauvegarde Android reste désactivée.
 
 ## Prochaine action
 
-- Installer la V0.7 par-dessus la V0.6. Vérifier le profil et l’objectif, puis créer une sauvegarde dans Téléchargements et vérifier sa restauration depuis les paramètres. Refaire le test de restauration sur une installation de test vierge avant toute désinstallation de l’app utilisée.
+- Sur le téléphone où la V0.7 est installée, vérifier la reprise du profil et de l’objectif, puis créer une sauvegarde dans Téléchargements et vérifier sa restauration depuis les paramètres. Refaire le test de restauration sur une installation de test vierge avant toute désinstallation de l’app utilisée.
 - Après une nouvelle marche, vérifier l’envoi automatique des pas en laissant NOLATR en arrière-plan.
 - Le diagnostic Withings est mis en pause.
