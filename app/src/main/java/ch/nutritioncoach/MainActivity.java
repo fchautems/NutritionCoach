@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.health.connect.HealthConnectManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -33,6 +35,7 @@ public final class MainActivity extends Activity {
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
 
     private static final int WITHINGS_PERMISSION = 42;
+    private static final int STEPS_PERMISSION = 43;
     private static final String REJECTED_VERSION = "rejected_interface_v1";
 
     private WebView web;
@@ -51,6 +54,8 @@ public final class MainActivity extends Activity {
     private volatile String withingsStatus = "idle";
     private volatile int withingsAdded;
     private boolean requestingWithings;
+    private LocalDate stepsPermissionDay;
+    private int stepsReadId;
 
     @Override
     @SuppressWarnings("deprecation")
@@ -164,6 +169,7 @@ public final class MainActivity extends Activity {
     @Override protected void onResume() {
         super.onResume();
         if (withingsSupported && hasWeightPermission()) importWithings(false);
+        web.evaluateJavascript("window.dispatchEvent(new Event('nutrition-resume'))", null);
     }
 
     private boolean hasWeightPermission() {
@@ -219,8 +225,57 @@ public final class MainActivity extends Activity {
         web.evaluateJavascript("window.dispatchEvent(new Event('nutrition-withings'))", null);
     }
 
+    private void readSteps(LocalDate day, boolean interactive) {
+        if (isDestroyed() || stepsPermissionDay != null) return;
+        int readId = ++stepsReadId;
+        LocalDate today = LocalDate.now();
+        if (day.isAfter(today) || day.isBefore(today.minusDays(29))) {
+            publishSteps(day, "out-of-range", null, null);
+            return;
+        }
+        if (Build.VERSION.SDK_INT < 34 || getSystemService(HealthConnectManager.class) == null) {
+            publishSteps(day, "unavailable", null, null);
+            return;
+        }
+        if (!hasStepsPermission()) {
+            publishSteps(day, "denied", null, null);
+            if (interactive) {
+                stepsPermissionDay = day;
+                requestPermissions(new String[]{StepsReader.PERMISSION}, STEPS_PERMISSION);
+            }
+            return;
+        }
+
+        StepsReader.read(getSystemService(HealthConnectManager.class), day, getMainExecutor(),
+                (fit, nolatr) -> {
+                    if (isDestroyed() || readId != stepsReadId) return;
+                    if (hasStepsPermission()) publishSteps(day, "done", fit, nolatr);
+                    else publishSteps(day, "denied", null, null);
+                }, result -> {
+                    if (!isDestroyed() && readId == stepsReadId) publishSteps(day, result, null, null);
+                });
+    }
+
+    private boolean hasStepsPermission() {
+        return checkSelfPermission(StepsReader.PERMISSION) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void publishSteps(LocalDate day, String result, Long fit, Long nolatr) {
+        String payload = "{\"day\":" + JSONObject.quote(day.toString())
+                + ",\"status\":" + JSONObject.quote(result)
+                + ",\"fit\":" + fit + ",\"nolatr\":" + nolatr + "}";
+        web.evaluateJavascript("window.dispatchEvent(new CustomEvent('nutrition-steps', {detail:"
+                + payload + "}))", null);
+    }
+
     @Override public void onRequestPermissionsResult(int request, String[] permissions, int[] grants) {
         super.onRequestPermissionsResult(request, permissions, grants);
+        if (request == STEPS_PERMISSION) {
+            LocalDate day = stepsPermissionDay;
+            stepsPermissionDay = null;
+            if (day != null) readSteps(day, false);
+            return;
+        }
         if (request != WITHINGS_PERMISSION) return;
         requestingWithings = false;
         if (hasWeightPermission()) importWithings(false);
@@ -297,6 +352,16 @@ public final class MainActivity extends Activity {
 
         @JavascriptInterface public void importWithings() {
             ui.post(() -> MainActivity.this.importWithings(true));
+        }
+
+        @JavascriptInterface public void readSteps(String day, boolean interactive) {
+            if (day == null || day.length() != 10) return;
+            try {
+                LocalDate date = LocalDate.parse(day);
+                ui.post(() -> MainActivity.this.readSteps(date, interactive));
+            } catch (DateTimeParseException ignored) {
+                // The bridge only accepts ISO dates from the journal.
+            }
         }
 
         @JavascriptInterface public void ready(int opening) {

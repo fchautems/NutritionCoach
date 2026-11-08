@@ -17,7 +17,7 @@ const oldState = {
 };
 
 function openApp(t, {data = structuredClone(oldState), detailed = true, day = today, withings = false,
-    readWithings} = {}) {
+    readWithings, readSteps} = {}) {
     const errors = [];
     const virtualConsole = new VirtualConsole();
     virtualConsole.on('jsdomError', error => errors.push(error));
@@ -47,6 +47,11 @@ function openApp(t, {data = structuredClone(oldState), detailed = true, day = to
                     return true;
                 }
             };
+            if (readSteps) {
+                window.NutritionHost.readSteps = (day, interactive) => readSteps(day, interactive, result => {
+                    window.dispatchEvent(new window.CustomEvent('nutrition-steps', {detail: {day, ...result}}));
+                });
+            }
             if (withings) {
                 window.NutritionHost.withingsInfo = () => JSON.stringify({
                     available: true, status: data.withingsStatus || 'idle', added: data.withingsAdded ?? 1
@@ -361,4 +366,32 @@ test('affiche les 243 pesées importées par date depuis le diagnostic et le pro
     app.click('profile-withings-history');
     assert.equal(app.field('withings-history').open, true);
     assert.deepEqual(visibleDays(), days.map(record => record.day));
+});
+
+
+test('lit les pas avec autorisation explicite et sépare les deux sources', t => {
+    const calls = [];
+    const app = openApp(t, {readSteps: (day, interactive, reply) => {
+        calls.push({day, interactive});
+        reply(interactive ? {status: 'done', fit: 5432, nolatr: null} : {status: 'denied'});
+    }});
+    assert.deepEqual(calls, [{day: today, interactive: false}]);
+    assert.match(app.text('steps-status'), /Autorise la lecture/);
+    app.click('steps-refresh');
+    assert.deepEqual(calls.at(-1), {day: today, interactive: true});
+    assert.match(app.text('fit-steps'), /^5\s432 pas$/);
+    assert.equal(app.text('nolatr-steps'), 'Aucun pas transmis');
+    assert.equal(app.text('total'), '247 kcal');
+});
+
+test('masque le résultat périmé en changeant de jour et distingue zéro des données absentes', t => {
+    const replies = [];
+    const app = openApp(t, {readSteps: (day, interactive, reply) => replies.push({day, interactive, reply})});
+    app.click('previous');
+    assert.equal(replies[1].day, '2026-11-06');
+    replies[0].reply({status: 'done', fit: 123, nolatr: 456});
+    assert.equal(app.visible('steps-counts'), false);
+    replies[1].reply({status: 'done', fit: 0, nolatr: 1234});
+    assert.equal(app.text('fit-steps'), '0 pas');
+    assert.match(app.text('nolatr-steps'), /^1\s234 pas$/);
 });

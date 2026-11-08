@@ -20,7 +20,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 /** Downloads a complete offline document from the dedicated NutritionCoach release branch. */
 final class UiChannel {
-    static final int BUNDLED_VERSION = 9;
+    static final int BUNDLED_VERSION = 10;
     private static final int MAX_HTML_BYTES = 512 * 1024;
     private static final String CHANNEL =
             "https://raw.githubusercontent.com/fchautems/NutritionCoach/ui-channel/";

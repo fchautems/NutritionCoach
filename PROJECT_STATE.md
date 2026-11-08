@@ -39,6 +39,8 @@ Dernière mise à jour : 2026-11-08
 - 2026-11-08. Interface 6. Un seul bouton enregistre le profil. Si une cible calculée diffère de celle du journal, la confirmation affiche les deux valeurs et propose d’appliquer ou de garder l’objectif actuel.
 - 2026-11-08. Aperçu Android V0.5. Import local en lecture seule du poids Withings via Health Connect sur Android 14 et plus, à l’ouverture après autorisation et sur demande. L’utilisateur choisit si la dernière pesée doit servir de poids actuel. La tendance rassemble les pesées importées et manuelles.
 
+- 2026-11-08. Aperçu V0.6, interface 10 embarquée. Le journal lit les pas quotidiens des 30 derniers jours via Santé Connect sur Android 14 et plus, avec une autorisation de lecture dédiée. Google Fit et NOLATR sont lus séparément pour vérifier leurs transmissions sans additionner deux compteurs potentiellement superposés. Aucun pas n’est copié dans le journal local. Une nouvelle APK est nécessaire pour déclarer la permission.
+
 ## Contrôles et limites
 
 - La V0.1 est signée avec une clé debug générée par le runner CI. Une nouvelle APK signée avec une autre clé ne peut pas la remplacer en conservant son journal.
@@ -68,6 +70,9 @@ Dernière mise à jour : 2026-11-08
 
 - 2026-11-08. L’interface 9 n’est pas apparue sur le Pixel au premier essai. Le manifeste et le fichier HTML ont été téléchargés en HTTP 200, sans redirection, depuis l’URL utilisée par l’APK. Le protocole 1 et l’empreinte SHA-256 concordent. Une capture du Pixel confirme ensuite que l’interface 9 est active et que la vérification indique que l’interface est à jour. Le message d’import indique toujours qu’aucune nouvelle pesée Withings n’a été trouvée.
 
+- 2026-11-08. V0.6 compilée localement avec le SDK 35. Dix tests JUnit et onze tests DOM réussis. L’APK d’aperçu conserve l’identifiant Android et le certificat de la V0.5. Les tests DOM simulent l’autorisation, des réponses distinctes pour Fit et NOLATR, l’absence de transmission et le changement de jour. L’app NOLATR pour Android est identifiée, mais son export des pas vers Santé Connect reste inconnu. [Fiche NOLATR](https://play.google.com/store/apps/details?id=com.nolatr.ring) · [Synchronisation Fit](https://support.google.com/fit/answer/12830119?hl=fr) · [Lecture des pas](https://developer.android.com/health-and-fitness/health-connect/features/steps)
+
 ## Prochaine action
 
-- Tester une pesée prise après la reconnexion, d’abord dans Withings puis dans Santé Connect, pour distinguer l’envoi des nouvelles mesures du rattrapage de l’historique. Vérifier aussi la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).
+- Installer l’aperçu V0.6 sur l’Android de la personne qui porte le bracelet. Dans le journal, ouvrir « Pas », autoriser la lecture puis actualiser après la synchronisation habituelle du bracelet. Vérifier le compteur NOLATR séparément de Fit. Un compteur Fit seul valide uniquement la présence de données Fit.
+- Le diagnostic Withings est mis en pause.
