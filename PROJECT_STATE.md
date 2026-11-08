@@ -19,6 +19,9 @@ Dernière mise à jour : 2026-11-08
 
 ## Décisions et changements
 
+- 2026-11-08. Activation de la tâche horaire d’amélioration. Chaque passage reprend la branche par défaut, vérifie les PR et le canal diffusé, puis propose les changements vérifiés sur une branche `auto/nutritioncoach-*` via une PR. La fusion et la diffusion suivent le flux de coordination.
+- 2026-11-08. Après avoir choisi un repas, « Aliments récents » propose jusqu’à trois aliments distincts reconnus dans le journal, par ordre d’ajout. Chaque raccourci reprend l’état de pesée et la dernière portion, modifiables avant validation. La reconnaissance utilise le libellé du catalogue et les kcal enregistrées. Les anciens formats et les saisies libres sans correspondance restent visibles dans le journal. Le pont, le stockage et les valeurs OSAV restent identiques.
+
 - 2026-11-08. La conservation du profil, de l’objectif et du journal est un critère de livraison. Utiliser le canal intégré pour les changements d’interface. Si une APK est nécessaire, vérifier l’identifiant, le certificat et le code de version, puis tester l’installation par-dessus la version distribuée avec des données existantes. V0.5 et V0.6 ont le même identifiant d’aperçu et le même certificat. Les deux APK désactivent la sauvegarde Android. Avant toute procédure nécessitant une désinstallation, livrer et vérifier un export et une restauration du profil, de l’objectif et du journal.
 
 - 2026-11-07. Passage du POC à de petites itérations testables. [Spécifications et lots](docs/SPECIFICATIONS.md).
@@ -42,6 +45,8 @@ Dernière mise à jour : 2026-11-08
 - 2026-11-08. Aperçu Android V0.5. Import local en lecture seule du poids Withings via Health Connect sur Android 14 et plus, à l’ouverture après autorisation et sur demande. L’utilisateur choisit si la dernière pesée doit servir de poids actuel. La tendance rassemble les pesées importées et manuelles.
 
 ## Contrôles et limites
+
+- 2026-11-08. Le manifeste HTTPS du canal indique l’interface 9, protocole 1. Le SHA-256 du HTML correspond au manifeste et les octets correspondent à l’interface de départ sur `main`. Dix tests DOM passent avec les récents, dont un test sur le pont V0.3 qui vérifie le tri, la déduplication, l’état cuit, l’annulation, l’ajout et la suppression. Un contrôle hors ligne avec pont simulé valide le passage interface 9 → candidate → 9 avec le même profil, objectif et historique. L’application locale du changement sur la branche de la PR #6 réussit avec ses 14 tests DOM, y compris les pas et la sauvegarde. Le rendu et le toucher restent à vérifier sur le Pixel. Les tests Android Gradle relèvent de la CI, le SDK étant absent de cet environnement.
 
 - La V0.1 est signée avec une clé debug générée par le runner CI. Une nouvelle APK signée avec une autre clé ne peut pas la remplacer en conservant son journal.
 - Les 2 tests unitaires du calcul quotidien passent. APK d’aperçu compilée localement avec le SDK Android 35, archive et signature vérifiées. Identifiant vérifié : `ch.nutritioncoach.preview`.
@@ -72,4 +77,5 @@ Dernière mise à jour : 2026-11-08
 
 ## Prochaine action
 
-- Tester une pesée prise après la reconnexion, d’abord dans Withings puis dans Santé Connect, pour distinguer l’envoi des nouvelles mesures du rattrapage de l’historique. Vérifier aussi la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).
+- Après intégration, préparer une livraison de canal qui conserve les écrans des préversions Android retenues (#5 et #6). Pour atteindre les APK V0.6 et V0.7 existantes, choisir un numéro de canal supérieur aux versions embarquées 10 et 11 ainsi qu’à la version diffusée au moment de publier. Sur le Pixel, ouvrir un repas, reprendre une portion cuite récente, l’ajuster et confirmer que le profil et le journal sont toujours accessibles hors ligne.
+- Withings en pause. À la reprise, tester une pesée prise après la reconnexion, d’abord dans Withings puis dans Santé Connect, et vérifier la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).
