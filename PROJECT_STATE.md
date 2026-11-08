@@ -64,7 +64,7 @@ Dernière mise à jour : 2026-11-08
 
 - 2026-11-08. Sur le Pixel, le diagnostic de l’interface 8 indique que Santé Connect renvoie des pesées Withings sans nouvel ajout. L’historique local contient 243 mesures et s’arrête au 1er février 2026. Une pesée du 7 novembre est visible dans Withings. La présence de cette pesée dans Santé Connect et l’attribution des mesures importées à un profil restent à vérifier.
 
-- 2026-11-08. L’interface 9 permet d’ouvrir la liste complète des pesées Withings importées depuis le profil et le diagnostic, de la plus récente à la plus ancienne. Neuf tests d’interface passent, dont l’affichage et le tri de 243 pesées reçues dans le désordre.
+- 2026-11-08. L’interface 9 permet d’ouvrir la liste complète des pesées Withings importées depuis le profil et le diagnostic, de la plus récente à la plus ancienne. Neuf tests d’interface passent, dont l’affichage et le tri de 243 pesées reçues dans le désordre. Une capture du Pixel confirme que la liste complète s’ouvre et que la première ligne reste le 1er février 2026, avec 243 pesées enregistrées.
 
 - 2026-11-08. L’interface 9 n’est pas apparue sur le Pixel au premier essai. Le manifeste et le fichier HTML ont été téléchargés en HTTP 200, sans redirection, depuis l’URL utilisée par l’APK. Le protocole 1 et l’empreinte SHA-256 concordent. Une capture du Pixel confirme ensuite que l’interface 9 est active et que la vérification indique que l’interface est à jour. Le message d’import indique toujours qu’aucune nouvelle pesée Withings n’a été trouvée.
 
