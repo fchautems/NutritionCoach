@@ -3,6 +3,7 @@ package ch.nutritioncoach;
 import android.content.SharedPreferences;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,6 +63,42 @@ public class JournalStoreTest {
         assertFalse(profile.has("weighIns"));
         assertEquals(2175, after.getInt("goal"));
         assertEquals(before.getJSONArray("entries").toString(), after.getJSONArray("entries").toString());
+    }
+
+    @Test public void restoresAnExistingProfileAndGoalWithoutOverwritingJournal() throws Exception {
+        String original = store.exportProfile();
+        assertTrue(store.saveProfileDetails(details().put("recordWeight", true).toString(), TODAY));
+        JSONObject detailed = profile();
+        String backup = new JournalStore(prefs).exportProfile();
+
+        assertTrue(store.saveGoal("1800"));
+        values.remove("profile_v1");
+        JournalStore reopened = new JournalStore(prefs);
+        assertTrue(reopened.restoreProfile(JournalStore.validateProfileBackup(backup)));
+        assertTrue(detailed.similar(profile()));
+        JSONObject state = new JSONObject(reopened.read());
+        assertEquals(2175, state.getInt("goal"));
+        assertTrue(new JSONArray(OLD_ENTRIES).similar(state.getJSONArray("entries")));
+
+        assertTrue(reopened.restoreProfile(JournalStore.validateProfileBackup(original)));
+        assertTrue(new JSONObject(OLD_PROFILE).similar(profile()));
+    }
+
+    @Test public void rejectsUnsupportedOrMalformedBackupsBeforeRestoring() throws Exception {
+        String before = store.read();
+        JSONObject backup = new JSONObject(store.exportProfile());
+        String unsupported = new JSONObject(backup.toString()).put("version", 2).toString();
+        String badGoal = new JSONObject(backup.toString()).put("goal", 150).toString();
+        backup.getJSONObject("profile").put("weight", "not a weight");
+
+        for (String invalid : new String[]{"{", unsupported, badGoal, backup.toString()}) {
+            try {
+                store.restoreProfile(JournalStore.validateProfileBackup(invalid));
+                fail("Invalid backup was accepted");
+            } catch (JSONException expected) {
+                assertEquals(before, store.read());
+            }
+        }
     }
 
     @Test public void tracksOneWeighInPerDayAndAllowsAnUnchangedMeasurement() throws Exception {

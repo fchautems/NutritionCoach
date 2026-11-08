@@ -305,6 +305,7 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
         <p class="eyebrow spaced">PREMIER PAS</p>
         <h1 id="profile-title" tabindex="-1">Ton profil</h1>
         <p class="intro">Renseigne tes infos pour ouvrir ton journal.</p>
+        <button id="restore-first-profile" class="link-button spaced" type="button" hidden>Restaurer un profil sauvegardé</button>
         <form id="profile-form">
           <div class="card panel">
             <label for="first-name">Prénom</label>
@@ -512,6 +513,14 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
             <span class="row-icon"><svg aria-hidden="true"><use href="#nav-person"/></svg></span>
             <span>Modifier mon profil</span><span class="arrow" aria-hidden="true">›</span>
         </button>
+        <button id="export-profile" class="settings-row" type="button" hidden>
+            <span class="row-icon"><svg aria-hidden="true"><use href="#nav-person"/></svg></span>
+            <span>Sauvegarder mon profil</span><span class="arrow" aria-hidden="true">›</span>
+        </button>
+        <button id="restore-profile" class="settings-row" type="button" hidden>
+            <span class="row-icon"><svg aria-hidden="true"><use href="#nav-person"/></svg></span>
+            <span>Restaurer un profil</span><span class="arrow" aria-hidden="true">›</span>
+        </button>
         <button id="check-update" class="settings-row" type="button">
             <span class="row-icon"><svg aria-hidden="true"><use href="#nav-update"/></svg></span>
             <span id="update-label">Vérifier les mises à jour</span><span class="arrow" aria-hidden="true">›</span>
@@ -599,6 +608,7 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
 'use strict';
 const host = window.NutritionHost;
 const stepsBridge = typeof host?.readSteps === 'function';
+const profileBackupBridge = typeof host?.profileBackup === 'function';
 const detailedProfile = host && typeof host.saveProfileDetails === 'function';
 const byId = id => document.getElementById(id);
 const meals = [
@@ -1225,6 +1235,7 @@ function openProfile() {
         renderProfileDetails();
     }
     byId('cancel-profile').hidden = !profile;
+    byId('restore-first-profile').hidden = !profileBackupBridge || !!profile;
     byId('profile').querySelector('.eyebrow').hidden = !!profile;
     byId('profile').querySelector('.intro').hidden = !!profile;
     message('profile-error', '');
@@ -1404,6 +1415,18 @@ byId('settings-button').addEventListener('click', () => {
     byId('settings').showModal();
 });
 byId('edit-profile').addEventListener('click', () => { byId('settings').close(); openProfile(); });
+if (profileBackupBridge) {
+    byId('export-profile').hidden = false;
+    byId('restore-profile').hidden = false;
+    byId('export-profile').addEventListener('click', () => host.profileBackup(false));
+    byId('restore-profile').addEventListener('click', () => host.profileBackup(true));
+    byId('restore-first-profile').addEventListener('click', () => host.profileBackup(true));
+    window.addEventListener('nutrition-profile-restored', () => {
+        if (byId('settings').open) byId('settings').close();
+        readState();
+        renderToday();
+    });
+}
 byId('check-update').addEventListener('click', () => {
     if (byId('check-update').dataset.action === 'apply') host.applyUpdate();
     else host.checkUpdate();

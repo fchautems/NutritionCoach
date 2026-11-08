@@ -17,7 +17,7 @@ const oldState = {
 };
 
 function openApp(t, {data = structuredClone(oldState), detailed = true, day = today, withings = false,
-    readWithings, readSteps} = {}) {
+    readWithings, readSteps, profileBackup} = {}) {
     const errors = [];
     const virtualConsole = new VirtualConsole();
     virtualConsole.on('jsdomError', error => errors.push(error));
@@ -47,6 +47,7 @@ function openApp(t, {data = structuredClone(oldState), detailed = true, day = to
                     return true;
                 }
             };
+            if (profileBackup) window.NutritionHost.profileBackup = profileBackup;
             if (readSteps) {
                 window.NutritionHost.readSteps = (day, interactive) => readSteps(day, interactive, result => {
                     window.dispatchEvent(new window.CustomEvent('nutrition-steps', {detail: {day, ...result}}));
@@ -145,6 +146,31 @@ test('reprend le profil, le journal et l’objectif, puis persiste la date de na
     assert.equal(reopened.field('birth-date').value, '1988-11-07');
     assert.equal(reopened.field('weight-goal-mode').value, 'maintain');
     assert.match(reopened.text('energy-goal'), /2\s230 kcal\/j/);
+});
+
+test('ouvre la sauvegarde et la restauration du profil depuis les paramètres', t => {
+    const actions = [];
+    const app = openApp(t, {profileBackup: restore => actions.push(restore)});
+    app.click('settings-button');
+    assert.equal(app.visible('export-profile'), true);
+    app.click('export-profile');
+    app.click('restore-profile');
+    assert.deepEqual(actions, [false, true]);
+});
+
+test('restaure un profil dès le premier lancement et ouvre le journal', t => {
+    const data = {...structuredClone(oldState), profile: null, goal: 2000};
+    const actions = [];
+    const app = openApp(t, {data, profileBackup: restore => actions.push(restore)});
+    assert.equal(app.visible('restore-first-profile'), true);
+    app.click('restore-first-profile');
+    assert.deepEqual(actions, [true]);
+
+    data.profile = structuredClone(oldState.profile);
+    data.goal = oldState.goal;
+    app.document.defaultView.dispatchEvent(new app.document.defaultView.Event('nutrition-profile-restored'));
+    assert.equal(app.visible('today'), true);
+    assert.match(app.text('goal-button'), /2\s175 kcal/);
 });
 
 test('compare les rythmes et permet de modifier une échéance serrée ou le poids cible', t => {
