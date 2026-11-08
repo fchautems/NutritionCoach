@@ -1,8 +1,11 @@
 package ch.nutritioncoach;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -11,8 +14,10 @@ import android.health.connect.HealthConnectManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceRequest;
@@ -181,11 +186,15 @@ public final class MainActivity extends Activity {
         web.evaluateJavascript("window.dispatchEvent(new Event('nutrition-resume'))", null);
     }
 
-    private void chooseProfileBackup(boolean restore) {
+    private void startProfileBackup(boolean restore) {
         if (isDestroyed()) return;
+        if (!restore && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            worker.execute(() -> exportProfile(null));
+            return;
+        }
         Intent picker = new Intent(restore ? Intent.ACTION_OPEN_DOCUMENT : Intent.ACTION_CREATE_DOCUMENT)
                 .addCategory(Intent.CATEGORY_OPENABLE).setType(restore ? "*/*" : "application/json");
-        if (!restore) picker.putExtra(Intent.EXTRA_TITLE, "NutritionCoach-profil-" + LocalDate.now() + ".json");
+        if (!restore) picker.putExtra(Intent.EXTRA_TITLE, profileBackupName());
         try {
             startActivityForResult(picker, restore ? RESTORE_PROFILE : EXPORT_PROFILE);
         } catch (ActivityNotFoundException e) {
@@ -204,14 +213,59 @@ public final class MainActivity extends Activity {
     private void exportProfile(Uri file) {
         try {
             byte[] backup = journal.exportProfile().getBytes(StandardCharsets.UTF_8);
-            try (OutputStream stream = getContentResolver().openOutputStream(file, "wt")) {
-                if (stream == null) throw new IOException("Cannot open backup for writing");
-                stream.write(backup);
+            String message;
+            if (file == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                saveProfileToDownloads(backup);
+                message = "Profil sauvegardé dans Téléchargements.";
+            } else {
+                writeProfileBackup(file, backup);
+                message = "Sauvegarde du profil enregistrée.";
             }
-            ui.post(() -> backupMessage("Sauvegarde du profil enregistrée."));
-        } catch (IOException | JSONException | SecurityException e) {
+            ui.post(() -> backupMessage(message));
+        } catch (IOException | JSONException | IllegalArgumentException | SecurityException e) {
             ui.post(() -> backupMessage("La sauvegarde du profil a échoué."));
         }
+    }
+
+    @TargetApi(Build.VERSION_CODES.Q)
+    private void saveProfileToDownloads(byte[] backup) throws IOException {
+        ContentResolver resolver = getContentResolver();
+        ContentValues file = new ContentValues();
+        file.put(MediaStore.Downloads.DISPLAY_NAME, profileBackupName());
+        file.put(MediaStore.Downloads.MIME_TYPE, "application/json");
+        file.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+        file.put(MediaStore.Downloads.IS_PENDING, 1);
+        Uri downloads = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+        Uri destination = resolver.insert(downloads, file);
+        if (destination == null) throw new IOException("Cannot create profile backup");
+
+        boolean published = false;
+        try {
+            writeProfileBackup(destination, backup);
+            ContentValues complete = new ContentValues();
+            complete.put(MediaStore.Downloads.IS_PENDING, 0);
+            published = resolver.update(destination, complete, null, null) == 1;
+            if (!published) throw new IOException("Cannot publish profile backup");
+        } finally {
+            if (!published) {
+                try {
+                    resolver.delete(destination, null, null);
+                } catch (IllegalArgumentException | SecurityException ignored) {
+                    // An incomplete backup remains pending if the provider refuses cleanup.
+                }
+            }
+        }
+    }
+
+    private void writeProfileBackup(Uri file, byte[] backup) throws IOException {
+        try (OutputStream stream = getContentResolver().openOutputStream(file, "wt")) {
+            if (stream == null) throw new IOException("Cannot open backup for writing");
+            stream.write(backup);
+        }
+    }
+
+    private static String profileBackupName() {
+        return "NutritionCoach-profil-" + LocalDate.now() + ".json";
     }
 
     private void readProfileBackup(Uri file) {
@@ -429,7 +483,7 @@ public final class MainActivity extends Activity {
         }
 
         @JavascriptInterface public void profileBackup(boolean restore) {
-            ui.post(() -> chooseProfileBackup(restore));
+            ui.post(() -> startProfileBackup(restore));
         }
 
         @JavascriptInterface public String withingsInfo() {

@@ -78,8 +78,11 @@ Dernière mise à jour : 2026-11-08
 
 - 2026-11-08. V0.7 compilée avec le SDK 35. Douze tests JUnit et treize tests DOM passent. Ils couvrent la reprise et la restauration d’un profil ancien et d’un profil détaillé, l’objectif calorique, la conservation du journal, le rejet de sauvegardes invalides et les accès depuis les paramètres et le premier lancement. L’identifiant et la signature de la V0.6 sont conservés. L’utilisateur confirme avoir installé la V0.7 sur téléphone. La conservation effective des données, le sélecteur de fichiers et la restauration restent à vérifier. Le fichier de sauvegarde contient des données personnelles en clair. La sauvegarde Android reste désactivée.
 
+- 2026-11-08. Pour la prochaine version native, « Sauvegarder mon profil » crée directement un fichier JSON daté dans Téléchargements sur Android 10 ou plus. La confirmation s’affiche après la publication du fichier complet. Le sélecteur reste disponible pour la restauration et pour la sauvegarde sur Android 8 et 9. Compilation SDK 35 et 25 tests locaux réussis. L’écriture dans Téléchargements reste à vérifier sur téléphone. Le changement sera regroupé dans le prochain APK nécessaire.
+
 ## Prochaine action
 
+- Au prochain APK nécessaire, vérifier la sauvegarde en un appui et la restauration depuis Téléchargements sur Android récent.
 - Sur le téléphone où la V0.7 est installée, vérifier la reprise du profil et de l’objectif, puis créer une sauvegarde dans Téléchargements et vérifier sa restauration depuis les paramètres. Refaire le test de restauration sur une installation de test vierge avant toute désinstallation de l’app utilisée.
 - Après une nouvelle marche, vérifier l’envoi automatique des pas en laissant NOLATR en arrière-plan.
 - Le diagnostic Withings est mis en pause.
