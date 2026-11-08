@@ -58,6 +58,8 @@ Dernière mise à jour : 2026-11-08
 
 - 2026-11-08. Le pilote sur Pixel importe un historique ancien, mais des pesées plus récentes manquent. L’interface 7 distingue la dernière pesée importée de la dernière pesée enregistrée dans Withings. Les sept tests d’interface passent, y compris le tri d’un historique reçu dans le désordre.
 
+- 2026-11-08. Le lecteur Android a été testé avec Santé Connect simulé et un historique réparti sur plusieurs pages. Une pesée récente de source Withings est lue avec ou sans l’autorisation d’historique. Une pesée récente d’une autre source est exclue par le filtre prévu. Il reste à identifier les données écrites sur le Pixel, auxquelles le test n’a pas accès.
+
 ## Prochaine action
 
 - Vérifier si une pesée récente apparaît dans Health Connect sous la source Withings avant de modifier le filtre d’import. Vérifier aussi la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).
