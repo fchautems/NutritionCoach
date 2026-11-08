@@ -41,6 +41,8 @@ Dernière mise à jour : 2026-11-08
 
 - 2026-11-08. Aperçu V0.6, interface 10 embarquée. Le journal lit les pas quotidiens des 30 derniers jours via Santé Connect sur Android 14 et plus, avec une autorisation de lecture dédiée. Google Fit et NOLATR sont lus séparément pour vérifier leurs transmissions sans additionner deux compteurs potentiellement superposés. Aucun pas n’est copié dans le journal local. Une nouvelle APK est nécessaire pour déclarer la permission.
 
+- 2026-11-08. Aperçu V0.7, interface 11 embarquée. Le profil Android historique conserve son stockage privé, séparé de l’interface remplaçable. Les paramètres proposent une sauvegarde JSON du profil, de l’objectif calorique et des pesées manuelles. La restauration, disponible aussi au premier lancement, valide le fichier avant confirmation. Les mises à jour d’interface passent par le canal intégré. L’accès aux fichiers de sauvegarde utilise le sélecteur Android et nécessite la V0.7.
+
 ## Contrôles et limites
 
 - La V0.1 est signée avec une clé debug générée par le runner CI. Une nouvelle APK signée avec une autre clé ne peut pas la remplacer en conservant son journal.
@@ -72,7 +74,12 @@ Dernière mise à jour : 2026-11-08
 
 - 2026-11-08. V0.6 compilée localement avec le SDK 35. Dix tests JUnit et onze tests DOM réussis. L’APK d’aperçu conserve l’identifiant Android et le certificat de la V0.5. Les tests DOM simulent l’autorisation, des réponses distinctes pour Fit et NOLATR, l’absence de transmission et le changement de jour. L’app NOLATR pour Android est identifiée, mais son export des pas vers Santé Connect reste inconnu. [Fiche NOLATR](https://play.google.com/store/apps/details?id=com.nolatr.ring) · [Synchronisation Fit](https://support.google.com/fit/answer/12830119?hl=fr) · [Lecture des pas](https://developer.android.com/health-and-fitness/health-connect/features/steps)
 
+- 2026-11-08. Sur le téléphone cible, l’utilisateur confirme l’affichage des pas NOLATR dans la V0.6 après la synchronisation depuis NOLATR. L’envoi automatique en arrière-plan reste à vérifier.
+
+- 2026-11-08. V0.7 compilée avec le SDK 35. Douze tests JUnit et treize tests DOM passent. Ils couvrent la reprise et la restauration d’un profil ancien et d’un profil détaillé, l’objectif calorique, la conservation du journal, le rejet de sauvegardes invalides et les accès depuis les paramètres et le premier lancement. L’identifiant et la signature de la V0.6 sont conservés. Le sélecteur de fichiers et l’installation par-dessus la V0.6 restent à valider sur téléphone. Le fichier de sauvegarde contient des données personnelles en clair. La sauvegarde Android reste désactivée.
+
 ## Prochaine action
 
-- Installer l’aperçu V0.6 sur l’Android de la personne qui porte le bracelet. Dans le journal, ouvrir « Pas », autoriser la lecture puis actualiser après la synchronisation habituelle du bracelet. Vérifier le compteur NOLATR séparément de Fit. Un compteur Fit seul valide uniquement la présence de données Fit.
+- Installer la V0.7 par-dessus la V0.6. Vérifier le profil et l’objectif, puis créer une sauvegarde dans Téléchargements et vérifier sa restauration depuis les paramètres. Refaire le test de restauration sur une installation de test vierge avant toute désinstallation de l’app utilisée.
+- Après une nouvelle marche, vérifier l’envoi automatique des pas en laissant NOLATR en arrière-plan.
 - Le diagnostic Withings est mis en pause.

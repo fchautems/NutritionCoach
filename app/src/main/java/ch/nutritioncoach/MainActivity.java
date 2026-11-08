@@ -1,10 +1,14 @@
 package ch.nutritioncoach;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.health.connect.HealthConnectManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -15,6 +19,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,6 +27,7 @@ import org.json.JSONObject;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -36,6 +42,9 @@ public final class MainActivity extends Activity {
 
     private static final int WITHINGS_PERMISSION = 42;
     private static final int STEPS_PERMISSION = 43;
+    private static final int EXPORT_PROFILE = 44;
+    private static final int RESTORE_PROFILE = 45;
+    private static final int MAX_PROFILE_BACKUP_BYTES = 64 * 1024;
     private static final String REJECTED_VERSION = "rejected_interface_v1";
 
     private WebView web;
@@ -170,6 +179,80 @@ public final class MainActivity extends Activity {
         super.onResume();
         if (withingsSupported && hasWeightPermission()) importWithings(false);
         web.evaluateJavascript("window.dispatchEvent(new Event('nutrition-resume'))", null);
+    }
+
+    private void chooseProfileBackup(boolean restore) {
+        if (isDestroyed()) return;
+        Intent picker = new Intent(restore ? Intent.ACTION_OPEN_DOCUMENT : Intent.ACTION_CREATE_DOCUMENT)
+                .addCategory(Intent.CATEGORY_OPENABLE).setType(restore ? "*/*" : "application/json");
+        if (!restore) picker.putExtra(Intent.EXTRA_TITLE, "NutritionCoach-profil-" + LocalDate.now() + ".json");
+        try {
+            startActivityForResult(picker, restore ? RESTORE_PROFILE : EXPORT_PROFILE);
+        } catch (ActivityNotFoundException e) {
+            backupMessage("Le sélecteur de fichiers Android est indisponible.");
+        }
+    }
+
+    @Override protected void onActivityResult(int request, int result, Intent data) {
+        super.onActivityResult(request, result, data);
+        if (result != RESULT_OK || data == null || data.getData() == null) return;
+        Uri file = data.getData();
+        if (request == EXPORT_PROFILE) worker.execute(() -> exportProfile(file));
+        if (request == RESTORE_PROFILE) worker.execute(() -> readProfileBackup(file));
+    }
+
+    private void exportProfile(Uri file) {
+        try {
+            byte[] backup = journal.exportProfile().getBytes(StandardCharsets.UTF_8);
+            try (OutputStream stream = getContentResolver().openOutputStream(file, "wt")) {
+                if (stream == null) throw new IOException("Cannot open backup for writing");
+                stream.write(backup);
+            }
+            ui.post(() -> backupMessage("Sauvegarde du profil enregistrée."));
+        } catch (IOException | JSONException | SecurityException e) {
+            ui.post(() -> backupMessage("La sauvegarde du profil a échoué."));
+        }
+    }
+
+    private void readProfileBackup(Uri file) {
+        try (InputStream stream = getContentResolver().openInputStream(file)) {
+            if (stream == null) throw new IOException("Cannot open backup for reading");
+            byte[] bytes = UiChannel.readLimited(stream, MAX_PROFILE_BACKUP_BYTES);
+            JSONObject backup = JournalStore.validateProfileBackup(new String(bytes, StandardCharsets.UTF_8));
+            ui.post(() -> confirmProfileRestore(backup));
+        } catch (IOException | JSONException | SecurityException e) {
+            ui.post(() -> backupMessage("Ce fichier n’est pas une sauvegarde de profil lisible."));
+        }
+    }
+
+    private void confirmProfileRestore(JSONObject backup) {
+        if (isDestroyed() || isFinishing()) return;
+        new AlertDialog.Builder(this)
+                .setTitle("Restaurer le profil ?")
+                .setMessage("Le fichier remplacera le profil et l’objectif calorique de ce téléphone.")
+                .setNegativeButton("Annuler", null)
+                .setPositiveButton("Restaurer", (dialog, action) -> worker.execute(() -> restoreProfile(backup)))
+                .show();
+    }
+
+    private void restoreProfile(JSONObject backup) {
+        try {
+            if (journal.restoreProfile(backup)) {
+                ui.post(() -> {
+                    if (isDestroyed()) return;
+                    web.evaluateJavascript("window.dispatchEvent(new Event('nutrition-profile-restored'))", null);
+                    backupMessage("Profil restauré.");
+                });
+                return;
+            }
+        } catch (JSONException ignored) {
+            // An unreadable backup leaves the current profile in place.
+        }
+        ui.post(() -> backupMessage("Le profil n’a pas pu être restauré."));
+    }
+
+    private void backupMessage(String message) {
+        if (!isDestroyed()) Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
     private boolean hasWeightPermission() {
@@ -343,6 +426,10 @@ public final class MainActivity extends Activity {
 
         @JavascriptInterface public boolean saveGoal(String kcal) {
             return journal.saveGoal(kcal);
+        }
+
+        @JavascriptInterface public void profileBackup(boolean restore) {
+            ui.post(() -> chooseProfileBackup(restore));
         }
 
         @JavascriptInterface public String withingsInfo() {

@@ -19,6 +19,8 @@ final class JournalStore {
     private static final String GOAL = "daily_goal_v1";
     private static final String PROFILE = "profile_v1";
     private static final String WITHINGS = "withings_weights_v1";
+    private static final String BACKUP_FORMAT = "nutritioncoach-profile";
+    private static final int BACKUP_VERSION = 1;
     private final SharedPreferences prefs;
 
     JournalStore(SharedPreferences prefs) {
@@ -26,13 +28,68 @@ final class JournalStore {
     }
 
     String read() throws JSONException {
-        String storedProfile = prefs.getString(PROFILE, null);
-        return new JSONObject()
-                .put("profile", storedProfile == null ? JSONObject.NULL : new JSONObject(storedProfile))
-                .put("goal", prefs.getInt(GOAL, 2000))
-                .put("entries", entries())
-                .put("withingsWeights", withingsWeights())
-                .toString();
+        synchronized (prefs) {
+            String storedProfile = prefs.getString(PROFILE, null);
+            return new JSONObject()
+                    .put("profile", storedProfile == null ? JSONObject.NULL : new JSONObject(storedProfile))
+                    .put("goal", prefs.getInt(GOAL, 2000))
+                    .put("entries", entries())
+                    .put("withingsWeights", withingsWeights())
+                    .toString();
+        }
+    }
+
+    String exportProfile() throws JSONException {
+        synchronized (prefs) {
+            String storedProfile = prefs.getString(PROFILE, null);
+            if (storedProfile == null) throw new JSONException("No profile to export");
+            return new JSONObject().put("format", BACKUP_FORMAT).put("version", BACKUP_VERSION)
+                    .put("profile", new JSONObject(storedProfile))
+                    .put("goal", prefs.getInt(GOAL, 2000)).toString(2);
+        }
+    }
+
+    static JSONObject validateProfileBackup(String contents) throws JSONException {
+        JSONObject backup = new JSONObject(contents);
+        if (!BACKUP_FORMAT.equals(backup.opt("format"))
+                || !Integer.valueOf(BACKUP_VERSION).equals(backup.opt("version"))
+                || !validBackupInt(backup.opt("goal"), 500, 10000)) {
+            throw new JSONException("Invalid profile backup");
+        }
+        JSONObject profile = backup.getJSONObject("profile");
+        String name = profile.getString("name").trim();
+        if (name.isEmpty() || name.length() > 60 || !validSex(profile.getString("sex"))
+                || !validBackupInt(profile.opt("height"), 50, 250)
+                || !validBackupWeight(profile.opt("weight"))) {
+            throw new JSONException("Invalid profile");
+        }
+        String birthDate = profile.optString("birthDate", "");
+        String deadline = profile.optString("deadline", "");
+        String goalMode = profile.optString("goalMode", "");
+        if ((!birthDate.isEmpty() && !validProfileDate(birthDate))
+                || (!deadline.isEmpty() && !validProfileDate(deadline))
+                || !oneOf(goalMode, "", "maintain", "target")
+                || ("target".equals(goalMode) && !validBackupWeight(profile.opt("targetWeight")))
+                || !validActivity(profile.optString("movement", ""), profile.optString("sport", ""))) {
+            throw new JSONException("Invalid profile details");
+        }
+        if (profile.has("weighIns")) {
+            JSONObject weighIns = profile.getJSONObject("weighIns");
+            for (Iterator<String> days = weighIns.keys(); days.hasNext();) {
+                String day = days.next();
+                if (!validProfileDate(day) || !validBackupWeight(weighIns.opt(day))) {
+                    throw new JSONException("Invalid weigh-in");
+                }
+            }
+        }
+        return backup;
+    }
+
+    boolean restoreProfile(JSONObject validatedBackup) throws JSONException {
+        synchronized (prefs) {
+            return prefs.edit().putString(PROFILE, validatedBackup.getJSONObject("profile").toString())
+                    .putInt(GOAL, validatedBackup.getInt("goal")).commit();
+        }
     }
 
     boolean saveProfile(String firstName, String sex, String heightCm, String weightKg)
@@ -67,8 +124,7 @@ final class JournalStore {
             String goalMode = details.getString("goalMode");
             if ((!birthDate.isEmpty() && (!validProfileDate(birthDate)
                     || birthDate.compareTo(today.toString()) > 0))
-                    || !oneOf(movement, "", "seated", "mixed", "active")
-                    || !oneOf(sport, "", "none", "short", "weekly", "regular", "frequent")
+                    || !validActivity(movement, sport)
                     || !oneOf(goalMode, "", "maintain", "target")) return false;
 
             if ("target".equals(goalMode)) {
@@ -170,7 +226,9 @@ final class JournalStore {
 
     boolean saveGoal(String amount) {
         int goal = positiveInt(amount, 500, 10000);
-        return goal != -1 && prefs.edit().putInt(GOAL, goal).commit();
+        synchronized (prefs) {
+            return goal != -1 && prefs.edit().putInt(GOAL, goal).commit();
+        }
     }
 
     private JSONArray entries() throws JSONException {
@@ -192,6 +250,19 @@ final class JournalStore {
 
     private static boolean validProfileDate(String value) {
         return value.length() == 10 && !value.startsWith("0000") && validDay(value);
+    }
+
+    private static boolean validActivity(String movement, String sport) {
+        return oneOf(movement, "", "seated", "mixed", "active")
+                && oneOf(sport, "", "none", "short", "weekly", "regular", "frequent");
+    }
+
+    private static boolean validBackupInt(Object value, int min, int max) {
+        return value instanceof Integer && (int) value >= min && (int) value <= max;
+    }
+
+    private static boolean validBackupWeight(Object value) {
+        return value instanceof Number && parseWeight(value.toString()) != -1;
     }
 
     private static boolean oneOf(String value, String... options) {
