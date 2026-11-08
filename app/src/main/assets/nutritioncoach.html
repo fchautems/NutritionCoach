@@ -425,6 +425,16 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
             <button id="goal-button" class="goal" type="button"></button>
         </div>
 
+        <section id="steps" class="card panel spaced" aria-labelledby="steps-title" hidden>
+            <h2 id="steps-title">Pas</h2>
+            <p id="steps-status" class="hint" role="status" hidden></p>
+            <div id="steps-counts" aria-live="polite" hidden>
+                <p>Google Fit · <strong id="fit-steps"></strong></p>
+                <p>NOLATR · <strong id="nolatr-steps"></strong></p>
+            </div>
+            <button id="steps-refresh" class="link-button" type="button" hidden>Actualiser</button>
+        </section>
+
         <h2 class="section-title">Tes repas</h2>
         <div id="meals" class="card"></div>
         <div id="legacy" hidden>
@@ -588,6 +598,7 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
 <script>
 'use strict';
 const host = window.NutritionHost;
+const stepsBridge = typeof host?.readSteps === 'function';
 const detailedProfile = host && typeof host.saveProfileDetails === 'function';
 const byId = id => document.getElementById(id);
 const meals = [
@@ -860,6 +871,42 @@ function mealButton(meal, entries) {
     return button;
 }
 
+function refreshSteps(interactive = false) {
+    if (!stepsBridge) return;
+    byId('steps').hidden = false;
+    byId('steps-counts').hidden = true;
+    byId('steps-refresh').hidden = true;
+    message('steps-status', 'Lecture des pas…');
+    host.readSteps(dateKey(date), interactive);
+}
+
+function showSteps(event) {
+    const {day, status, fit, nolatr} = event.detail;
+    if (screen !== 'today' || day !== dateKey(date)) return;
+    const messages = {
+        denied: 'Autorise la lecture des pas dans Santé Connect.',
+        unavailable: 'Le suivi des pas requiert Santé Connect sur Android 14 ou plus.',
+        'out-of-range': 'Les pas sont consultables pour les 30 derniers jours.',
+        error: 'La lecture des pas a échoué.'
+    };
+    byId('steps-counts').hidden = status !== 'done';
+    if (status === 'done') {
+        const label = count => count === null ? 'Aucun pas transmis' : formatted(count) + ' pas';
+        byId('fit-steps').textContent = label(fit);
+        byId('nolatr-steps').textContent = label(nolatr);
+    }
+    message('steps-status', messages[status] || '');
+    const button = byId('steps-refresh');
+    button.hidden = status === 'unavailable' || status === 'out-of-range';
+    button.textContent = status === 'denied' ? 'Autoriser la lecture' : 'Actualiser';
+}
+
+byId('steps-refresh').addEventListener('click', () => refreshSteps(true));
+window.addEventListener('nutrition-steps', showSteps);
+window.addEventListener('nutrition-resume', () => {
+    if (screen === 'today') refreshSteps();
+});
+
 function renderToday() {
     show('today');
     const today = dateKey(new Date());
@@ -871,6 +918,7 @@ function renderToday() {
     byId('day').dateTime = dateKey(date);
     byId('day').textContent = capital(dateFormat.format(date));
     byId('return-today').hidden = isToday;
+    refreshSteps();
     const entries = dayEntries();
     const total = sum(entries);
     const goal = state.goal;
