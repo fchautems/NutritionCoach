@@ -57,14 +57,21 @@ button:active { transform: translateY(2px); box-shadow: none; }
 }
 .section-title { margin: 1.15rem 0 .5rem; }
 .card { background: var(--surface); border-radius: 1rem; border: 1px solid var(--edge); overflow: hidden; }
+.meal-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
 .meal {
-    width: 100%; text-align: left; border: 0; border-radius: 0; box-shadow: none;
-    border-bottom: 1px solid var(--edge); padding: .6rem .85rem; min-height: 4.1rem;
+    position: relative; display: grid; justify-items: start; align-content: start; gap: .35rem;
+    min-height: 6rem; padding: .55rem; text-align: left; line-height: 1.2;
 }
-.meal:last-child { border-bottom: 0; }
-.meal:focus-visible { outline-offset: -3px; }
+.meal-label { max-width: 100%; overflow-wrap: anywhere; }
 .meal small { display: block; font-weight: 450; color: var(--muted); }
-.meal-mark { width: 2.5rem; height: 2.5rem; flex: none; }
+.meal-mark { width: 2.5rem; height: 2.5rem; }
+.meal-add { position: absolute; inset: .45rem .55rem auto auto; color: var(--deep); font-size: 1.2rem; }
+.meal-help { margin: -.2rem 0 .65rem; font-size: .9rem; }
+@media (max-width: 22rem) {
+    .meal-grid { grid-template-columns: 1fr; }
+    .meal { grid-template-columns: auto 1fr; align-items: center; gap: .65rem; min-height: 3rem; padding: .45rem 2rem .45rem .65rem; }
+    .meal-add { top: 50%; transform: translateY(-50%); }
+}
 .arrow { margin-left: auto; font-size: 1.4rem; color: var(--deep); }
 .primary {
     width: 100%; background: linear-gradient(155deg, #506591, var(--denim));
@@ -98,7 +105,6 @@ dialog {
 }
 dialog::backdrop { background: #2528407a; }
 dialog h2 { margin-bottom: .55rem; }
-dialog .meal { margin-top: .35rem; border-radius: .7rem; }
 
 button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items: center; }
 .icon-button svg, .link-button svg { width: 1.2rem; height: 1.2rem; }
@@ -425,13 +431,16 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
             <button id="goal-button" class="goal" type="button"></button>
         </div>
 
-        <h2 class="section-title">Tes repas</h2>
-        <div id="meals" class="card"></div>
+        <section aria-labelledby="quick-meal-title">
+            <h2 id="quick-meal-title" class="section-title">Ajouter un aliment</h2>
+            <p class="meal-help">Choisis le repas du jour affiché.</p>
+            <div id="meals" class="meal-grid"></div>
+        </section>
+
         <div id="legacy" hidden>
             <h2 class="section-title">Saisies précédentes</h2>
             <div id="legacy-entries" class="card"></div>
         </div>
-        <button id="add" class="primary spaced" type="button">+ Ajouter un aliment</button>
     </section>
 
 
@@ -484,12 +493,6 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
 
     <p id="fatal" class="error" role="alert" hidden>Le journal local est inaccessible.</p>
 </main>
-
-<dialog id="pick-meal" aria-labelledby="pick-title">
-    <h2 id="pick-title">Pour quel repas ?</h2>
-    <div id="meal-choices"></div>
-    <button class="spaced close" type="button">Annuler</button>
-</dialog>
 
 <dialog id="settings" aria-labelledby="settings-title">
     <header class="settings-header">
@@ -887,21 +890,22 @@ function renderPortion() {
 function mealButton(meal, entries) {
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = 'meal row';
+    button.className = 'meal';
     const svg = icon(meal.illustration);
     svg.setAttribute('class', 'meal-mark');
     const label = document.createElement('span');
+    label.className = 'meal-label';
     label.textContent = meal.label;
     if (entries.length) {
         const amount = document.createElement('small');
         amount.textContent = formatted(sum(entries)) + ' kcal';
         label.appendChild(amount);
     }
-    const arrow = document.createElement('span');
-    arrow.className = 'arrow';
-    arrow.setAttribute('aria-hidden', 'true');
-    arrow.textContent = '›';
-    button.append(svg, label, arrow);
+    const add = document.createElement('span');
+    add.className = 'meal-add';
+    add.setAttribute('aria-hidden', 'true');
+    add.textContent = '+';
+    button.append(svg, label, add);
     button.addEventListener('click', () => openMeal(meal));
     return button;
 }
@@ -967,7 +971,6 @@ function renderMealEntries() {
 }
 
 function openMeal(meal) {
-    if (byId('pick-meal').open) byId('pick-meal').close();
     currentMeal = meal;
     byId('meal-title').textContent = meal.label;
     byId('meal-date').textContent = capital(dateFormat.format(date));
@@ -1393,11 +1396,6 @@ byId('next').addEventListener('click', () => { date.setDate(date.getDate() + 1);
 byId('return-today').addEventListener('click', () => { date = new Date(); renderToday(); });
 byId('cancel-profile').addEventListener('click', renderToday);
 byId('back').addEventListener('click', renderToday);
-byId('add').addEventListener('click', () => {
-    byId('meal-choices').textContent = '';
-    meals.forEach(meal => byId('meal-choices').appendChild(mealButton(meal, [])));
-    byId('pick-meal').showModal();
-});
 byId('settings-button').addEventListener('click', () => {
     updateStatus();
     updateWithingsStatus();

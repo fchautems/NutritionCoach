@@ -148,6 +148,34 @@ test('reprend le profil, le journal et l’objectif, puis persiste la date de na
     assert.match(reopened.text('energy-goal'), /2\s230 kcal\/j/);
 });
 
+test('ouvre le bon repas en un appui et ajoute sur le jour affiché', t => {
+    const app = openApp(t);
+    const meals = () => [...app.field('meals').querySelectorAll('button')];
+    assert.equal(app.visible('quick-meal-title'), true);
+    assert.deepEqual(meals().map(button => button.querySelector('.meal-label').firstChild.textContent),
+        ['Petit-déjeuner', 'Midi', 'Soir']);
+    assert.equal(meals()[1].querySelector('small').textContent, '195 kcal');
+
+    app.click('previous');
+    meals()[2].click();
+    assert.equal(app.text('meal-title'), 'Soir');
+    assert.equal(app.document.activeElement.id, 'meal-title');
+    assert.equal(app.visible('food-search'), true);
+    app.fill('food-search', 'chocolat');
+    app.field('food-results').querySelector('button').click();
+    app.fill('grams', '20');
+    app.submit('portion-form');
+    app.click('back');
+
+    assert.equal(app.field('day').dateTime, '2026-11-06');
+    assert.equal(meals()[2].querySelector('small').textContent, '107 kcal');
+    assert.deepEqual(app.data, {...oldState, entries: [...oldState.entries, {
+        id: 'added', date: '2026-11-06', meal: 'dinner', name: 'Chocolat noir · 20 g', kcal: 107
+    }]});
+    app.click('return-today');
+    assert.equal(app.text('total'), '247 kcal');
+});
+
 test('compare les rythmes et permet de modifier une échéance serrée ou le poids cible', t => {
     const data = {...structuredClone(oldState), profile: {...oldState.profile,
         sex: 'undisclosed', birthDate: '1988-11-08', movement: 'mixed', sport: 'regular',

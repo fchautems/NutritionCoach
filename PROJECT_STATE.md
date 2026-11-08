@@ -21,6 +21,8 @@ Dernière mise à jour : 2026-11-08
 
 ## Décisions et changements
 
+- 2026-11-08. Sur Aujourd’hui et dans le journal d’un autre jour, « Ajouter un aliment » apparaît juste sous le bilan calorique. Trois tuiles ouvrent directement la recherche du repas choisi et affichent son total si des aliments sont déjà enregistrés. Sur un écran étroit, les tuiles se disposent sur une colonne. Ce parcours remplace le sélecteur de repas en bas du journal.
+
 - 2026-11-08. Activation de la tâche horaire d’amélioration. Chaque passage reprend la branche par défaut, vérifie les PR et le canal diffusé, puis propose les changements vérifiés sur une branche `auto/nutritioncoach-*` via une PR. La fusion et la diffusion suivent le flux de coordination.
 - 2026-11-08. Après avoir choisi un repas, « Aliments récents » propose jusqu’à trois aliments distincts reconnus dans le journal, par ordre d’ajout. Chaque raccourci reprend l’état de pesée et la dernière portion, modifiables avant validation. La reconnaissance utilise le libellé du catalogue et les kcal enregistrées. Les anciens formats et les saisies libres sans correspondance restent visibles dans le journal. Le pont, le stockage et les valeurs OSAV restent identiques.
 
@@ -47,6 +49,8 @@ Dernière mise à jour : 2026-11-08
 - 2026-11-08. Aperçu Android V0.5. Import local en lecture seule du poids Withings via Health Connect sur Android 14 et plus, à l’ouverture après autorisation et sur demande. L’utilisateur choisit si la dernière pesée doit servir de poids actuel. La tendance rassemble les pesées importées et manuelles.
 
 ## Contrôles et limites
+
+- 2026-11-08. Accès direct aux repas. Onze tests DOM passent sur les sources et quinze sur le HTML candidat construit depuis l’interface 12, dont l’ajout à une date passée et la conservation des totaux. Le contrôle 12 → candidate → 12 avec stockage Android simulé confirme la relecture du profil, de l’objectif, du journal et des pesées. Le rendu tactile sur Pixel reste à vérifier.
 
 - 2026-11-08. Interface 12. Les 14 tests DOM passent avec le HTML diffusé, dont les pas, les entrées récentes et la sauvegarde/restauration via pont simulé. Deux contrôles de relecture hors ligne couvrent les passages 9 → 12 → 9 et 11 → 12 → 11 avec conservation du journal, du profil, de l’objectif et des pesées. Le manifeste et le HTML sont servis en HTTP 200 sans redirection par l’URL utilisée par l’APK. L’empreinte SHA-256 concorde. Le lancement de Chromium tactile est bloqué par l’environnement. Une capture du Pixel confirme que l’interface 12 est active, que les paramètres la signalent à jour et que les commandes de sauvegarde et de restauration sont visibles. La capture ne valide ni leur exécution ni la reprise d’une portion.
 
@@ -81,5 +85,6 @@ Dernière mise à jour : 2026-11-08
 
 ## Prochaine action
 
+- Préparer la diffusion de l’accueil via le canal intégré, puis vérifier sur le Pixel la position des tuiles et leur ouverture directe sur le bon repas.
 - Sur le Pixel, ouvrir un repas, reprendre une portion récente, l’ajuster et confirmer que le profil et le journal sont accessibles hors ligne. Vérifier aussi les pas et l’exécution de la sauvegarde et de la restauration sur V0.7.
 - Withings en pause. À la reprise, tester une pesée prise après la reconnexion, d’abord dans Withings puis dans Santé Connect, et vérifier la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).
