@@ -56,6 +56,8 @@ Dernière mise à jour : 2026-11-08
 
 - Interface 6 et V0.5. Sept tests DOM et dix tests JUnit réussis. APK compilée avec le SDK 35. L’identifiant, le certificat de l’aperçu V0.4 et les permissions de lecture sont vérifiés. L’utilisateur confirme que l’import a abouti sur son Pixel. L’attribution des mesures dans le cas d’une balance partagée reste à vérifier.
 
+- 2026-11-08. Le pilote sur Pixel importe un historique ancien, mais des pesées plus récentes manquent. L’interface 7 distingue la dernière pesée importée de la dernière pesée enregistrée dans Withings. Les sept tests d’interface passent, y compris le tri d’un historique reçu dans le désordre.
+
 ## Prochaine action
 
-- Comparer quelques dates et poids importés à l’historique du profil Withings utilisé sur le Pixel. Vérifier aussi la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).
+- Vérifier si une pesée récente apparaît dans Health Connect sous la source Withings avant de modifier le filtre d’import. Vérifier aussi la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).

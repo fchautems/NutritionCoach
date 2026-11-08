@@ -1011,7 +1011,7 @@ function renderWithingsProfile() {
     if (!latest) return;
 
     const label = record => number.format(record.kg) + ' kg · ' + record.day.split('-').reverse().join('.');
-    byId('withings-latest').textContent = 'Dernière pesée Withings · ' + label(latest);
+    byId('withings-latest').textContent = 'Dernière pesée importée de Withings · ' + label(latest);
     byId('withings-history-title').textContent = measurements.length + ' pesée(s) Withings'
         + (measurements.length > 30 ? ' · 30 dernières affichées' : '');
     byId('withings-weights').replaceChildren(...measurements.slice(0, 30).map(record => {
@@ -1324,7 +1324,7 @@ function updateWithingsStatus() {
         denied: 'Autorise NutritionCoach à lire le poids dans Health Connect, puis réessaie.',
         empty: 'Aucune pesée Withings accessible. Dans Withings, active l’export du poids vers Health Connect.',
         done: info.added ? info.added + (info.added === 1 ? ' nouvelle pesée importée.' : ' nouvelles pesées importées.')
-            : 'Les pesées Withings sont à jour.',
+            : 'Aucune nouvelle pesée Withings trouvée dans Health Connect.',
         error: 'L’import a échoué. Réessaie après avoir ouvert Health Connect.'
     };
     message('withings-status', messages[info.status] || '');

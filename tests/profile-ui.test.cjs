@@ -48,13 +48,13 @@ function openApp(t, {data = structuredClone(oldState), detailed = true, day = to
             };
             if (withings) {
                 window.NutritionHost.withingsInfo = () => JSON.stringify({
-                    available: true, status: data.withingsStatus || 'idle', added: 1
+                    available: true, status: data.withingsStatus || 'idle', added: data.withingsAdded ?? 1
                 });
                 window.NutritionHost.importWithings = () => {
                     data.withingsStatus = 'done';
                     data.withingsWeights = {
-                        latest: {id: 'latest', time: Date.UTC(2026, 10, 7, 8), day: today, kg: 76.12},
-                        old: {id: 'old', time: Date.UTC(2026, 9, 24, 8), day: '2026-10-24', kg: 78.12}
+                        old: {id: 'old', time: Date.UTC(2026, 9, 24, 8), day: '2026-10-24', kg: 78.12},
+                        latest: {id: 'latest', time: Date.UTC(2026, 10, 7, 8), day: today, kg: 76.12}
                     };
                     window.dispatchEvent(new window.Event('nutrition-withings'));
                 };
@@ -278,8 +278,11 @@ test('importe les pesées, affiche la tendance et propose de reprendre le dernie
     assert.equal(app.visible('import-withings'), true);
     app.click('import-withings');
     assert.match(app.text('withings-status'), /nouvelle pesée importée/);
+    data.withingsAdded = 0;
+    app.click('import-withings');
+    assert.match(app.text('withings-status'), /Aucune nouvelle pesée Withings trouvée dans Health Connect/);
     app.click('edit-profile');
-    assert.match(app.text('withings-latest'), /76[.,]12 kg/);
+    assert.match(app.text('withings-latest'), /Dernière pesée importée de Withings · 76[.,]12 kg/);
     assert.match(app.text('observed-pace'), /−1 kg\/semaine/);
     assert.equal(app.field('weight').value, '78,5');
     app.click('use-withings-weight');
