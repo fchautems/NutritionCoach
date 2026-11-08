@@ -1,0 +1,1363 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<title>NutritionCoach</title>
+<style>
+:root {
+    color-scheme: light;
+    --cream: #fcf8f1;
+    --surface: #fffdfa;
+    --ink: #22283a;
+    --muted: #555e73;
+    --denim: #425783;
+    --deep: #33446a;
+    --apricot: #f0b781;
+    --edge: #e6ded2;
+    --shadow: 0 2px 0 #e1d9cc, 0 3px 7px #47372812;
+    font: 100%/1.48 system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--cream); color: var(--ink); }
+main { max-width: 34rem; margin: auto; padding: 1rem 1.1rem 2rem; }
+h1, h2, p { margin: 0; }
+h1 { margin-top: .65rem; font-size: 2.1rem; line-height: 1.13; letter-spacing: -.04em; }
+h2 { font-size: 1.15rem; }
+p { color: var(--muted); }
+[hidden] { display: none !important; }
+button, input, select { font: inherit; }
+button {
+    color: var(--ink); min-height: 3rem; background: var(--surface); padding: .55rem .85rem;
+    border: 1px solid var(--edge); border-radius: .9rem; font-weight: 650; box-shadow: var(--shadow);
+}
+button:active { transform: translateY(2px); box-shadow: none; }
+:focus-visible { outline: 3px solid #9f541d; outline-offset: 3px; }
+.brand, .date-row, .row, .actions { display: flex; align-items: center; gap: .7rem; }
+.brand { color: var(--deep); font-weight: 750; }
+.brand svg { flex: none; }
+.brand button { margin-left: auto; min-width: 3rem; padding: .35rem; font-size: 1.35rem; }
+.date-row { margin: .85rem 0; text-align: center; justify-content: space-between; }
+.date-row button { min-width: 3rem; font-size: 1.35rem; }
+.date-row time { font-weight: 650; }
+.return { width: 100%; margin: 0 0 .75rem; }
+.summary {
+    border-radius: 1.25rem; color: var(--surface); padding: .9rem 1rem;
+    background: linear-gradient(153deg, #4c618e, var(--deep));
+    box-shadow: 0 3px 0 #2d3c5f, 0 6px 14px #23335421;
+}
+.summary p { color: #fff6ec; }
+.total { font-size: 2.55rem; line-height: 1.13; letter-spacing: -.055em; font-weight: 780; }
+.meter { border-radius: 1rem; background: #ffffff43; height: .5rem; margin: .65rem 0 .4rem; }
+.meter span { display: block; background: var(--apricot); height: 100%; border-radius: 1rem; }
+.goal {
+    width: 100%; color: #fff7ed; background: #ffffff15; border-color: #ffffff51;
+    box-shadow: none; margin-top: .55rem; min-height: 3rem;
+}
+.section-title { margin: 1.15rem 0 .5rem; }
+.card { background: var(--surface); border-radius: 1rem; border: 1px solid var(--edge); overflow: hidden; }
+.meal {
+    width: 100%; text-align: left; border: 0; border-radius: 0; box-shadow: none;
+    border-bottom: 1px solid var(--edge); padding: .6rem .85rem; min-height: 4.1rem;
+}
+.meal:last-child { border-bottom: 0; }
+.meal:focus-visible { outline-offset: -3px; }
+.meal small { display: block; font-weight: 450; color: var(--muted); }
+.meal-mark { width: 2.5rem; height: 2.5rem; flex: none; }
+.arrow { margin-left: auto; font-size: 1.4rem; color: var(--deep); }
+.primary {
+    width: 100%; background: linear-gradient(155deg, #506591, var(--denim));
+    color: #fffaf3; border-color: var(--deep); box-shadow: 0 3px 0 #303f61, 0 5px 10px #22325227;
+    min-height: 3.25rem; font-weight: 750;
+}
+.spaced { margin-top: .9rem; }
+.intro { margin: .65rem 0 1.1rem; }
+.eyebrow { color: var(--deep); font-weight: 750; font-size: .78rem; letter-spacing: .09em; }
+.panel { padding: 1rem; }
+label { display: block; font-weight: 650; margin: .75rem 0 .25rem; }
+label:first-child { margin-top: 0; }
+input, select {
+    color: var(--ink); width: 100%; min-height: 3rem; padding: .55rem .65rem;
+    border: 1px solid #a6a7ae; border-radius: .65rem; background: var(--surface);
+}
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+.pair label { margin-top: .75rem; }
+.hint { margin-top: .8rem; font-size: .9rem; }
+.error { color: #8b2347; margin-top: .65rem; }
+.actions { margin-top: .8rem; }
+.actions .primary { width: auto; flex: 1; }
+.entry { min-height: 3rem; padding: .4rem .65rem; border-bottom: 1px solid var(--edge); }
+.entry:last-child { border-bottom: 0; }
+.entry strong { overflow-wrap: anywhere; }
+.entry small { color: var(--muted); white-space: nowrap; margin-left: auto; }
+.entry button { flex: none; width: 3rem; box-shadow: none; }
+dialog {
+    background: var(--cream); color: var(--ink); width: calc(100% - 2rem); max-width: 30rem;
+    border: 1px solid var(--edge); border-radius: 1.1rem; padding: 1rem; max-height: 85vh;
+}
+dialog::backdrop { background: #2528407a; }
+dialog h2 { margin-bottom: .55rem; }
+dialog .meal { margin-top: .35rem; border-radius: .7rem; }
+
+button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items: center; }
+.icon-button svg, .link-button svg { width: 1.2rem; height: 1.2rem; }
+.meal-header { margin: .7rem 0 .8rem; }
+.meal-header h1 { margin-top: .35rem; }
+.meal-header p { margin-top: .2rem; }
+.link-button {
+    display: inline-flex; align-items: center; gap: .3rem; min-height: 2.8rem;
+    padding: .3rem .4rem; box-shadow: none; border-color: transparent; background: transparent;
+    color: var(--deep); font-weight: 650;
+}
+.food-search {
+    display: flex; align-items: center; gap: .55rem; padding-left: .75rem; margin-top: .55rem;
+    background: var(--surface); border: 1px solid #a6a7ae; border-radius: .8rem;
+}
+.food-search svg { width: 1.15rem; height: 1.15rem; color: var(--deep); flex: none; }
+.food-search input { border: 0; background: transparent; padding-left: 0; }
+.food-search:focus-within { outline: 2px solid var(--denim); outline-offset: 2px; }
+.food-search input:focus-visible { outline: 0; }
+.catalog { margin-top: 1.15rem; }
+.category-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
+.category {
+    padding: .7rem .35rem .6rem; min-height: 5.9rem; display: grid; justify-items: center;
+    gap: .25rem; text-align: center; line-height: 1.25;
+    border-color: #27284016; box-shadow: 0 2px 0 #55494e22, 0 3px 6px #4737280e;
+}
+.category svg { width: 2.8rem; height: 2.3rem; }
+.category[data-group="meat"], .category[data-group="fruit"] { background: #f8e7e0; }
+.category[data-group="fish"] { background: #e6edf6; }
+.category[data-group="vegetables"] { background: #eef0e1; }
+.category[data-group="starches"], .category[data-group="eggs"] { background: #f7eddb; }
+.category[data-group="dairy"], .category[data-group="other"] { background: #eee9f3; }
+.catalog-heading { display: flex; align-items: baseline; justify-content: space-between; gap: .4rem; }
+.catalog-heading .link-button { min-height: 3rem; white-space: nowrap; }
+.catalog-list { max-height: 23rem; overflow: auto; }
+.food-row {
+    width: 100%; text-align: left; padding: .65rem .8rem; border: 0; box-shadow: none;
+    border-bottom: 1px solid var(--edge); border-radius: 0; display: flex; align-items: center; gap: .5rem;
+}
+.food-row:last-child { border-bottom: 0; }
+.food-row:focus-visible { outline-offset: -3px; }
+.food-row small { display: block; color: var(--muted); font-weight: 450; }
+.source { font-size: .76rem; color: var(--muted); margin-top: .55rem; }
+#manual-open { margin: .55rem 0 .25rem; }
+#entry-form { margin-top: .45rem; }
+.presets { display: flex; flex-wrap: wrap; gap: .4rem; margin: .65rem 0; }
+.presets button { font-size: .9rem; min-height: 3rem; padding: .3rem .65rem; }
+.primary:disabled { opacity: .6; box-shadow: none; }
+.presets button[aria-pressed="true"] { background: #e7ecf7; border-color: #8e9fbf; color: var(--deep); }
+.portion-total { margin-top: .65rem; color: var(--deep); font-size: 1.3rem; font-weight: 750; }
+.meal-saved { margin-top: .8rem; }
+.meal-saved h2 { display: flex; justify-content: space-between; align-items: baseline; gap: .4rem; }
+.meal-saved h2 span { color: var(--deep); font-size: .9rem; }
+#settings {
+    position: fixed; inset: auto 0 0; margin: 0 auto; width: 100%; max-width: 34rem;
+    border-radius: 1.35rem 1.35rem 0 0; padding: 1rem 1.1rem 1.4rem;
+}
+.settings-header { display: flex; align-items: center; justify-content: space-between; gap: .7rem; }
+.settings-header h2 { font-size: 1.45rem; margin: 0; }
+.settings-header p { font-size: .86rem; }
+.settings-list { margin-top: .9rem; }
+.settings-row {
+    width: 100%; border: 0; border-radius: 0; box-shadow: none;
+    padding: .7rem .8rem; display: flex; text-align: left; align-items: center; gap: .65rem;
+}
+.settings-row + .settings-row { border-top: 1px solid var(--edge); }
+.settings-row:focus-visible { outline-offset: -3px; }
+.settings-row .row-icon {
+    width: 2rem; height: 2rem; display: grid; place-items: center; flex: none;
+    background: #e9edf6; color: var(--deep); border-radius: .6rem;
+}
+.row-icon svg { width: 1rem; height: 1rem; }
+#update-status { margin: .6rem 0 0; }
+.profile-results { background: #edf1f8; border-radius: .75rem; padding: .65rem .75rem; }
+.profile-results strong { color: var(--deep); }
+.weight-check { display: flex; align-items: center; gap: .6rem; font-weight: 450; }
+.weight-check input { width: 1.15rem; height: 1.15rem; min-height: 0; margin: 0; flex: none; }
+#weight-guide summary { color: var(--deep); cursor: pointer; font-weight: 650; }
+#deadline-actions { display: flex; flex-wrap: wrap; gap: .55rem; }
+#withings-history ul { padding-left: 1.3rem; max-height: 12rem; overflow: auto; }
+#birthday { margin-top: .75rem; background: #f7eddb; color: var(--ink); }
+
+@media (max-width: 350px) { .pair { grid-template-columns: 1fr; gap: 0; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+    <defs>
+        <symbol id="fork" viewBox="0 0 40 40">
+            <circle cx="20" cy="20" r="18" fill="#425783" stroke="#33446a"/>
+            <circle cx="20" cy="20" r="14" fill="none" stroke="#fff3dc" stroke-width="1.5"/>
+            <path d="M16 12v6a4 4 0 008 0v-6m-4 0v7m0 3v6" fill="none" stroke="#f0b781"
+                stroke-width="2" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="breakfast-mark" viewBox="0 0 44 44">
+            <circle cx="22" cy="22" r="20" fill="#fae3c7"/>
+            <path d="M11 20c-5-3-3-10 4-11h13c7 1 9 8 4 11v12c0 2-2 3-4 3H15c-2 0-4-1-4-3Z"
+                fill="#ce8a4d" stroke="#9b5935" stroke-width="1.3"/>
+            <path d="M13 18c-4-3-1-6 3-6h11c4 0 7 3 3 6v13H13Z" fill="#efb975"/>
+            <path d="M16 23c0-4 4-7 8-6 4 0 6 3 6 6 1 5-4 7-8 7-4 0-7-3-6-7Z" fill="#fff8df"/>
+            <circle cx="23" cy="23" r="3.8" fill="#eb9a34"/>
+        </symbol>
+        <symbol id="lunch-mark" viewBox="0 0 44 44">
+            <circle cx="22" cy="22" r="20" fill="#e7edf8"/>
+            <ellipse cx="22" cy="22" rx="14" ry="8" fill="#f5dbaa" stroke="#587292" stroke-width="1.4"/>
+            <path d="M8 22c1 9 6 13 14 13s13-4 14-13c-5 5-23 5-28 0Z" fill="#7594b7" stroke="#587292" stroke-width="1.2"/>
+            <path d="m15 20 3-2m2 3 3-3m1 5 3-2m2-2 2 1" fill="none" stroke="#bf844c"
+                stroke-width="1.7" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="dinner-mark" viewBox="0 0 44 44">
+            <circle cx="22" cy="22" r="20" fill="#e9e4f0"/>
+            <ellipse cx="22" cy="23" rx="15" ry="10" fill="#fff8e9" stroke="#b69bb1" stroke-width="1.4"/>
+            <path d="M14 25c-5-2-3-7 0-7 1-4 6-3 7 1 5-1 6 5 1 7-2 4-6 3-8-1Z" fill="#748c54"/>
+            <circle cx="16" cy="23" r="2.3" fill="#e17a53"/>
+            <path d="M24 20c3-5 10-2 9 2 0 4-6 8-9 5-2-1-2-4 0-7Z" fill="#dc9b5e"/>
+            <path d="m25 21 5 3m-6-1 4 3" stroke="#975c3e" stroke-width="1.3" stroke-linecap="round"/>
+        </symbol>
+
+        <symbol id="nav-back" viewBox="0 0 24 24">
+            <path d="m14 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </symbol>
+        <symbol id="nav-close" viewBox="0 0 24 24">
+            <path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="nav-search" viewBox="0 0 24 24">
+            <circle cx="10" cy="10" r="6" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="m15 15 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="nav-person" viewBox="0 0 24 24">
+            <circle cx="12" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M5 20c0-7 14-7 14 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="nav-update" viewBox="0 0 24 24">
+            <path d="M20 11a8 8 0 0 0-14-5L4 8m0-5v5h5M4 13a8 8 0 0 0 14 5l2-2m0 5v-5h-5"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </symbol>
+        <symbol id="food-meat" viewBox="0 0 52 42">
+            <path d="M9 29c-4-10 8-22 23-23 11-1 17 7 14 15-3 7-12 8-20 13-7 4-14 3-17-5Z"
+                fill="#b76454" stroke="#874638" stroke-width="1.6"/>
+            <path d="M13 26C11 18 22 10 32 9c9 0 13 6 10 11-3 5-12 6-19 11-5 3-9 1-10-5Z"
+                fill="#d88772" stroke="#f1c3a0" stroke-width="2"/>
+            <path d="m23 15 7 11m0-14 7 10m-22 2 7-3m5-2 10-4" stroke="#975040" stroke-width="1.5" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="food-fish" viewBox="0 0 52 42">
+            <path d="M5 22c9-15 26-15 34-5l8-7v20l-8-6C28 36 14 34 5 22Z" fill="#82a0b5"
+                stroke="#46667f" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M13 25c8 5 18 4 26-1" stroke="#dbe5eb" stroke-width="3" stroke-linecap="round"/>
+            <path d="M19 16c3 4 3 7 0 10m8-9 5 4-5 4" fill="none" stroke="#57788e" stroke-width="1.4"/>
+            <circle cx="13" cy="20" r="1.8" fill="#253a4d"/>
+        </symbol>
+        <symbol id="food-vegetables" viewBox="0 0 52 42">
+            <path d="M12 13c-2-5 5-9 7-4 2-5 9-3 8 2 5-1 7 5 3 8l-4 3-1 7h-6l1-7-5-2c-5 1-8-4-3-7Z"
+                fill="#779360" stroke="#577346" stroke-width="1.4"/>
+            <path d="M29 29c2-6 7-10 13-8 5 4-1 10-5 13l-13 5Z" fill="#de9257" stroke="#b8663e" stroke-width="1.3"/>
+            <path d="M41 22v-8m0 8 6-6m-13 12 4 2m-9 2 3 2" fill="none" stroke="#577346" stroke-width="1.5" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="food-starches" viewBox="0 0 52 42">
+            <path d="m9 25 12-17 8 5-12 18Zm10 6 12-17 9 5-12 18Zm15-2 8-11 7 5-8 11Z"
+                fill="#dca15a" stroke="#ac6f35" stroke-width="1.3" stroke-linejoin="round"/>
+            <path d="m13 25 11-15m-1 21 11-15m4 14 7-10" stroke="#fae1a5" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="m7 29 8 4 3-3m10 7 5-3" fill="none" stroke="#9e6235" stroke-width="1.3" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="food-fruit" viewBox="0 0 52 42">
+            <circle cx="31" cy="22" r="13" fill="#efb06a" stroke="#c98042" stroke-width="1.5"/>
+            <path d="M31 9c2-5 7-6 11-5-1 4-5 7-11 5Z" fill="#78935e"/>
+            <path d="M6 23c1-6 16-7 18-1 2 5-4 13-9 15-5-2-10-9-9-14Z" fill="#cd6e62" stroke="#aa4f47" stroke-width="1.3"/>
+            <path d="m8 20 5 1 2-5 3 5 5-2" fill="none" stroke="#647d50" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M12 25h.2m6 0h.2m-3 5h.2" stroke="#f9dab1" stroke-width="1.7" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="food-dairy" viewBox="0 0 52 42">
+            <path d="M11 8h12v6l5 7v15H7V21l4-7Z" fill="#fcf8ea" stroke="#8794ad" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M11 9h12m-15 14h20v7H8" fill="#a5b4cb" stroke="#8794ad" stroke-width="1.5"/>
+            <path d="m24 29 11-11 13 7v11H24Z" fill="#e5ad60" stroke="#b58040" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="m24 29 24-4" stroke="#b58040" stroke-width="1.4"/>
+            <circle cx="36" cy="30" r="2" fill="#b58040"/><circle cx="42" cy="32" r="1.5" fill="#b58040"/>
+        </symbol>
+        <symbol id="food-eggs" viewBox="0 0 52 42">
+            <path d="M9 28C9 19 15 9 22 9s13 10 13 19c0 7-5 10-13 10S9 35 9 28Z"
+                fill="#f4e7c6" stroke="#bca475" stroke-width="1.5"/>
+            <circle cx="22" cy="27" r="7.5" fill="#e6a953"/>
+            <path d="M34 18c2-6 9-6 11-1 3 5-3 9-7 7-4 0-5-2-4-6Z" fill="#9aa96f"/>
+            <path d="M34 30c1-5 8-6 11-1 3 5-3 10-8 7-3-1-4-3-3-6Z" fill="#bb956a"/>
+        </symbol>
+        <symbol id="food-other" viewBox="0 0 52 42">
+            <path d="M9 10h10v6l4 6v13H5V22l4-6Z" fill="#e3b66f" stroke="#aa8045" stroke-width="1.4" stroke-linejoin="round"/>
+            <path d="M9 10h10v4H9Z" fill="#a1825b"/>
+            <path d="M26 20h20v16H26Z" fill="#a47363" stroke="#744d42" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M26 28h20m-10-8v16" stroke="#744d42" stroke-width="1.3"/>
+        </symbol>
+    </defs>
+</svg>
+<main>
+    <header class="brand">
+        <svg width="36" height="36" aria-hidden="true"><use href="#fork"/></svg>
+        <span>NutritionCoach</span>
+        <button id="settings-button" type="button" aria-label="Paramètres" hidden>⋮</button>
+    </header>
+
+    <section id="profile" hidden aria-labelledby="profile-title">
+        <p class="eyebrow spaced">PREMIER PAS</p>
+        <h1 id="profile-title" tabindex="-1">Ton profil</h1>
+        <p class="intro">Renseigne tes infos pour ouvrir ton journal.</p>
+        <form id="profile-form">
+          <div class="card panel">
+            <label for="first-name">Prénom</label>
+            <input id="first-name" autocomplete="given-name" maxlength="60" required>
+            <div class="spaced" data-detailed-profile hidden>
+                <label for="birth-date">Date de naissance (facultative)</label>
+                <input id="birth-date" type="date" min="0001-01-01" autocomplete="bday"
+                       aria-describedby="birth-age">
+                <p id="birth-age" class="hint">Elle sert à calculer ton âge et à te souhaiter ton anniversaire.</p>
+            </div>
+            <label for="sex">Sexe</label>
+            <select id="sex" required>
+                <option value="">Sélectionner</option>
+                <option value="female">Féminin</option>
+                <option value="male">Masculin</option>
+                <option value="other">Autre</option>
+                <option value="undisclosed">Je préfère ne pas préciser</option>
+            </select>
+            <div class="pair">
+                <div>
+                    <label for="height">Taille (cm)</label>
+                    <input id="height" inputmode="numeric" type="number" min="50" max="250" placeholder="175" required>
+                </div>
+                <div>
+                    <label for="weight">Poids actuel (kg)</label>
+                    <input id="weight" inputmode="decimal" maxlength="6" placeholder="72,5" required>
+                </div>
+            </div>
+            <div data-detailed-profile hidden>
+                <label class="weight-check">
+                    <input id="record-weight" type="checkbox">Enregistrer une pesée aujourd’hui
+                </label>
+                <p id="profile-bmi" class="hint" hidden></p>
+                <div id="withings-profile" hidden>
+                    <p id="withings-latest" class="hint"></p>
+                    <button id="use-withings-weight" class="link-button" type="button">Utiliser cette pesée</button>
+                    <details id="withings-history">
+                        <summary id="withings-history-title"></summary>
+                        <ul id="withings-weights"></ul>
+                    </details>
+                </div>
+            </div>
+          </div>
+          <section class="card panel spaced" data-detailed-profile hidden aria-labelledby="activity-title">
+            <h2 id="activity-title">Ton activité</h2>
+            <label for="movement">Hors sport, tu bouges combien dans une journée habituelle ?</label>
+            <select id="movement">
+                <option value="">Choisir</option>
+                <option value="seated">Je suis surtout assis·e</option>
+                <option value="mixed">J’alterne entre position assise, debout et marche</option>
+                <option value="active">Je marche ou bouge une bonne partie de la journée</option>
+            </select>
+            <label for="sport">Combien de temps fais-tu du sport dans une semaine habituelle ?</label>
+            <select id="sport">
+                <option value="">Choisir</option>
+                <option value="none">Aucun</option>
+                <option value="short">Moins d’une heure</option>
+                <option value="weekly">De 1 h à moins de 2 h</option>
+                <option value="regular">De 2 h à moins de 4 h</option>
+                <option value="frequent">4 h ou plus</option>
+            </select>
+            <div class="profile-results spaced">
+                <strong id="profile-energy"></strong>
+                <p id="energy-goal" class="hint"></p>
+            </div>
+          </section>
+          <section class="card panel spaced" data-detailed-profile hidden aria-labelledby="weight-goal-title">
+            <h2 id="weight-goal-title">Ton objectif de poids</h2>
+            <label for="weight-goal-mode">Que souhaites-tu faire ?</label>
+            <select id="weight-goal-mode">
+                <option value="">Choisir plus tard</option>
+                <option value="maintain">Maintenir mon poids</option>
+                <option value="target">Fixer un poids cible</option>
+            </select>
+            <div id="weight-target-fields" hidden>
+                <label for="target-weight">Poids cible (kg)</label>
+                <input id="target-weight" inputmode="decimal" maxlength="6" placeholder="72,5">
+                <details id="weight-guide" class="spaced" hidden>
+                    <summary>Voir une fourchette indicative</summary>
+                    <p id="weight-range" class="hint"></p>
+                </details>
+                <label for="weight-deadline">Échéance (facultative)</label>
+                <input id="weight-deadline" type="date" min="0001-01-01" max="9999-12-31">
+            </div>
+            <p id="weight-pace" class="hint" hidden></p>
+            <p id="observed-pace" class="hint" hidden></p>
+            <p id="pace-warning" class="error" hidden></p>
+            <div id="deadline-actions" class="spaced" hidden>
+                <button id="postpone-deadline" type="button">Repousser l’échéance</button>
+                <button id="adjust-weight" type="button">Ajuster le poids cible</button>
+            </div>
+            <div id="calorie-proposal" class="profile-results spaced" hidden>
+                <strong id="calorie-proposal-title">Objectif calorique proposé</strong>
+                <p id="calorie-proposal-detail" class="hint"></p>
+            </div>
+          </section>
+            <p class="hint">Ton profil et ton journal sont enregistrés sur ce téléphone.</p>
+            <p id="profile-error" class="error" role="alert" hidden></p>
+            <div class="actions">
+                <button id="cancel-profile" type="button" hidden>Annuler</button>
+                <button class="primary" type="submit">Enregistrer</button>
+            </div>
+        </form>
+    </section>
+
+    <section id="today" hidden aria-labelledby="today-title">
+        <h1 id="today-title" tabindex="-1">Aujourd’hui</h1>
+        <p id="birthday" class="card panel" role="status" hidden></p>
+        <nav class="date-row" aria-label="Date du journal">
+            <button id="previous" type="button" aria-label="Jour précédent">‹</button>
+            <time id="day"></time>
+            <button id="next" type="button" aria-label="Jour suivant">›</button>
+        </nav>
+        <button id="return-today" class="return" type="button" hidden>Revenir à aujourd’hui</button>
+
+        <div class="summary">
+            <h2>Calories du jour</h2>
+            <div id="total" class="total"></div>
+            <div class="meter" aria-hidden="true"><span id="fill"></span></div>
+            <p id="balance"></p>
+            <button id="goal-button" class="goal" type="button"></button>
+        </div>
+
+        <h2 class="section-title">Tes repas</h2>
+        <div id="meals" class="card"></div>
+        <div id="legacy" hidden>
+            <h2 class="section-title">Saisies précédentes</h2>
+            <div id="legacy-entries" class="card"></div>
+        </div>
+        <button id="add" class="primary spaced" type="button">+ Ajouter un aliment</button>
+    </section>
+
+
+    <section id="meal" hidden aria-labelledby="meal-title">
+        <header class="meal-header">
+            <button id="back" class="link-button" type="button">
+                <svg aria-hidden="true"><use href="#nav-back"/></svg> Journal
+            </button>
+            <h1 id="meal-title" tabindex="-1"></h1>
+            <p id="meal-date"></p>
+        </header>
+
+        <div class="catalog">
+            <h2>Ajouter un aliment</h2>
+            <label class="food-search" for="food-search">
+                <svg aria-hidden="true"><use href="#nav-search"/></svg>
+                <input id="food-search" type="search" aria-label="Rechercher un aliment" placeholder="Rechercher un aliment" autocomplete="off">
+            </label>
+            <div id="food-categories" class="category-grid spaced"></div>
+            <section id="catalog-results" class="spaced" hidden aria-labelledby="results-title">
+                <div class="catalog-heading">
+                    <h2 id="results-title" tabindex="-1">Résultats</h2>
+                    <button id="reset-catalog" class="link-button" type="button">Catégories</button>
+                </div>
+                <div id="food-results" class="card catalog-list"></div>
+                <p id="food-empty" class="hint" hidden>Aucun aliment trouvé. Tu peux encore le saisir à la main.</p>
+            </section>
+            <p id="catalog-feedback" class="hint" role="status" hidden></p>
+            <p class="source">Valeurs pour la partie comestible. Base de données suisse des valeurs nutritives V7.1, OSAV, valeursnutritives.ch.</p>
+            <button id="manual-open" class="link-button" type="button" aria-expanded="false" aria-controls="entry-form">Saisir un aliment à la main</button>
+        </div>
+        <form id="entry-form" class="card panel" hidden>
+            <label for="food">Aliment ou plat</label>
+            <input id="food" maxlength="80" placeholder="Ex. salade de pâtes" required>
+            <label for="kcal">Calories (kcal)</label>
+            <input id="kcal" type="number" inputmode="numeric" min="1" max="10000" placeholder="Ex. 420" required>
+            <p id="entry-error" class="error" role="alert" hidden></p>
+            <button class="primary spaced" type="submit">Ajouter au repas</button>
+        </form>
+        <section class="meal-saved" aria-labelledby="meal-saved-title">
+            <h2 class="section-title" id="meal-saved-title">Aliments enregistrés <span id="meal-total"></span></h2>
+            <p id="meal-empty">Tu n’as encore rien saisi pour ce repas.</p>
+            <div id="meal-entries" class="card" hidden></div>
+        </section>
+    </section>
+
+    <p id="fatal" class="error" role="alert" hidden>Le journal local est inaccessible.</p>
+</main>
+
+<dialog id="pick-meal" aria-labelledby="pick-title">
+    <h2 id="pick-title">Pour quel repas ?</h2>
+    <div id="meal-choices"></div>
+    <button class="spaced close" type="button">Annuler</button>
+</dialog>
+
+<dialog id="settings" aria-labelledby="settings-title">
+    <header class="settings-header">
+        <div>
+            <h2 id="settings-title">Paramètres</h2>
+            <p id="interface-version"></p>
+        </div>
+        <button class="close icon-button" type="button" aria-label="Fermer">
+            <svg aria-hidden="true"><use href="#nav-close"/></svg>
+        </button>
+    </header>
+    <div class="card settings-list">
+        <button id="edit-profile" class="settings-row" type="button">
+            <span class="row-icon"><svg aria-hidden="true"><use href="#nav-person"/></svg></span>
+            <span>Modifier mon profil</span><span class="arrow" aria-hidden="true">›</span>
+        </button>
+        <button id="check-update" class="settings-row" type="button">
+            <span class="row-icon"><svg aria-hidden="true"><use href="#nav-update"/></svg></span>
+            <span id="update-label">Vérifier les mises à jour</span><span class="arrow" aria-hidden="true">›</span>
+        </button>
+        <button id="import-withings" class="settings-row" type="button" hidden>
+            <span class="row-icon"><svg aria-hidden="true"><use href="#nav-update"/></svg></span>
+            <span>Importer les pesées Withings</span><span class="arrow" aria-hidden="true">›</span>
+        </button>
+    </div>
+    <p id="withings-status" class="hint" role="status" hidden></p>
+    <p id="update-status" class="hint" aria-live="polite" hidden></p>
+</dialog>
+<dialog id="portion-dialog" aria-labelledby="portion-title">
+    <h2 id="portion-title"></h2>
+    <p id="portion-reference"></p>
+    <form id="portion-form">
+        <div id="weighing-options" hidden>
+            <label for="weighing-state">Comment as-tu pesé l’aliment ?</label>
+            <select id="weighing-state"></select>
+        </div>
+        <p id="weighing-note" class="hint" hidden></p>
+        <div id="portion-presets" class="presets" aria-label="Quantités proposées"></div>
+        <label for="grams">Quantité (g)</label>
+        <input id="grams" type="number" inputmode="decimal" min="1" max="2000" step="0.1" required>
+        <p id="portion-total" class="portion-total" aria-live="polite"></p>
+        <p id="portion-error" class="error" role="alert" hidden></p>
+        <div class="actions">
+            <button class="close" type="button">Annuler</button>
+            <button id="add-portion" class="primary" type="submit">Ajouter au repas</button>
+        </div>
+    </form>
+</dialog>
+<dialog id="goal-dialog" aria-labelledby="goal-title">
+    <h2 id="goal-title">Objectif quotidien</h2>
+    <p id="goal-proposal-note" hidden></p>
+    <form id="goal-form">
+        <label for="goal-input">Calories (kcal)</label>
+        <input id="goal-input" type="number" min="500" max="10000" inputmode="numeric" required>
+        <p id="goal-error" class="error" role="alert" hidden></p>
+        <div class="actions">
+            <button id="goal-cancel" class="close" type="button">Annuler</button>
+            <button id="goal-save" class="primary" type="submit">Enregistrer</button>
+        </div>
+    </form>
+</dialog>
+<dialog id="delete-dialog" aria-labelledby="delete-title">
+    <h2 id="delete-title">Supprimer cet aliment ?</h2>
+    <p id="delete-name"></p>
+    <p id="delete-error" class="error" role="alert" hidden></p>
+    <div class="actions">
+        <button class="close" type="button">Annuler</button>
+        <button id="delete-confirm" class="primary" type="button">Supprimer</button>
+    </div>
+</dialog>
+
+<!-- nutrition-boot -->
+<script>
+'use strict';
+const host = window.NutritionHost;
+const detailedProfile = host && typeof host.saveProfileDetails === 'function';
+const byId = id => document.getElementById(id);
+const meals = [
+    {id: 'breakfast', label: 'Petit-déjeuner', illustration: 'breakfast-mark'},
+    {id: 'lunch', label: 'Midi', illustration: 'lunch-mark'},
+    {id: 'dinner', label: 'Soir', illustration: 'dinner-mark'}
+];
+const categories = [
+    ['meat', 'Viandes'],
+    ['fish', 'Poissons'],
+    ['vegetables', 'Légumes'],
+    ['starches', 'Féculents'],
+    ['fruit', 'Fruits'],
+    ['dairy', 'Produits laitiers'],
+    ['eggs', 'Œufs et légumineuses'],
+    ['other', 'Boissons et divers']
+];
+// OSAV, Base de données suisse des valeurs nutritives V7.1, Generic Foods.
+// Each row gives the source ID, category, label, kcal per 100 g, default grams, shortcuts and weighing state.
+// Optional alternate state: source ID, kcal per 100 g, default grams, shortcuts and weighing state.
+const foods = [
+    [13276, "meat", "Blanc de poulet grillé", 128, 130, [80, 130, 160], "Cuit, sans peau ni gras ajouté"],
+    [13310, "meat", "Cuisse de poulet rôtie avec peau", 187, 120, [80, 120, 160], "Cuite, viande et peau consommées, sans os"],
+    [13309, "meat", "Poulet rôti avec peau", 193, 130, [75, 130, 180], "Cuit, chair et peau consommées, sans os"],
+    [13258, "meat", "Entrecôte de bœuf grillée", 162, 150, [100, 150, 200], "Cuite à point, sans gras ajouté"],
+    [13297, "meat", "Bœuf haché", 211, 120, [60, 120, 150], "Grillé · après cuisson", [14237, 208, 125, [75, 125, 200], "Cru · avant cuisson"]],
+    [691, "meat", "Jambon cuit", 104, 40, [20, 40, 60], "Tel que vendu, jambon de derrière"],
+    [13354, "fish", "Filet de saumon vapeur", 200, 120, [80, 120, 160], "Cuit, saumon d’élevage, sans arêtes ni gras ajouté"],
+    [193, "fish", "Saumon fumé", 173, 50, [25, 50, 80], "Tel que vendu, prêt à manger"],
+    [417, "fish", "Thon au naturel", 109, 100, [50, 100, 150], "En conserve, égoutté"],
+    [418, "fish", "Thon à l’huile", 199, 100, [50, 100, 150], "En conserve, égoutté"],
+    [13350, "fish", "Filet de cabillaud vapeur", 74, 120, [75, 120, 160], "Cuit, sans arêtes ni gras ajouté"],
+    [14293, "fish", "Crevettes cuites", 86, 75, [50, 75, 120], "Cuites, décortiquées, sans queue non consommée"],
+    [1005, "vegetables", "Brocoli vapeur", 35, 120, [80, 120, 180], "Cuit, sans sauce"],
+    [1002, "vegetables", "Carottes vapeur", 44, 100, [50, 100, 160], "Cuites, sans sauce"],
+    [1654, "vegetables", "Courgettes vapeur", 18, 100, [50, 100, 170], "Cuites, sans sauce"],
+    [348, "vegetables", "Tomate", 21, 100, [50, 100, 150], "Crue, partie mangée"],
+    [354, "vegetables", "Concombre", 12, 75, [50, 75, 150], "Cru, partie mangée"],
+    [448, "vegetables", "Laitue pommée", 16, 40, [20, 40, 60], "Crue, feuilles seules"],
+    [1009, "vegetables", "Haricots verts vapeur", 33, 100, [50, 100, 170], "Cuits, sans sauce"],
+    [1066, "starches", "Riz blanc cuit", 117, 120, [80, 120, 180], "Cuit à l’eau, sans sauce"],
+    [800, "starches", "Pâtes sans œufs", 353, 75, [50, 75, 100], "Sec · avant cuisson", [1063, 158, 170, [100, 170, 250], "Cuit · dans l’assiette"]],
+    [801, "starches", "Pâtes complètes", 338, 75, [50, 75, 100], "Sec · avant cuisson", [1064, 152, 170, [100, 170, 250], "Cuit · dans l’assiette"]],
+    [14259, "starches", "Pommes de terre nouvelles à l’eau", 66, 150, [100, 150, 250], "Cuites à l’eau, avec peau consommée, sans sel ajouté"],
+    [823, "starches", "Pain blanc", 242, 60, [30, 60, 100], "Tel que vendu"],
+    [198, "starches", "Flocons d’avoine", 381, 50, [30, 50, 75], "Secs, avant lait ou eau"],
+    [13396, "starches", "Quinoa cuit", 117, 120, [80, 120, 180], "Cuit, sans gras ni sel ajoutés"],
+    [1535, "starches", "Pizza margherita", 238, 200, [100, 200, 300], "Cuite au four, portion mangée"],
+    [381, "fruit", "Banane", 90, 120, [[60, "½ banane"], [120, "1 banane"], 150], "Crue, pelée"],
+    [378, "fruit", "Pomme", 52, 150, [75, 150, 200], "Crue, sans trognon"],
+    [382, "fruit", "Poire", 54, 140, [75, 140, 200], "Crue, sans trognon"],
+    [405, "fruit", "Orange", 45, 150, [75, 150, 180], "Crue, pelée"],
+    [385, "fruit", "Fraises", 38, 100, [60, 100, 150], "Crues, équeutées"],
+    [389, "fruit", "Myrtilles", 51, 60, [30, 60, 100], "Crues, partie mangée"],
+    [395, "fruit", "Kiwi", 58, 75, [50, 75, 150], "Cru, chair si pelé"],
+    [380, "fruit", "Avocat", 158, 75, [40, 75, 150], "Cru, chair sans peau ni noyau"],
+    [13399, "dairy", "Lait demi-écrémé 1,5 %", 46, 206, [[51.5, "50 ml"], [206, "200 ml"], [257.5, "250 ml"]], "Liquide UHT"],
+    [52, "dairy", "Yogourt nature", 66, 125, [100, 125, 180], "Tel que vendu, non sucré"],
+    [1192, "dairy", "Yogourt sucré", 105, 180, [100, 125, 180], "Tel que vendu, moyenne générique"],
+    [82, "dairy", "Mozzarella", 256, 60, [30, 60, 125], "Égouttée, prête à manger"],
+    [505, "dairy", "Cottage cheese nature", 100, 100, [50, 100, 150], "Tel que vendu, fromage frais granulé"],
+    [1070, "eggs", "Œuf dur", 156, 50, [[50, "1 œuf"], [100, "2 œufs"], [150, "3 œufs"]], "Cuit dur, sans coquille"],
+    [1059, "eggs", "Pois chiches cuits", 131, 100, [60, 100, 150], "Cuits, égouttés, sans gras ni sel ajoutés"],
+    [1060, "eggs", "Lentilles entières cuites", 111, 120, [60, 120, 150], "Cuites, égouttées, sans gras ni sel ajoutés"],
+    [13437, "eggs", "Tofu ferme nature", 148, 120, [50, 120, 200], "Tel que vendu, égoutté si liquide séparé, avant cuisson"],
+    [273, "eggs", "Amandes nature", 624, 20, [15, 20, 30], "Amandes décortiquées, sans assaisonnement"],
+    [591, "other", "Huile d’olive", 900, 10, [[4.6, "1 c. à café"], 10, 15], "Quantité utilisée pour la part mangée"],
+    [60, "other", "Beurre de fromagerie", 747, 10, [5, 10, 20], "Tel que vendu, quantité mangée ou attribuée à sa part"],
+    [196, "other", "Chocolat noir", 537, 20, [10, 20, 30], "Tel que vendu, tablette générique"],
+    [576, "other", "Jus d’orange", 42, 208, [[104, "100 ml"], [208, "200 ml"], [260, "250 ml"]], "Liquide, 100 % jus, sans dilution"]
+].map(([id, group, name, kcal, portion, presets, weighing, alternate]) => {
+    const states = [{id, kcal, portion, presets, weighing}];
+    if (alternate) {
+        const [id, kcal, portion, presets, weighing] = alternate;
+        states.push({id, kcal, portion, presets, weighing});
+    }
+    return {group, name, states};
+});
+const number = new Intl.NumberFormat('fr-CH', {useGrouping: false});
+const formatted = value => number.format(value).replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f');
+const dateFormat = new Intl.DateTimeFormat('fr-CH', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'});
+const two = value => String(value).padStart(2, '0');
+const dateKey = date => date.getFullYear() + '-' + two(date.getMonth() + 1) + '-' + two(date.getDate());
+const capital = value => value.charAt(0).toUpperCase() + value.slice(1);
+const dayMillis = 86400000;
+const movementFactors = {seated: 1.4, mixed: 1.6, active: 1.8};
+const sportHours = {none: 0, short: 0.5, weekly: 1.5, regular: 3, frequent: 5};
+
+let state;
+let date = new Date();
+let currentMeal;
+let selectedCategory;
+let selectedFood;
+let selectedWithingsId = "";
+let pendingDelete;
+let screen;
+
+function readState() {
+    const data = JSON.parse(host.state());
+    if (data.error) throw new Error('Journal unavailable');
+    state = data;
+}
+
+function show(name) {
+    screen = name;
+    ['profile', 'today', 'meal'].forEach(id => { byId(id).hidden = id !== name; });
+    byId('settings-button').hidden = name !== 'today';
+    window.scrollTo(0, 0);
+}
+
+function message(id, value) {
+    byId(id).textContent = value;
+    byId(id).hidden = !value;
+}
+
+function dayEntries() {
+    return state.entries.filter(entry => entry && entry.date === dateKey(date));
+}
+
+function sum(entries) {
+    return entries.reduce((total, entry) => total + Number(entry.kcal), 0);
+}
+
+function icon(id) {
+    const namespace = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(namespace, 'svg');
+    const use = document.createElementNS(namespace, 'use');
+    svg.setAttribute('aria-hidden', 'true');
+    use.setAttribute('href', '#' + id);
+    svg.appendChild(use);
+    return svg;
+}
+
+function searchKey(value) {
+    return value.toLocaleLowerCase('fr').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/œ/g, 'oe').replace(/[^a-z0-9]+/g, ' ').trim()
+        .replace(/\byaourts?\b/g, 'yogourt');
+}
+
+function renderCatalog() {
+    const query = searchKey(byId('food-search').value);
+    const showingResults = !!(query || selectedCategory);
+    byId('food-categories').hidden = showingResults;
+    byId('catalog-results').hidden = !showingResults;
+    if (!showingResults) return;
+
+    byId('results-title').textContent = query ? 'Résultats' : categories.find(([id]) => id === selectedCategory)[1];
+    const matches = query
+        ? foods.filter(food => {
+            const searchable = searchKey([food.name, ...food.states.map(state => state.weighing)].join(' '));
+            return query.split(' ').every(word => searchable.includes(word));
+        })
+        : foods.filter(food => food.group === selectedCategory);
+    const results = byId('food-results');
+    results.textContent = '';
+    results.hidden = !matches.length;
+    byId('food-empty').hidden = !!matches.length;
+    matches.forEach(food => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'food-row';
+        const text = document.createElement('span');
+        text.textContent = food.name;
+        const density = document.createElement('small');
+        const firstState = food.states[0];
+        density.textContent = formatted(firstState.kcal) + ' kcal / 100 g'
+            + (food.states.length > 1 ? ' · ' + firstState.weighing.split(' · ')[0].toLowerCase() : '');
+        text.appendChild(density);
+        const arrow = document.createElement('span');
+        arrow.className = 'arrow';
+        arrow.setAttribute('aria-hidden', 'true');
+        arrow.textContent = '›';
+        button.append(text, arrow);
+        button.addEventListener('click', () => openPortion(food));
+        results.appendChild(button);
+    });
+}
+
+function openCategory(id) {
+    selectedCategory = id;
+    byId('food-search').value = '';
+    renderCatalog();
+    byId('results-title').focus();
+}
+
+function resetCatalog() {
+    selectedCategory = null;
+    byId('food-search').value = '';
+    renderCatalog();
+}
+
+function setManual(open) {
+    byId('entry-form').hidden = !open;
+    byId('manual-open').setAttribute('aria-expanded', String(open));
+    byId('manual-open').textContent = open ? 'Masquer la saisie manuelle' : 'Saisir un aliment à la main';
+}
+
+function openPortion(food) {
+    selectedFood = food;
+    byId('portion-title').textContent = food.name;
+    const select = byId('weighing-state');
+    byId('weighing-options').hidden = food.states.length === 1;
+    select.replaceChildren(...food.states.map((state, index) => new Option(state.weighing, index)));
+    select.value = '0';
+    setPortionState();
+    byId('portion-dialog').showModal();
+}
+
+function currentPortionState() {
+    return selectedFood?.states[Number(byId('weighing-state').value)];
+}
+
+function setPortionState() {
+    const state = currentPortionState();
+    byId('portion-reference').textContent = formatted(state.kcal) + ' kcal pour 100 g';
+    message('weighing-note', selectedFood.states.length === 1 ? state.weighing : '');
+    const presets = byId('portion-presets');
+    presets.textContent = '';
+    state.presets.forEach(preset => {
+        const [grams, label] = Array.isArray(preset) ? preset : [preset, ''];
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.dataset.grams = grams;
+        button.textContent = (label ? label + ' ≈ ' : '') + formatted(grams) + ' g';
+        button.addEventListener('click', () => {
+            byId('grams').value = grams;
+            renderPortion();
+        });
+        presets.appendChild(button);
+    });
+    byId('grams').value = state.portion;
+    renderPortion();
+}
+
+function renderPortion() {
+    const input = byId('grams');
+    const grams = input.valueAsNumber;
+    const state = currentPortionState();
+    const valid = !!state && input.validity.valid;
+    const kcal = valid ? Math.round(state.kcal * grams / 100) : 0;
+    byId('portion-total').textContent = valid ? '≈ ' + formatted(kcal) + ' kcal' : 'Indique une quantité.';
+    byId('add-portion').disabled = !valid || kcal < 1 || kcal > 10000;
+    byId('portion-presets').querySelectorAll('button').forEach(button => {
+        button.setAttribute('aria-pressed', String(Number(button.dataset.grams) === grams));
+    });
+    message('portion-error', valid && (kcal < 1 || kcal > 10000)
+        ? 'Choisis une portion entre 1 et 10 000 kcal.' : '');
+    return kcal;
+}
+
+function mealButton(meal, entries) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'meal row';
+    const svg = icon(meal.illustration);
+    svg.setAttribute('class', 'meal-mark');
+    const label = document.createElement('span');
+    label.textContent = meal.label;
+    if (entries.length) {
+        const amount = document.createElement('small');
+        amount.textContent = formatted(sum(entries)) + ' kcal';
+        label.appendChild(amount);
+    }
+    const arrow = document.createElement('span');
+    arrow.className = 'arrow';
+    arrow.setAttribute('aria-hidden', 'true');
+    arrow.textContent = '›';
+    button.append(svg, label, arrow);
+    button.addEventListener('click', () => openMeal(meal));
+    return button;
+}
+
+function renderToday() {
+    show('today');
+    const today = dateKey(new Date());
+    const isToday = dateKey(date) === today;
+    byId('today-title').textContent = isToday ? 'Aujourd’hui' : 'Journal du jour';
+    const birth = state.profile && state.profile.birthDate;
+    message('birthday', detailedProfile && isToday && birth && birth.slice(5) === today.slice(5)
+        ? 'Joyeux anniversaire, ' + state.profile.name + ' !' : '');
+    byId('day').dateTime = dateKey(date);
+    byId('day').textContent = capital(dateFormat.format(date));
+    byId('return-today').hidden = isToday;
+    const entries = dayEntries();
+    const total = sum(entries);
+    const goal = state.goal;
+    byId('total').textContent = formatted(total) + ' kcal';
+    byId('fill').style.width = Math.min(100, 100 * total / goal) + '%';
+    byId('balance').textContent = total === goal ? 'Objectif atteint' : formatted(Math.abs(goal - total)) +
+        (total < goal ? ' kcal restantes' : ' kcal au-dessus de l’objectif');
+    byId('goal-button').textContent = 'Objectif ' + formatted(goal) + ' kcal · Modifier';
+    byId('meals').textContent = '';
+    meals.forEach(meal => {
+        byId('meals').appendChild(mealButton(meal, entries.filter(entry => entry.meal === meal.id)));
+    });
+    const legacy = entries.filter(entry => !meals.some(meal => meal.id === entry.meal));
+    byId('legacy').hidden = !legacy.length;
+    listEntries(byId('legacy-entries'), legacy);
+}
+
+function listEntries(container, entries) {
+    container.textContent = '';
+    entries.slice().reverse().forEach(entry => {
+        const row = document.createElement('div');
+        row.className = 'entry row';
+        const name = document.createElement('strong');
+        name.textContent = entry.name;
+        const amount = document.createElement('small');
+        amount.textContent = formatted(entry.kcal) + ' kcal';
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.textContent = '×';
+        remove.setAttribute('aria-label', 'Supprimer ' + entry.name);
+        remove.addEventListener('click', () => {
+            pendingDelete = entry.id;
+            byId('delete-name').textContent = entry.name;
+            message('delete-error', '');
+            byId('delete-dialog').showModal();
+        });
+        row.append(name, amount, remove);
+        container.appendChild(row);
+    });
+}
+
+function renderMealEntries() {
+    const entries = dayEntries().filter(entry => entry.meal === currentMeal.id);
+    byId('meal-empty').hidden = !!entries.length;
+    byId('meal-total').textContent = entries.length ? formatted(sum(entries)) + ' kcal' : '';
+    byId('meal-entries').hidden = !entries.length;
+    listEntries(byId('meal-entries'), entries);
+}
+
+function openMeal(meal) {
+    if (byId('pick-meal').open) byId('pick-meal').close();
+    currentMeal = meal;
+    byId('meal-title').textContent = meal.label;
+    byId('meal-date').textContent = capital(dateFormat.format(date));
+    byId('entry-form').reset();
+    setManual(false);
+    resetCatalog();
+    message('catalog-feedback', '');
+    message('entry-error', '');
+    show('meal');
+    renderMealEntries();
+    byId('meal-title').focus();
+}
+
+function weightValue(value) {
+    const normalized = value.trim().replace(',', '.');
+    const kg = Number(normalized);
+    return /^[0-9]{1,3}(\.[0-9]{1,2})?$/.test(normalized) && kg >= 10 && kg <= 500 ? kg : null;
+}
+
+function ageOn(birth, today) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(birth) || birth > today) return null;
+    return Number(today.slice(0, 4)) - Number(birth.slice(0, 4)) - (today.slice(5) < birth.slice(5) ? 1 : 0);
+}
+
+function daysBetween(start, end) {
+    return (Date.parse(end) - Date.parse(start)) / dayMillis;
+}
+
+function profileDraft() {
+    return {
+        name: byId('first-name').value,
+        sex: byId('sex').value,
+        height: byId('height').value,
+        weight: byId('weight').value,
+        birthDate: byId('birth-date').value,
+        movement: byId('movement').value,
+        sport: byId('sport').value,
+        goalMode: byId('weight-goal-mode').value,
+        targetWeight: byId('target-weight').value,
+        deadline: byId('weight-deadline').value,
+        recordWeight: byId('record-weight').checked,
+        withingsId: selectedWithingsId
+    };
+}
+
+function renderEnergy(draft, age, cm, kg) {
+    const energy = byId('profile-energy');
+    const link = byId('energy-goal');
+    const goal = formatted(state.goal) + ' kcal/j';
+    energy.textContent = 'Dépense quotidienne estimée';
+    if (age === null || age < 18 || !cm || kg === null || !draft.sex || !draft.movement || !draft.sport) {
+        link.textContent = (age !== null && age < 18 ? 'L’estimation est prévue pour les adultes. '
+            : 'Complète la date de naissance, les mesures et l’activité pour obtenir une estimation. ')
+            + 'Objectif du journal · ' + goal + '.';
+        return null;
+    }
+    // Mifflin–St Jeor at rest, approximate daily movement, then net cost of moderate sport.
+    const base = 10 * kg + 6.25 * cm - 5 * age;
+    const extra = 3 * kg * sportHours[draft.sport] / 7;
+    const estimate = offset => Math.round(((base + offset) * movementFactors[draft.movement] + extra) / 50) * 50;
+    const low = estimate(draft.sex === 'male' ? 5 : -161);
+    const high = estimate(draft.sex === 'female' ? -161 : 5);
+    if (low <= 0) {
+        link.textContent = 'Estimation indisponible pour ces mesures. Objectif du journal · ' + goal + '.';
+        return null;
+    }
+    energy.textContent += ' · ≈ ' + formatted(low) + (high === low ? '' : ' à ' + formatted(high)) + ' kcal/j';
+    const comparison = state.goal < low ? 'en dessous de' : state.goal > high ? 'au-dessus de' : 'proche de';
+    link.textContent = 'Ton objectif de ' + goal + ' se situe ' + comparison
+        + ' cette estimation de maintien. Manger en dessous tend à faire baisser le poids, et manger au-dessus tend à le faire monter.';
+    return {low, high};
+}
+
+function renderCalorieProposal(draft, energy, cm, kg, today) {
+    const section = byId('calorie-proposal');
+    const title = byId('calorie-proposal-title');
+    const detail = byId('calorie-proposal-detail');
+    const target = draft.goalMode === 'target' ? weightValue(draft.targetWeight) : kg;
+    section.hidden = !energy || !draft.goalMode || target === null;
+    if (section.hidden) return null;
+
+    title.textContent = 'Objectif calorique proposé';
+    const difference = target - kg;
+    const days = daysBetween(today, draft.deadline);
+    if (difference !== 0 && draft.deadline && !(days > 0)) {
+        detail.textContent = 'Choisis une date future ou laisse l’échéance vide.';
+        return null;
+    }
+    const requested = draft.deadline && difference !== 0 ? 7700 * difference / days : 250 * Math.sign(difference);
+    const adjustment = Math.max(-500, Math.min(300, requested));
+    const maintenance = (energy.low + energy.high) / 2;
+    const proposed = Math.round((maintenance + adjustment) / 50) * 50;
+    if ((difference < 0 && (target / (cm / 100) ** 2 < 18.5 || proposed < 1500)) || proposed < 500 || proposed > 10000) {
+        detail.textContent = 'Aucune cible proposée pour ces paramètres. Tu peux revoir ton objectif de poids.';
+        return null;
+    }
+
+    title.textContent += ' · ' + formatted(proposed) + ' kcal/j';
+    detail.textContent = (energy.low === energy.high ? 'Basé sur ta dépense de maintien estimée.'
+        : 'Basé sur le milieu de ta fourchette de maintien.')
+        + (adjustment !== requested ? ' L’ajustement est limité. Il faudra peut-être plus de temps pour atteindre le poids cible.'
+            : difference !== 0 ? ' C’est un point de départ à ajuster selon l’évolution de ton poids.' : '')
+        + ' Objectif actuel du journal · ' + formatted(state.goal) + ' kcal/j.';
+    return proposed;
+}
+
+function withingsMeasurements() {
+    return Object.values(state.withingsWeights || {}).sort((left, right) => right.time - left.time);
+}
+
+function renderWithingsProfile() {
+    const measurements = withingsMeasurements();
+    const latest = measurements[0];
+    byId('withings-profile').hidden = !latest;
+    if (!latest) return;
+
+    const label = record => number.format(record.kg) + ' kg · ' + record.day.split('-').reverse().join('.');
+    byId('withings-latest').textContent = 'Dernière pesée Withings · ' + label(latest);
+    byId('withings-history-title').textContent = measurements.length + ' pesée(s) Withings'
+        + (measurements.length > 30 ? ' · 30 dernières affichées' : '');
+    byId('withings-weights').replaceChildren(...measurements.slice(0, 30).map(record => {
+        const item = document.createElement('li');
+        item.textContent = label(record);
+        return item;
+    }));
+}
+
+function observedWeight(today) {
+    const weighIns = {};
+    withingsMeasurements().reverse().forEach(record => { weighIns[record.day] = record.kg; });
+    Object.assign(weighIns, state.profile?.weighIns);
+    const days = Object.keys(weighIns).filter(day => {
+        const elapsed = daysBetween(day, today);
+        return elapsed >= 0 && elapsed < 90;
+    }).sort();
+    const first = days[0];
+    const last = days[days.length - 1];
+    const duration = daysBetween(first, last);
+    return duration >= 7 ? {pace: 7 * (weighIns[last] - weighIns[first]) / duration, duration} : null;
+}
+
+function paceText(pace) {
+    const rounded = Math.round(Math.abs(pace) * 100) / 100;
+    return (rounded === 0 ? '' : pace < 0 ? '−' : '+') + number.format(rounded) + ' kg/semaine';
+}
+
+function renderWeightGoal(draft, age, cm, kg, today) {
+    const targeting = draft.goalMode === 'target';
+    const target = weightValue(draft.targetWeight);
+    const adult = age !== null && age >= 18;
+    byId('weight-target-fields').hidden = !targeting;
+    byId('target-weight').required = targeting;
+    byId('weight-deadline').disabled = !targeting;
+    byId('weight-guide').hidden = !adult || !cm;
+    if (adult && cm) {
+        const area = (cm / 100) ** 2;
+        const kgText = bmi => number.format(Math.round(bmi * area * 10) / 10);
+        byId('weight-range').textContent = 'Pour ta taille, environ ' + kgText(18.5) + ' à '
+            + kgText(24.9) + ' kg (repère d’IMC adulte). Ce repère général laisse le choix du poids cible.';
+    }
+    const days = daysBetween(today, draft.deadline);
+    const delta = targeting && target !== null && kg !== null ? target - kg : null;
+    const required = draft.goalMode === 'maintain' || delta === 0 ? 0
+        : delta !== null && days > 0 ? 7 * delta / days : null;
+    message('weight-pace', required !== null ? 'Rythme visé · ' + paceText(required)
+        : delta !== null && !draft.deadline ? 'Ajoute une échéance si tu veux calculer un rythme hebdomadaire.' : '');
+
+    const observed = draft.goalMode && observedWeight(today);
+    let comparison = '';
+    if (observed && required !== null) {
+        const tolerance = 0.05;
+        const difference = Math.abs(required - observed.pace);
+        if (difference < tolerance) comparison = ' Ton rythme observé est proche du rythme visé.';
+        else if (required === 0) comparison = ' Ton poids évolue alors que tu vises le maintien.';
+        else if (Math.abs(observed.pace) < tolerance) comparison = ' Ton poids est resté assez stable.';
+        else if (Math.sign(required) !== Math.sign(observed.pace)) comparison = ' Ton poids évolue dans le sens opposé.';
+        else comparison = Math.abs(required) > Math.abs(observed.pace)
+            ? ' Il faudrait avancer plus vite.' : ' Ton rythme observé est plus rapide.';
+    }
+    message('observed-pace', observed ? 'Rythme observé · ' + paceText(observed.pace)
+        + ' sur ' + observed.duration + ' jours.' + comparison
+        : draft.goalMode ? 'Pour voir une tendance, enregistre deux pesées espacées d’au moins 7 jours.' : '');
+
+    const limit = delta < 0 ? 1 : 0.5;
+    const expired = delta !== null && delta !== 0 && days <= 0;
+    const tight = required !== null && Math.abs(required) > limit;
+    message('pace-warning', expired ? 'L’échéance est aujourd’hui ou déjà passée.'
+        : tight ? 'L’échéance semble serrée au vu du rythme hebdomadaire nécessaire.' : '');
+    byId('deadline-actions').hidden = !expired && !tight;
+    return tight || expired ? Math.max(7, Math.ceil(Math.abs(delta) * 7 / limit)) : null;
+}
+
+function renderProfileDetails() {
+    const draft = profileDraft();
+    const today = dateKey(new Date());
+    const age = ageOn(draft.birthDate, today);
+    const height = Number(draft.height);
+    const cm = Number.isInteger(height) && height >= 50 && height <= 250 ? height : null;
+    const kg = weightValue(draft.weight);
+    byId('birth-age').textContent = age === null ? 'Elle sert à calculer ton âge et à te souhaiter ton anniversaire.'
+        : 'Âge · ' + age + ' ans';
+    message('profile-bmi', cm && kg !== null ? 'IMC · ' + number.format(Math.round(10 * kg / (cm / 100) ** 2) / 10) : '');
+    const energy = renderEnergy(draft, age, cm, kg);
+    const proposedGoal = renderCalorieProposal(draft, energy, cm, kg, today);
+    const postponeDays = renderWeightGoal(draft, age, cm, kg, today);
+    return {proposedGoal, postponeDays};
+}
+
+function openProfile() {
+    const profile = state.profile;
+    byId('profile-form').reset();
+    selectedWithingsId = '';
+    if (profile) {
+        byId('first-name').value = profile.name;
+        byId('sex').value = profile.sex;
+        byId('height').value = profile.height;
+        byId('weight').value = String(profile.weight).replace('.', ',');
+    }
+    if (detailedProfile) {
+        document.querySelectorAll('[data-detailed-profile]').forEach(section => { section.hidden = false; });
+        byId('birth-date').max = dateKey(new Date());
+        byId('birth-date').value = profile?.birthDate || '';
+        byId('movement').value = profile?.movement || '';
+        byId('sport').value = profile?.sport || '';
+        byId('weight-goal-mode').value = profile?.goalMode || '';
+        byId('target-weight').value = profile?.targetWeight ? String(profile.targetWeight).replace('.', ',') : '';
+        byId('weight-deadline').value = profile?.deadline || '';
+        byId('weight-guide').open = false;
+        byId('withings-history').open = false;
+        renderWithingsProfile();
+        renderProfileDetails();
+    }
+    byId('cancel-profile').hidden = !profile;
+    byId('profile').querySelector('.eyebrow').hidden = !!profile;
+    byId('profile').querySelector('.intro').hidden = !!profile;
+    message('profile-error', '');
+    show('profile');
+    byId('profile-title').focus();
+}
+
+function updateStatus() {
+    const info = JSON.parse(host.updateInfo());
+    const messages = {
+        idle: '', checking: 'Vérification en cours…', current: 'L’interface est à jour.',
+        available: 'Version prête pour le prochain lancement. Tu peux aussi l’appliquer ici.',
+        applied: 'La nouvelle interface est chargée.',
+        unavailable: 'Vérification indisponible. Ton journal reste accessible.',
+        failed: 'La mise à jour n’a pas pu être appliquée.'
+    };
+    byId('interface-version').textContent = 'Version de l’interface ' + info.version;
+    message('update-status', messages[info.status] || '');
+    const update = byId('check-update');
+    update.disabled = info.status === 'checking';
+    update.dataset.action = info.status === 'available' ? 'apply' : 'check';
+    byId('update-label').textContent = info.status === 'available' ? 'Appliquer la mise à jour'
+        : info.status === 'checking' ? 'Vérification en cours…' : 'Vérifier les mises à jour';
+}
+
+if (!host) {
+    message('fatal', 'Ouvre cette interface depuis l’application NutritionCoach.');
+} else {
+    try {
+        readState();
+        if (state.profile) renderToday();
+        else openProfile();
+        host.ready(window.nutritionOpening);
+    } catch (error) {
+        message('fatal', 'Le journal local est inaccessible.');
+    }
+}
+
+byId('profile-form').addEventListener('submit', event => {
+    event.preventDefault();
+    const draft = profileDraft();
+    const weight = weightValue(draft.weight);
+    if (weight === null) {
+        message('profile-error', 'Indique un poids entre 10 et 500 kg.');
+        byId('weight').focus();
+        return;
+    }
+    if (detailedProfile && draft.goalMode === 'target' && weightValue(draft.targetWeight) === null) {
+        message('profile-error', 'Indique un poids cible entre 10 et 500 kg.');
+        byId('target-weight').focus();
+        return;
+    }
+    const proposedGoal = detailedProfile ? renderProfileDetails().proposedGoal : null;
+    const saved = detailedProfile ? host.saveProfileDetails(JSON.stringify(draft))
+        : host.saveProfile(draft.name, draft.sex, draft.height, String(weight));
+    if (!saved) {
+        message('profile-error', 'Vérifie les informations puis réessaie.');
+        return;
+    }
+    readState();
+    renderToday();
+    byId('today-title').focus();
+    if (proposedGoal !== null && proposedGoal !== state.goal) openCalorieGoal(proposedGoal, true);
+});
+if (detailedProfile) {
+    byId('profile-form').addEventListener('input', renderProfileDetails);
+    byId('postpone-deadline').addEventListener('click', () => {
+        const today = dateKey(new Date());
+        const minDays = renderProfileDetails().postponeDays;
+        const previousDays = daysBetween(today, byId('weight-deadline').value);
+        const date = new Date(Date.parse(today) + Math.max(minDays, previousDays + 1) * dayMillis);
+        byId('weight-deadline').value = date.toISOString().slice(0, 10);
+        renderProfileDetails();
+        byId('weight-deadline').focus();
+    });
+    byId('adjust-weight').addEventListener('click', () => {
+        byId('target-weight').focus();
+        byId('target-weight').select();
+    });
+}
+
+categories.forEach(([id, name]) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'category';
+    button.dataset.group = id;
+    button.append(icon('food-' + id), name);
+    button.addEventListener('click', () => openCategory(id));
+    byId('food-categories').appendChild(button);
+});
+byId('food-search').addEventListener('input', () => {
+    selectedCategory = null;
+    renderCatalog();
+});
+byId('reset-catalog').addEventListener('click', () => {
+    resetCatalog();
+    byId('food-search').focus();
+});
+byId('manual-open').addEventListener('click', () => {
+    const open = byId('entry-form').hidden;
+    setManual(open);
+    if (open) byId('food').focus();
+});
+byId('weighing-state').addEventListener('change', setPortionState);
+byId('grams').addEventListener('input', renderPortion);
+byId('portion-form').addEventListener('submit', event => {
+    event.preventDefault();
+    const kcal = renderPortion();
+    if (byId('add-portion').disabled) return;
+    const grams = byId('grams').valueAsNumber;
+    const stateLabel = selectedFood.states.length > 1 ? ' · ' + currentPortionState().weighing.split(' · ')[0].toLowerCase() : '';
+    const name = selectedFood.name + stateLabel + ' · ' + formatted(grams) + ' g';
+    if (!host.addEntry(dateKey(date), currentMeal.id, name, String(kcal))) {
+        message('portion-error', 'L’aliment n’a pas été enregistré. Réessaie.');
+        return;
+    }
+    readState();
+    byId('portion-dialog').close();
+    renderMealEntries();
+    message('catalog-feedback', name + ' ajouté au repas.');
+});
+
+byId('entry-form').addEventListener('submit', event => {
+    event.preventDefault();
+    if (!host.addEntry(dateKey(date), currentMeal.id, byId('food').value, byId('kcal').value)) {
+        message('entry-error', 'Vérifie le nom et indique entre 1 et 10 000 kcal.');
+        return;
+    }
+    readState();
+    byId('entry-form').reset();
+    message('entry-error', '');
+    renderMealEntries();
+});
+byId('delete-confirm').addEventListener('click', () => {
+    if (!host.deleteEntry(pendingDelete)) {
+        message('delete-error', 'La suppression n’a pas abouti. Réessaie.');
+        return;
+    }
+    readState();
+    byId('delete-dialog').close();
+    if (screen === 'meal') renderMealEntries();
+    else renderToday();
+});
+byId('goal-form').addEventListener('submit', event => {
+    event.preventDefault();
+    if (!host.saveGoal(byId('goal-input').value)) {
+        message('goal-error', 'Indique un objectif entre 500 et 10 000 kcal.');
+        return;
+    }
+    readState();
+    byId('goal-dialog').close();
+    renderToday();
+});
+function openCalorieGoal(goal, proposed = false) {
+    byId('goal-title').textContent = proposed ? 'Appliquer l’objectif calculé ?' : 'Objectif quotidien';
+    message('goal-proposal-note', proposed ? 'Ton journal utilise actuellement ' + formatted(state.goal) + ' kcal/j.' : '');
+    byId('goal-cancel').textContent = proposed ? 'Garder l’objectif actuel' : 'Annuler';
+    byId('goal-save').textContent = proposed ? 'Appliquer au journal' : 'Enregistrer';
+    byId('goal-input').value = goal;
+    message('goal-error', '');
+    byId('goal-dialog').showModal();
+}
+byId('goal-button').addEventListener('click', () => openCalorieGoal(state.goal));
+byId('previous').addEventListener('click', () => { date.setDate(date.getDate() - 1); renderToday(); });
+byId('next').addEventListener('click', () => { date.setDate(date.getDate() + 1); renderToday(); });
+byId('return-today').addEventListener('click', () => { date = new Date(); renderToday(); });
+byId('cancel-profile').addEventListener('click', renderToday);
+byId('back').addEventListener('click', renderToday);
+byId('add').addEventListener('click', () => {
+    byId('meal-choices').textContent = '';
+    meals.forEach(meal => byId('meal-choices').appendChild(mealButton(meal, [])));
+    byId('pick-meal').showModal();
+});
+byId('settings-button').addEventListener('click', () => {
+    updateStatus();
+    updateWithingsStatus();
+    byId('settings').showModal();
+});
+byId('edit-profile').addEventListener('click', () => { byId('settings').close(); openProfile(); });
+byId('check-update').addEventListener('click', () => {
+    if (byId('check-update').dataset.action === 'apply') host.applyUpdate();
+    else host.checkUpdate();
+});
+document.querySelectorAll('.close').forEach(button => {
+    button.addEventListener('click', () => button.closest('dialog').close());
+});
+function updateWithingsStatus() {
+    const button = byId('import-withings');
+    if (typeof host?.withingsInfo !== 'function') return;
+    const info = JSON.parse(host.withingsInfo());
+    button.hidden = !info.available;
+    button.disabled = info.status === 'reading';
+    const messages = {
+        reading: 'Lecture des pesées Withings…',
+        denied: 'Autorise NutritionCoach à lire le poids dans Health Connect, puis réessaie.',
+        empty: 'Aucune pesée Withings accessible. Dans Withings, active l’export du poids vers Health Connect.',
+        done: info.added ? info.added + (info.added === 1 ? ' nouvelle pesée importée.' : ' nouvelles pesées importées.')
+            : 'Les pesées Withings sont à jour.',
+        error: 'L’import a échoué. Réessaie après avoir ouvert Health Connect.'
+    };
+    message('withings-status', messages[info.status] || '');
+    if (info.status === 'done') {
+        readState();
+        if (screen === 'profile' && detailedProfile) {
+            renderWithingsProfile();
+            renderProfileDetails();
+        }
+    }
+}
+
+byId('import-withings').addEventListener('click', () => host.importWithings());
+byId('use-withings-weight').addEventListener('click', () => {
+    const latest = withingsMeasurements()[0];
+    if (!latest) return;
+    selectedWithingsId = latest.id;
+    byId('weight').value = String(Math.round(latest.kg * 100) / 100).replace('.', ',');
+    byId('record-weight').checked = false;
+    renderProfileDetails();
+});
+window.addEventListener('nutrition-withings', updateWithingsStatus);
+window.addEventListener('nutrition-update', updateStatus);
+window.nutritionBack = () => {
+    const dialog = document.querySelector('dialog[open]');
+    if (dialog) { dialog.close(); return true; }
+    if (screen === 'meal' && !byId('catalog-results').hidden) {
+        resetCatalog();
+        return true;
+    }
+    if (screen === 'meal' || (screen === 'profile' && state.profile)) { renderToday(); return true; }
+    return false;
+};
+</script>
+</body>
+</html>
