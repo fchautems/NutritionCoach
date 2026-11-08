@@ -246,7 +246,7 @@ test('reprend les trois derniers aliments reconnus avec leur portion et leur ét
     app.fill('food-search', 'pomme');
     assert.equal(app.visible('recent-foods'), false);
     assert.match(app.text('food-results'), /Pomme/);
-    app.click('reset-catalog');
+    app.click('clear-food-search');
     recent()[0].click();
     assert.equal(app.field('weighing-state').value, '1');
     assert.equal(app.field('grams').value, '170.5');
@@ -408,4 +408,45 @@ test('affiche les 243 pesées importées par date depuis le diagnostic et le pro
     app.click('profile-withings-history');
     assert.equal(app.field('withings-history').open, true);
     assert.deepEqual(visibleDays(), days.map(record => record.day));
+});
+
+test('efface une recherche en un appui et revient à la catégorie sans ouvrir le clavier', t => {
+    const data = structuredClone(oldState);
+    data.profile.weighIns = {[today]: 78.5};
+    data.withingsWeights = {old: {day: '2026-11-01', kg: 78}};
+    const before = structuredClone(data);
+    const app = openApp(t, {data});
+    app.field('meals').querySelectorAll('button')[1].click();
+
+    const search = app.field('food-search');
+    const category = app.field('food-categories').querySelector('[data-group="starches"]');
+    assert.equal(app.visible('clear-food-search'), false);
+    category.click();
+    assert.equal(app.visible('reset-catalog'), true);
+    app.click('reset-catalog');
+    assert.equal(app.document.activeElement, category);
+    assert.equal(app.visible('food-categories'), true);
+    category.click();
+    assert.equal(app.back(), true);
+    assert.equal(app.document.activeElement, category);
+
+    app.fill('food-search', 'sans correspondance');
+    assert.equal(app.visible('food-empty'), true);
+    assert.equal(app.visible('reset-catalog'), false);
+    assert.equal(app.visible('clear-food-search'), true);
+    app.click('clear-food-search');
+    assert.equal(search.value, '');
+    assert.equal(app.document.activeElement, search);
+    assert.equal(app.visible('food-categories'), true);
+    assert.equal(app.visible('clear-food-search'), false);
+
+    app.fill('food-search', 'pomme');
+    assert.match(app.text('food-results'), /Pomme/);
+    app.fill('food-search', '…');
+    assert.equal(app.visible('clear-food-search'), true);
+    assert.equal(app.back(), true);
+    assert.equal(app.visible('meal'), true);
+    assert.equal(search.value, '');
+    assert.equal(app.document.activeElement, app.field('catalog-title'));
+    assert.deepEqual(data, before);
 });

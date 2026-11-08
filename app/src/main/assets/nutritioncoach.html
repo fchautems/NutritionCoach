@@ -115,7 +115,10 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
     background: var(--surface); border: 1px solid #a6a7ae; border-radius: .8rem;
 }
 .food-search svg { width: 1.15rem; height: 1.15rem; color: var(--deep); flex: none; }
-.food-search input { border: 0; background: transparent; padding-left: 0; }
+.food-search label { display: flex; margin: 0; }
+.food-search input { border: 0; background: transparent; padding-left: 0; min-width: 0; }
+.food-search input::-webkit-search-cancel-button { display: none; }
+.food-search button { flex: none; border: 0; box-shadow: none; background: transparent; }
 .food-search:focus-within { outline: 2px solid var(--denim); outline-offset: 2px; }
 .food-search input:focus-visible { outline: 0; }
 .catalog { margin-top: 1.15rem; }
@@ -445,11 +448,14 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
         </header>
 
         <div class="catalog">
-            <h2>Ajouter un aliment</h2>
-            <label class="food-search" for="food-search">
-                <svg aria-hidden="true"><use href="#nav-search"/></svg>
+            <h2 id="catalog-title" tabindex="-1">Ajouter un aliment</h2>
+            <div class="food-search">
+                <label for="food-search"><svg aria-hidden="true"><use href="#nav-search"/></svg></label>
                 <input id="food-search" type="search" aria-label="Rechercher un aliment" placeholder="Rechercher un aliment" autocomplete="off">
-            </label>
+                <button id="clear-food-search" class="icon-button" type="button" aria-label="Effacer la recherche" hidden>
+                    <svg aria-hidden="true"><use href="#nav-close"/></svg>
+                </button>
+            </div>
             <section id="recent-foods" class="spaced" hidden aria-labelledby="recent-foods-title">
                 <h2 id="recent-foods-title" tabindex="-1">Aliments récents</h2>
                 <div id="recent-food-list" class="card catalog-list"></div>
@@ -783,7 +789,10 @@ function renderRecentFoods() {
 }
 
 function renderCatalog() {
-    const query = searchKey(byId('food-search').value);
+    const search = byId('food-search').value;
+    const query = searchKey(search);
+    byId('clear-food-search').hidden = !search;
+    byId('reset-catalog').hidden = !selectedCategory;
     const showingResults = !!(query || selectedCategory);
     byId('food-categories').hidden = showingResults;
     byId('catalog-results').hidden = !showingResults;
@@ -823,6 +832,14 @@ function resetCatalog() {
     selectedCategory = null;
     byId('food-search').value = '';
     renderCatalog();
+}
+
+function returnToCatalog() {
+    const origin = selectedCategory
+        ? byId('food-categories').querySelector(`[data-group="${selectedCategory}"]`)
+        : byId('catalog-title');
+    resetCatalog();
+    origin.focus();
 }
 
 function setManual(open) {
@@ -1317,7 +1334,8 @@ byId('food-search').addEventListener('input', () => {
     selectedCategory = null;
     renderCatalog();
 });
-byId('reset-catalog').addEventListener('click', () => {
+byId('reset-catalog').addEventListener('click', returnToCatalog);
+byId('clear-food-search').addEventListener('click', () => {
     resetCatalog();
     byId('food-search').focus();
 });
@@ -1495,8 +1513,8 @@ window.nutritionBack = () => {
     const dialogs = document.querySelectorAll('dialog[open]');
     const dialog = dialogs[dialogs.length - 1];
     if (dialog) { dialog.close(); return true; }
-    if (screen === 'meal' && !byId('catalog-results').hidden) {
-        resetCatalog();
+    if (screen === 'meal' && (selectedCategory || byId('food-search').value)) {
+        returnToCatalog();
         return true;
     }
     if (screen === 'meal' || (screen === 'profile' && state.profile)) { renderToday(); return true; }

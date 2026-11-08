@@ -46,6 +46,12 @@ Dernière mise à jour : 2026-11-08
 - 2026-11-08. Interface 6. Un seul bouton enregistre le profil. Si une cible calculée diffère de celle du journal, la confirmation affiche les deux valeurs et propose d’appliquer ou de garder l’objectif actuel.
 - 2026-11-08. Aperçu Android V0.5. Import local en lecture seule du poids Withings via Health Connect sur Android 14 et plus, à l’ouverture après autorisation et sur demande. L’utilisateur choisit si la dernière pesée doit servir de poids actuel. La tendance rassemble les pesées importées et manuelles.
 
+## Effacement de la recherche et retour aux catégories
+
+- 2026-11-08. Le champ de recherche affiche une commande « Effacer la recherche » dès qu’il contient du texte. Un appui efface la requête, réaffiche les récents et les catégories disponibles et rend le focus au champ pour saisir un autre aliment. Le bouton « Catégories » et le retour Android depuis une catégorie rendent le focus à la tuile d’origine.
+- Onze tests DOM passent sur les sources, quinze sur le candidat construit depuis le HTML 12 servi par le canal et dix-huit avec les PR #8, #9 et #10. Le SHA-256 du HTML diffusé concorde avec le manifeste. Un contrôle hors ligne 12 → candidat → 12 avec pont simulé relit un ajout après effacement de la recherche et vérifie la conservation du journal, du profil, de l’objectif et des pesées.
+- Prochaine étape. Appliquer le changement au HTML du canal courant lors de la diffusion coordonnée par le protocole 1. Sur Pixel, vérifier la cible tactile, le focus et le comportement du clavier après effacement et après retour d’une catégorie. Le lancement de Chromium est bloqué par l’environnement.
+
 ## Contrôles et limites
 
 - 2026-11-08. Interface 12. Les 14 tests DOM passent avec le HTML diffusé, dont les pas, les entrées récentes et la sauvegarde/restauration via pont simulé. Deux contrôles de relecture hors ligne couvrent les passages 9 → 12 → 9 et 11 → 12 → 11 avec conservation du journal, du profil, de l’objectif et des pesées. Le manifeste et le HTML sont servis en HTTP 200 sans redirection par l’URL utilisée par l’APK. L’empreinte SHA-256 concorde. Le lancement de Chromium tactile est bloqué par l’environnement. Une capture du Pixel confirme que l’interface 12 est active, que les paramètres la signalent à jour et que les commandes de sauvegarde et de restauration sont visibles. La capture ne valide ni leur exécution ni la reprise d’une portion.
