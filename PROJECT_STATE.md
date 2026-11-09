@@ -4,6 +4,8 @@ Dernière mise à jour : 2026-11-09
 
 ## État vérifié
 
+- 2026-11-09. [Interface 13 publiée sur le canal intégré](https://github.com/fchautems/NutritionCoach/commit/6dab1aaedac009be4e78df3d9d813255428709af) après fusion de la [PR #15](https://github.com/fchautems/NutritionCoach/pull/15). Elle passe à 131 aliments hors ligne et conserve les écrans des pas et de la sauvegarde selon le pont Android installé. Elle s’applique avec l’APK existante.
+
 - 2026-11-09. L’utilisateur confirme que l’interface 12 fonctionne sur son Pixel et donne la priorité à un catalogue nettement plus large et à l’usage quotidien.
 
 - 2026-11-08. [Interface 12 publiée sur le canal intégré](https://github.com/fchautems/NutritionCoach/commit/440000305825cc0a165904e01ddc3b7eb92d7ef2) après fusion de la PR #7. La livraison assemble les aliments récents et les écrans des pas et de la sauvegarde du profil à partir de l’interface de la V0.7. Les fonctions natives s’affichent selon les capacités du pont Android installé. Le canal utilise le protocole 1 et dépasse les versions embarquées 10 et 11. Les PR Android #5 et #6 suivent leur revue séparée.
@@ -22,6 +24,8 @@ Dernière mise à jour : 2026-11-09
 - Sur `main`, l’aperçu V0.4 embarque l’interface 3 comme base et y ajoute le profil détaillé, l’estimation de maintien et l’objectif de poids. Les données supplémentaires sont enregistrées dans le profil Android existant. Le pont V0.3 reste compatible avec la partie historique de cette interface.
 
 ## Décisions et changements
+
+- 2026-11-09. Le passage de coordination quotidien à 18 h 30, heure suisse, vérifie et publie les lots d’interface prêts sur le canal intégré. La tâche horaire prépare les changements en PR. Une diffusion exige une vérification du lot final et de la conservation des données. Les préversions Android suivent leur revue séparée.
 
 - 2026-11-09. Extension du catalogue hors ligne à 131 fiches avec 82 aliments supplémentaires. Les catégories « Plats préparés », « Boissons » et « Sauces et en-cas » accélèrent le choix sans recherche. Les libellés, valeurs et portions des 49 fiches historiques sont préservés. [Source, unités et états de pesée](docs/CATALOGUE_PORTIONS.md#extension-du-catalogue-courant-du-9-novembre-2026).
 
@@ -51,6 +55,8 @@ Dernière mise à jour : 2026-11-09
 - 2026-11-08. Aperçu Android V0.5. Import local en lecture seule du poids Withings via Health Connect sur Android 14 et plus, à l’ouverture après autorisation et sur demande. L’utilisateur choisit si la dernière pesée doit servir de poids actuel. La tendance rassemble les pesées importées et manuelles.
 
 ## Contrôles et limites
+
+- 2026-11-09. Interface 13. La [CI Android de la PR #15](https://github.com/fchautems/NutritionCoach/actions/runs/42603582833) et les 11 tests DOM des sources passent. Les 16 tests du candidat assemblé sur l’interface 12 passent en Europe/Zurich et America/Los_Angeles. Le test avec pont simulé vérifie la relecture hors ligne d’une saisie du nouveau catalogue par la 12 ainsi que la conservation du journal, du profil, de l’objectif et des pesées. Après expiration du cache GitHub, les URL HTTPS utilisées par l’APK servent le manifeste 13 et le HTML correspondant, dont le SHA-256 concorde. L’installation sur le Pixel reste à confirmer.
 
 - 2026-11-09. Les 83 valeurs ajoutées, dont les deux états du riz complet, concordent avec le classeur OSAV V7.1. Les 11 tests DOM des sources et les 16 tests du candidat dérivé de l’interface 12 passent. Le retour à la 12 relit une saisie du nouveau catalogue et conserve le journal, le profil, l’objectif et les pesées avec pont simulé. Le toucher sur Pixel reste à vérifier après diffusion. Les boissons ajoutées se pèsent en grammes et les plats composés restent des estimations génériques.
 
@@ -87,7 +93,7 @@ Dernière mise à jour : 2026-11-09
 
 ## Prochaine action
 
-- Passer le catalogue par le flux de diffusion du canal intégré. Essayer sur Pixel le chemin « Plats préparés → Lasagnes → portion » et la recherche du riz complet.
+- Sur le Pixel, appliquer l’interface 13 depuis « Paramètres → Vérifier les mises à jour », puis essayer « Plats préparés → Lasagnes → portion » et chercher le riz complet cuit et sec.
 
 - Sur le Pixel, ouvrir un repas, reprendre une portion récente, l’ajuster et confirmer que le profil et le journal sont accessibles hors ligne. Vérifier aussi les pas et l’exécution de la sauvegarde et de la restauration sur V0.7.
 - Withings en pause. À la reprise, tester une pesée prise après la reconnexion, d’abord dans Withings puis dans Santé Connect, et vérifier la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).
