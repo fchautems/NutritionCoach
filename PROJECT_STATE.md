@@ -25,6 +25,8 @@ Dernière mise à jour : 2026-11-09
 
 ## Décisions et changements
 
+- 2026-11-09. Après un ajout depuis le catalogue, une confirmation avec l’aliment et sa portion apparaît cinq secondes en bas de la fenêtre. Elle reste visible quelle que soit la position dans la liste, laisse passer les appuis et ne prend pas le focus. Une annulation ou un refus du journal n’affiche pas de confirmation. Le changement utilise le protocole 1.
+
 - 2026-11-09. Le passage de coordination quotidien à 18 h 30, heure suisse, vérifie et publie les lots d’interface prêts sur le canal intégré. La tâche horaire prépare les changements en PR. Une diffusion exige une vérification du lot final et de la conservation des données. Les préversions Android suivent leur revue séparée.
 
 - 2026-11-09. Extension du catalogue hors ligne à 131 fiches avec 82 aliments supplémentaires. Les catégories « Plats préparés », « Boissons » et « Sauces et en-cas » accélèrent le choix sans recherche. Les libellés, valeurs et portions des 49 fiches historiques sont préservés. [Source, unités et états de pesée](docs/CATALOGUE_PORTIONS.md#extension-du-catalogue-courant-du-9-novembre-2026).
@@ -55,6 +57,8 @@ Dernière mise à jour : 2026-11-09
 - 2026-11-08. Aperçu Android V0.5. Import local en lecture seule du poids Withings via Health Connect sur Android 14 et plus, à l’ouverture après autorisation et sur demande. L’utilisateur choisit si la dernière pesée doit servir de poids actuel. La tendance rassemble les pesées importées et manuelles.
 
 ## Contrôles et limites
+
+- 2026-11-09. Confirmation d’ajout. Les 12 tests DOM des sources passent. Le test ciblé échoue avant le changement et vérifie l’annulation, le refus d’enregistrement, la confirmation et son effacement. Les 17 tests du candidat issu du HTML 13 diffusé passent en Europe/Zurich et America/Los_Angeles. Les 18 tests du candidat combiné avec le défilement de la PR #19 passent en Europe/Zurich. Le retour hors ligne 13 → candidat → 13 relit la portion ajoutée et conserve le journal, le profil, l’objectif et les pesées avec pont simulé. Chromium ne démarre pas dans cet environnement et Gradle Android relève de la CI.
 
 - 2026-11-09. Interface 13. La [CI Android de la PR #15](https://github.com/fchautems/NutritionCoach/actions/runs/42603582833) et les 11 tests DOM des sources passent. Les 16 tests du candidat assemblé sur l’interface 12 passent en Europe/Zurich et America/Los_Angeles. Le test avec pont simulé vérifie la relecture hors ligne d’une saisie du nouveau catalogue par la 12 ainsi que la conservation du journal, du profil, de l’objectif et des pesées. Après expiration du cache GitHub, les URL HTTPS utilisées par l’APK servent le manifeste 13 et le HTML correspondant, dont le SHA-256 concorde. L’installation sur le Pixel reste à confirmer.
 
@@ -92,6 +96,8 @@ Dernière mise à jour : 2026-11-09
 - 2026-11-08. L’interface 9 n’est pas apparue sur le Pixel au premier essai. Le manifeste et le fichier HTML ont été téléchargés en HTTP 200, sans redirection, depuis l’URL utilisée par l’APK. Le protocole 1 et l’empreinte SHA-256 concordent. Une capture du Pixel confirme ensuite que l’interface 9 est active et que la vérification indique que l’interface est à jour. Le message d’import indique toujours qu’aucune nouvelle pesée Withings n’a été trouvée.
 
 ## Prochaine action
+
+- Après intégration, vérifier sur Pixel la confirmation et son annonce TalkBack au bas d’une longue liste, puis enchaîner deux ajouts sans quitter le catalogue.
 
 - Sur le Pixel, appliquer l’interface 13 depuis « Paramètres → Vérifier les mises à jour », puis essayer « Plats préparés → Lasagnes → portion » et chercher le riz complet cuit et sec.
 

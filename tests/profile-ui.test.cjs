@@ -440,3 +440,69 @@ test('affiche les 243 pesées importées par date depuis le diagnostic et le pro
     assert.equal(app.field('withings-history').open, true);
     assert.deepEqual(visibleDays(), days.map(record => record.day));
 });
+
+test('confirme un ajout du catalogue dans la fenêtre visible sans déplacer le focus', t => {
+    const app = openApp(t);
+    const window = app.document.defaultView;
+    const feedback = app.field('catalog-feedback');
+    const saveEntry = window.NutritionHost.addEntry;
+    const timers = new Map();
+    let nextTimer = 0;
+    window.setTimeout = (callback, delay) => {
+        assert.equal(delay, 5000);
+        const id = ++nextTimer;
+        timers.set(id, callback);
+        return id;
+    };
+    window.clearTimeout = id => timers.delete(id);
+
+    app.field('meals').querySelectorAll('button')[1].click();
+    app.fill('food-search', 'pomme');
+    const result = app.field('food-results').querySelector('button');
+    result.focus();
+    assert.equal(feedback.getAttribute('role'), 'status');
+    assert.equal(feedback.hidden, false);
+    assert.equal(window.getComputedStyle(feedback).position, 'fixed');
+    assert.equal(window.getComputedStyle(feedback).pointerEvents, 'none');
+
+    result.click();
+    assert.equal(app.back(), true);
+    assert.equal(app.data.entries.length, oldState.entries.length);
+    assert.equal(feedback.textContent, '');
+
+    result.click();
+    window.NutritionHost.addEntry = () => false;
+    app.submit('portion-form');
+    assert.equal(app.field('portion-dialog').open, true);
+    assert.match(app.text('portion-error'), /n’a pas été enregistré/);
+    assert.equal(timers.size, 0);
+    assert.equal(feedback.textContent, '');
+
+    window.NutritionHost.addEntry = saveEntry;
+    const focusBeforeSave = app.document.activeElement;
+    app.submit('portion-form');
+    assert.equal(app.field('portion-dialog').open, false);
+    assert.ok([focusBeforeSave, result].includes(app.document.activeElement));
+    assert.equal(app.field('food-search').value, 'pomme');
+    assert.equal(app.data.entries.length, oldState.entries.length + 1);
+    assert.deepEqual(app.data.entries.slice(0, -1), oldState.entries);
+    assert.deepEqual(app.data.profile, oldState.profile);
+    assert.equal(app.data.goal, oldState.goal);
+    assert.equal(feedback.textContent, app.data.entries.at(-1).name + ' ajouté au repas.');
+    assert.equal(timers.size, 1);
+
+    result.click();
+    assert.equal(feedback.textContent, '');
+    assert.equal(timers.size, 0);
+    app.submit('portion-form');
+    const expire = timers.get(nextTimer);
+    timers.delete(nextTimer);
+    expire();
+    assert.equal(feedback.textContent, '');
+
+    result.click();
+    app.submit('portion-form');
+    app.click('back');
+    assert.equal(feedback.textContent, '');
+    assert.equal(timers.size, 0);
+});

@@ -119,6 +119,15 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
 .food-search:focus-within { outline: 2px solid var(--denim); outline-offset: 2px; }
 .food-search input:focus-visible { outline: 0; }
 .catalog { margin-top: 1.15rem; }
+#catalog-feedback {
+    position: fixed; z-index: 1; left: 1.1rem; right: 1.1rem;
+    bottom: calc(1rem + env(safe-area-inset-bottom)); max-width: 30rem; margin: 0 auto;
+    pointer-events: none; overflow-wrap: anywhere;
+}
+#catalog-feedback:not(:empty) {
+    padding: .65rem .85rem; border-radius: .8rem; box-shadow: var(--shadow);
+    color: var(--surface); background: var(--deep);
+}
 .category-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
 .category {
     padding: .7rem .35rem .6rem; min-height: 5.9rem; display: grid; justify-items: center;
@@ -779,6 +788,7 @@ let date = new Date();
 let currentMeal;
 let selectedCategory;
 let selectedFood;
+let catalogFeedbackTimer;
 let selectedWithingsId = "";
 let pendingDelete;
 let screen;
@@ -790,6 +800,7 @@ function readState() {
 }
 
 function show(name) {
+    showCatalogFeedback('');
     screen = name;
     ['profile', 'today', 'meal'].forEach(id => { byId(id).hidden = id !== name; });
     byId('settings-button').hidden = name !== 'today';
@@ -799,6 +810,16 @@ function show(name) {
 function message(id, value) {
     byId(id).textContent = value;
     byId(id).hidden = !value;
+}
+
+function showCatalogFeedback(text) {
+    clearTimeout(catalogFeedbackTimer);
+    const feedback = byId('catalog-feedback');
+    feedback.hidden = false;
+    feedback.textContent = text;
+    if (text) {
+        catalogFeedbackTimer = setTimeout(() => { feedback.textContent = ''; }, 5000);
+    }
 }
 
 function dayEntries() {
@@ -926,6 +947,7 @@ function setManual(open) {
 }
 
 function openPortion(food, index = 0, grams = food.states[index].portion) {
+    showCatalogFeedback('');
     selectedFood = food;
     byId('portion-title').textContent = food.name;
     const select = byId('weighing-state');
@@ -1068,7 +1090,6 @@ function openMeal(meal) {
     byId('entry-form').reset();
     setManual(false);
     resetCatalog();
-    message('catalog-feedback', '');
     message('entry-error', '');
     show('meal');
     renderMealEntries();
@@ -1436,7 +1457,7 @@ byId('portion-form').addEventListener('submit', event => {
     byId('portion-dialog').close();
     renderMealEntries();
     if (byId('catalog-results').hidden) renderRecentFoods();
-    message('catalog-feedback', name + ' ajouté au repas.');
+    showCatalogFeedback(name + ' ajouté au repas.');
 });
 
 byId('entry-form').addEventListener('submit', event => {
