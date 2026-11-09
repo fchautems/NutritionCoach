@@ -1,6 +1,6 @@
 # NutritionCoach — état du projet
 
-Dernière mise à jour : 2026-11-08
+Dernière mise à jour : 2026-11-09
 
 ## État vérifié
 
@@ -83,3 +83,9 @@ Dernière mise à jour : 2026-11-08
 
 - Sur le Pixel, ouvrir un repas, reprendre une portion récente, l’ajuster et confirmer que le profil et le journal sont accessibles hors ligne. Vérifier aussi les pas et l’exécution de la sauvegarde et de la restauration sur V0.7.
 - Withings en pause. À la reprise, tester une pesée prise après la reconnexion, d’abord dans Withings puis dans Santé Connect, et vérifier la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).
+
+## 2026-11-09 · Consulter les aliments d’un repas
+
+- Le nombre d’aliments et leur total apparaissent au-dessus de la recherche. Un appui ouvre la liste des entrées du repas et du jour affichés. Le volet démarre replié et disparaît si le repas est vide. Après une suppression confirmée, le focus revient au volet ou au titre du repas.
+- 11 tests DOM passent sur les sources, 15 sur le candidat dérivé du HTML 12 diffusé et 20 sur le candidat incluant les PR #8 à #12. Le manifeste et le HTML servis à l’APK concordent avec la branche et son SHA-256. Le scénario hors ligne 12 → candidat → 12 relit la nouvelle saisie et conserve l’historique, le profil, l’objectif et les pesées avec un pont Android simulé.
+- Prochaine étape après revue. Appliquer la modification au HTML courant lors de la diffusion coordonnée du canal (protocole 1). Vérifier sur Pixel l’ouverture du volet, la lisibilité avec une police agrandie et le retour du focus après suppression. Chromium n’a pas pu démarrer dans l’environnement de test.

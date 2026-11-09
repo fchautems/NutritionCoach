@@ -260,10 +260,56 @@ test('reprend les trois derniers aliments reconnus avec leur portion et leur ét
     assert.deepEqual(data, {...before, entries: [...before.entries,
         {id: 'added', date: today, meal: 'dinner', name: 'Pâtes sans œufs · cuit · 150 g', kcal: 237}]});
     assert.equal(recent()[0].querySelector('small').textContent, '150 g');
+    app.click('meal-saved-title');
     app.field('meal-entries').querySelector('button').click();
     app.click('delete-confirm');
     assert.deepEqual(data, before);
     assert.equal(recent()[0].querySelector('small').textContent, '170,5 g');
+});
+
+test('consulte et corrige les aliments du repas sans descendre sous le catalogue', t => {
+    const data = structuredClone(oldState);
+    data.entries.push({id: 'yesterday', date: '2026-11-06', meal: 'lunch', name: 'Soupe', kcal: 130});
+    const before = structuredClone(data);
+    const app = openApp(t, {data, detailed: false});
+    const openLunch = () => app.field('meals').querySelectorAll('button')[1].click();
+    openLunch();
+
+    const saved = app.field('meal-saved');
+    const summary = app.field('meal-saved-title');
+    assert.equal(saved.open, false);
+    assert.equal(saved.nextElementSibling.className, 'catalog');
+    assert.equal(summary.textContent, '1 aliment enregistré · 195 kcal');
+    summary.click();
+    assert.equal(saved.open, true);
+    assert.match(app.text('meal-entries'), /Riz cuit/);
+    assert.doesNotMatch(app.text('meal-entries'), /Soupe|Pomme/);
+    assert.deepEqual(data, before);
+
+    app.click('manual-open');
+    app.fill('food', 'Salade');
+    app.fill('kcal', '80');
+    app.submit('entry-form');
+    assert.equal(saved.open, true);
+    assert.equal(summary.textContent, '2 aliments enregistrés · 275 kcal');
+    app.field('meal-entries').querySelector('button').click();
+    app.click('delete-confirm');
+    assert.equal(app.document.activeElement, summary);
+    assert.equal(summary.textContent, '1 aliment enregistré · 195 kcal');
+    assert.deepEqual(data, before);
+
+    app.click('back');
+    app.click('previous');
+    openLunch();
+    assert.equal(saved.open, false);
+    assert.equal(summary.textContent, '1 aliment enregistré · 130 kcal');
+    summary.click();
+    app.field('meal-entries').querySelector('button').click();
+    app.click('delete-confirm');
+    assert.equal(saved.hidden, true);
+    assert.equal(saved.open, false);
+    assert.equal(app.document.activeElement, app.field('meal-title'));
+    assert.deepEqual(data, {...before, entries: before.entries.filter(entry => entry.id !== 'yesterday')});
 });
 
 test('la proposition calorique modifie le journal seulement après confirmation', t => {

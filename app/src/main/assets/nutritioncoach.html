@@ -149,9 +149,12 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
 .primary:disabled { opacity: .6; box-shadow: none; }
 .presets button[aria-pressed="true"] { background: #e7ecf7; border-color: #8e9fbf; color: var(--deep); }
 .portion-total { margin-top: .65rem; color: var(--deep); font-size: 1.3rem; font-weight: 750; }
-.meal-saved { margin-top: .8rem; }
-.meal-saved h2 { display: flex; justify-content: space-between; align-items: baseline; gap: .4rem; }
-.meal-saved h2 span { color: var(--deep); font-size: .9rem; }
+.meal-saved summary {
+    min-height: 3rem; padding: .75rem .85rem; color: var(--deep);
+    font-weight: 650; cursor: pointer;
+}
+.meal-saved summary:focus-visible { outline-offset: -3px; }
+.meal-saved[open] summary { border-bottom: 1px solid var(--edge); }
 #settings {
     position: fixed; inset: auto 0 0; margin: 0 auto; width: 100%; max-width: 34rem;
     border-radius: 1.35rem 1.35rem 0 0; padding: 1rem 1.1rem 1.4rem;
@@ -444,6 +447,11 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
             <p id="meal-date"></p>
         </header>
 
+        <details id="meal-saved" class="meal-saved card" hidden>
+            <summary id="meal-saved-title"></summary>
+            <div id="meal-entries"></div>
+        </details>
+
         <div class="catalog">
             <h2>Ajouter un aliment</h2>
             <label class="food-search" for="food-search">
@@ -475,11 +483,6 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
             <p id="entry-error" class="error" role="alert" hidden></p>
             <button class="primary spaced" type="submit">Ajouter au repas</button>
         </form>
-        <section class="meal-saved" aria-labelledby="meal-saved-title">
-            <h2 class="section-title" id="meal-saved-title">Aliments enregistrés <span id="meal-total"></span></h2>
-            <p id="meal-empty">Tu n’as encore rien saisi pour ce repas.</p>
-            <div id="meal-entries" class="card" hidden></div>
-        </section>
     </section>
 
     <p id="fatal" class="error" role="alert" hidden>Le journal local est inaccessible.</p>
@@ -960,9 +963,12 @@ function listEntries(container, entries) {
 
 function renderMealEntries() {
     const entries = dayEntries().filter(entry => entry.meal === currentMeal.id);
-    byId('meal-empty').hidden = !!entries.length;
-    byId('meal-total').textContent = entries.length ? formatted(sum(entries)) + ' kcal' : '';
-    byId('meal-entries').hidden = !entries.length;
+    const saved = byId('meal-saved');
+    const count = entries.length;
+    saved.hidden = count === 0;
+    if (saved.hidden) saved.open = false;
+    const label = count === 1 ? 'aliment enregistré' : 'aliments enregistrés';
+    byId('meal-saved-title').textContent = count + ' ' + label + ' · ' + formatted(sum(entries)) + ' kcal';
     listEntries(byId('meal-entries'), entries);
 }
 
@@ -977,6 +983,7 @@ function openMeal(meal) {
     message('catalog-feedback', '');
     message('entry-error', '');
     show('meal');
+    byId('meal-saved').open = false;
     renderMealEntries();
     byId('meal-title').focus();
 }
@@ -1366,6 +1373,7 @@ byId('delete-confirm').addEventListener('click', () => {
     if (screen === 'meal') {
         renderMealEntries();
         if (byId('catalog-results').hidden) renderRecentFoods();
+        byId(byId('meal-saved').hidden ? 'meal-title' : 'meal-saved-title').focus();
     } else renderToday();
 });
 byId('goal-form').addEventListener('submit', event => {
