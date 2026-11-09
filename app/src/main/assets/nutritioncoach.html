@@ -764,18 +764,21 @@ function renderRecentFoods() {
     const seen = new Set();
     const rows = [];
     // The bridge appends entries. Read the newest additions first, even when backdated.
-    for (let i = state.entries.length - 1; i >= 0 && rows.length < 3; i--) {
-        const entry = state.entries[i];
-        const match = entry?.name?.match(/^(.+) · (\d[\d\u202f]*(?:,\d)?) g$/);
-        if (!match) continue;
-        const [, label, amount] = match;
-        const recipe = foodByPortionLabel.get(label);
-        if (!recipe || seen.has(recipe.food)) continue;
-        const grams = Number(amount.replace(/\u202f/g, '').replace(',', '.'));
-        if (grams < 1 || grams > 2000 || amount !== formatted(grams)
-                || Math.round(recipe.weighing.kcal * grams / 100) !== Number(entry.kcal)) continue;
-        seen.add(recipe.food);
-        rows.push(foodRow(label, amount + ' g', () => openPortion(recipe.food, recipe.index, grams)));
+    for (const sameMeal of [true, false]) {
+        for (let i = state.entries.length - 1; i >= 0 && rows.length < 3; i--) {
+            const entry = state.entries[i];
+            if ((entry?.meal === currentMeal.id) !== sameMeal) continue;
+            const match = entry?.name?.match(/^(.+) · (\d[\d\u202f]*(?:,\d)?) g$/);
+            if (!match) continue;
+            const [, label, amount] = match;
+            const recipe = foodByPortionLabel.get(label);
+            if (!recipe || seen.has(recipe.food)) continue;
+            const grams = Number(amount.replace(/\u202f/g, '').replace(',', '.'));
+            if (grams < 1 || grams > 2000 || amount !== formatted(grams)
+                    || Math.round(recipe.weighing.kcal * grams / 100) !== Number(entry.kcal)) continue;
+            seen.add(recipe.food);
+            rows.push(foodRow(label, amount + ' g', () => openPortion(recipe.food, recipe.index, grams)));
+        }
     }
     list.replaceChildren(...rows);
     section.hidden = rows.length === 0;

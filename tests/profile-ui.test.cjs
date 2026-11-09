@@ -225,10 +225,11 @@ test('un premier profil peut ouvrir le journal sans date de naissance ni échéa
     assert.equal(app.data.profile.weight, 78.5);
 });
 
-test('reprend les trois derniers aliments reconnus avec leur portion et leur état de pesée', t => {
+test('reprend les aliments récents du repas avant ceux des autres repas', t => {
     const data = structuredClone(oldState);
     data.entries.push(
         {id: 'apple', date: today, meal: 'breakfast', name: 'Pomme · 150 g', kcal: 78},
+        {id: 'pasta-breakfast', date: '2026-11-05', meal: 'breakfast', name: 'Pâtes sans œufs · sec · 50 g', kcal: 177},
         {id: 'pasta-dry', date: today, meal: 'lunch', name: 'Pâtes sans œufs · sec · 75 g', kcal: 265},
         {id: 'yogourt', date: today, meal: 'breakfast', name: 'Yogourt nature · 125 g', kcal: 83},
         {id: 'chocolate', date: today, meal: 'dinner', name: 'Chocolat noir · 20 g', kcal: 107},
@@ -237,24 +238,31 @@ test('reprend les trois derniers aliments reconnus avec leur portion et leur ét
     );
     const before = structuredClone(data);
     const app = openApp(t, {data, detailed: false});
-    app.field('meals').querySelectorAll('button')[2].click();
     const recent = () => [...app.field('recent-food-list').querySelectorAll('button')];
+    const names = () => recent().map(button => button.querySelector('span').firstChild.textContent);
+    app.field('meals').querySelectorAll('button')[0].click();
+    assert.deepEqual(names(), ['Yogourt nature', 'Pâtes sans œufs · sec', 'Pomme']);
+    recent()[1].click();
+    assert.equal(app.field('weighing-state').value, '0');
+    assert.equal(app.field('grams').value, '50');
+    app.field('portion-dialog').querySelector('.close').click();
+    app.click('back');
+    app.field('meals').querySelectorAll('button')[2].click();
     assert.equal(app.visible('recent-foods'), true);
-    assert.deepEqual(recent().map(button => button.querySelector('span').firstChild.textContent),
-        ['Pâtes sans œufs · cuit', 'Chocolat noir', 'Yogourt nature']);
+    assert.deepEqual(names(), ['Chocolat noir', 'Pâtes sans œufs · cuit', 'Yogourt nature']);
 
     app.fill('food-search', 'pomme');
     assert.equal(app.visible('recent-foods'), false);
     assert.match(app.text('food-results'), /Pomme/);
     app.click('reset-catalog');
-    recent()[0].click();
+    recent()[1].click();
     assert.equal(app.field('weighing-state').value, '1');
     assert.equal(app.field('grams').value, '170.5');
     assert.match(app.text('portion-total'), /269 kcal/);
     app.field('portion-dialog').querySelector('.close').click();
     assert.deepEqual(data, before);
 
-    recent()[0].click();
+    recent()[1].click();
     app.fill('grams', '150');
     app.submit('portion-form');
     assert.deepEqual(data, {...before, entries: [...before.entries,
@@ -263,7 +271,7 @@ test('reprend les trois derniers aliments reconnus avec leur portion et leur ét
     app.field('meal-entries').querySelector('button').click();
     app.click('delete-confirm');
     assert.deepEqual(data, before);
-    assert.equal(recent()[0].querySelector('small').textContent, '170,5 g');
+    assert.equal(recent()[1].querySelector('small').textContent, '170,5 g');
 });
 
 test('la proposition calorique modifie le journal seulement après confirmation', t => {
