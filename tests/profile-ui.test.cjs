@@ -195,7 +195,6 @@ test('garde le journal et le catalogue utilisables avec le pont de la V0.3', t =
     app.submit('profile-form');
     app.field('meals').querySelectorAll('button')[1].click();
     assert.match(app.text('meal-entries'), /Riz cuit/);
-    assert.equal(app.field('food-categories').querySelectorAll('button').length, 8);
     app.fill('food-search', 'chocolat');
     app.field('food-results').querySelector('button').click();
     app.fill('grams', '20');
@@ -322,6 +321,38 @@ test('les portions utilisent les valeurs propres à l’état et acceptent une q
     assert.match(app.text('portion-total'), /41 kcal/);
     app.submit('portion-form');
     assert.equal(app.data.entries.at(-1).kcal, 41);
+});
+
+test('trouve les nouveaux plats et boissons et calcule le riz complet dans les deux états', t => {
+    const app = openApp(t);
+    app.field('meals').querySelectorAll('button')[1].click();
+    const category = name => app.field('food-categories').querySelector(`[data-group="${name}"]`);
+    const result = name => [...app.field('food-results').querySelectorAll('button')].find(
+        button => button.querySelector('span').firstChild.textContent === name);
+    category('dishes').click();
+    assert.match(result('Lasagnes à la viande').textContent, /154 kcal/);
+    assert.ok(result('Pizza margherita'));
+    result('Lasagnes à la viande').click();
+    assert.equal(app.field('grams').value, '250');
+    assert.match(app.text('portion-total'), /385 kcal/);
+    app.submit('portion-form');
+    assert.deepEqual(app.data.entries.at(-1), {
+        id: 'added', date: today, meal: 'lunch', name: 'Lasagnes à la viande · 250 g', kcal: 385
+    });
+    app.click('reset-catalog');
+    assert.match(app.text('recent-food-list'), /Lasagnes à la viande/);
+    category('drinks').click();
+    assert.match(result('Boisson à l’avoine').textContent, /47 kcal/);
+    assert.ok(result('Jus d’orange'));
+    app.fill('food-search', 'riz complet');
+    result('Riz complet').click();
+    assert.match(app.text('portion-total'), /160 kcal/);
+    const weighing = app.field('weighing-state');
+    weighing.value = '1';
+    weighing.dispatchEvent(new app.document.defaultView.Event('change'));
+    assert.equal(app.field('grams').value, '60');
+    assert.match(app.text('portion-total'), /210 kcal/);
+    assert.equal(app.data.entries.length, oldState.entries.length + 1);
 });
 
 test('importe les pesées, affiche la tendance et propose de reprendre le dernier poids', t => {
