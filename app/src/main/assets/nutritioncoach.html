@@ -729,6 +729,9 @@ function searchKey(value) {
     return value.toLocaleLowerCase('fr').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
         .replace(/œ/g, 'oe').replace(/[^a-z0-9]+/g, ' ').trim()
         .replace(/\b(cuit|cru)e?s?\b/g, '$1').replace(/\b(?:secs?|seches?)\b/g, 'sec')
+        .replace(/\bpatates?\b/g, 'pommes de terre')
+        .replace(/\bfilets?(?: de)? poulet\b/g, 'blanc de poulet')
+        .replace(/\boeufs? durs?\b/g, 'oeuf dur')
         .replace(/\byaourts?\b/g, 'yogourt');
 }
 

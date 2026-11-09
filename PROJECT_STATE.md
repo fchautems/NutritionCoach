@@ -1,6 +1,6 @@
 # NutritionCoach — état du projet
 
-Dernière mise à jour : 2026-11-08
+Dernière mise à jour : 2026-11-09
 
 ## État vérifié
 
@@ -20,6 +20,8 @@ Dernière mise à jour : 2026-11-08
 - Sur `main`, l’aperçu V0.4 embarque l’interface 3 comme base et y ajoute le profil détaillé, l’estimation de maintien et l’objectif de poids. Les données supplémentaires sont enregistrées dans le profil Android existant. Le pont V0.3 reste compatible avec la partie historique de cette interface.
 
 ## Décisions et changements
+
+- 2026-11-09. PR #9. La recherche reconnaît « patates », « filet de poulet » et « œufs durs ». Elle ouvre les fiches existantes des pommes de terre cuites à l’eau, du blanc de poulet grillé et de l’œuf dur. Les variantes de nom servent à la recherche. Le journal continue d’utiliser les libellés et les valeurs des fiches OSAV V7.1.
 
 - 2026-11-08. Activation de la tâche horaire d’amélioration. Chaque passage reprend la branche par défaut, vérifie les PR et le canal diffusé, puis propose les changements vérifiés sur une branche `auto/nutritioncoach-*` via une PR. La fusion et la diffusion suivent le flux de coordination.
 - 2026-11-08. Après avoir choisi un repas, « Aliments récents » propose jusqu’à trois aliments distincts reconnus dans le journal, par ordre d’ajout. Chaque raccourci reprend l’état de pesée et la dernière portion, modifiables avant validation. La reconnaissance utilise le libellé du catalogue et les kcal enregistrées. Les anciens formats et les saisies libres sans correspondance restent visibles dans le journal. Le pont, le stockage et les valeurs OSAV restent identiques.
@@ -49,6 +51,8 @@ Dernière mise à jour : 2026-11-08
 - 2026-11-08. Aperçu Android V0.5. Import local en lecture seule du poids Withings via Health Connect sur Android 14 et plus, à l’ouverture après autorisation et sur demande. L’utilisateur choisit si la dernière pesée doit servir de poids actuel. La tendance rassemble les pesées importées et manuelles.
 
 ## Contrôles et limites
+
+- 2026-11-09. Manifeste et HTML 12 vérifiés sur le canal HTTPS. Les 12 tests DOM des sources, les 16 du candidat sur l’interface 12 et les 22 avec les autres PR d’interface passent. Le test couvre les trois noms courants et vérifie que « patate douce » et « filet de poulet cru » ne renvoient pas de fiche inadaptée. Le contrôle hors ligne 12 → candidat → 12 avec pont simulé confirme la relecture d’une portion ajoutée via « œufs durs » et la conservation du journal, du profil, de l’objectif et des pesées.
 
 - 2026-11-08. Interface 12. Les 14 tests DOM passent avec le HTML diffusé, dont les pas, les entrées récentes et la sauvegarde/restauration via pont simulé. Deux contrôles de relecture hors ligne couvrent les passages 9 → 12 → 9 et 11 → 12 → 11 avec conservation du journal, du profil, de l’objectif et des pesées. Le manifeste et le HTML sont servis en HTTP 200 sans redirection par l’URL utilisée par l’APK. L’empreinte SHA-256 concorde. Le lancement de Chromium tactile est bloqué par l’environnement. Une capture du Pixel confirme que l’interface 12 est active, que les paramètres la signalent à jour et que les commandes de sauvegarde et de restauration sont visibles. La capture ne valide ni leur exécution ni la reprise d’une portion.
 
@@ -85,6 +89,7 @@ Dernière mise à jour : 2026-11-08
 
 ## Prochaine action
 
+- Sur Pixel après diffusion, chercher « patates cuites », ouvrir la fiche et vérifier que l’état de pesée et la portion sont lisibles avant validation.
 - Sur le Pixel, ouvrir un repas, reprendre une portion récente, l’ajuster et confirmer que le profil et le journal sont accessibles hors ligne. Vérifier aussi les pas et l’exécution de la sauvegarde et de la restauration sur V0.7.
 - Withings en pause. À la reprise, tester une pesée prise après la reconnexion, d’abord dans Withings puis dans Santé Connect, et vérifier la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).
 - Lors de la prochaine diffusion coordonnée de l’interface, appliquer le correctif sur le HTML du canal courant. Sur le Pixel, chercher « pâtes cuites » dans un repas et vérifier le libellé, l’état prérempli et le calcul pour une portion de 150 g.

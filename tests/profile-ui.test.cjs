@@ -357,6 +357,27 @@ test('ouvre directement l’état de pesée recherché et garde les valeurs du j
     assert.equal(data.entries.length, before.entries.length + 1);
 });
 
+test('retrouve des aliments du catalogue par leur nom courant', t => {
+    const app = openApp(t, {detailed: false});
+    app.field('meals').querySelectorAll('button')[1].click();
+    for (const [query, name, kcal] of [
+        ['patates cuites', 'Pommes de terre nouvelles', 66],
+        ['filet de poulet', 'Blanc de poulet grillé', 128],
+        ['œufs durs', 'Œuf dur', 156]
+    ]) {
+        app.fill('food-search', query);
+        const rows = app.field('food-results').querySelectorAll('button');
+        assert.equal(rows.length, 1, query);
+        assert.ok(rows[0].textContent.includes(name), query);
+        assert.ok(rows[0].textContent.includes(kcal + ' kcal / 100 g'), query);
+    }
+    for (const query of ['patate douce', 'filet de poulet cru']) {
+        app.fill('food-search', query);
+        assert.equal(app.visible('food-empty'), true, query);
+    }
+    assert.deepEqual(app.data, oldState);
+});
+
 test('importe les pesées, affiche la tendance et propose de reprendre le dernier poids', t => {
     const data = {...structuredClone(oldState), profile: {...oldState.profile, goalMode: 'maintain',
         weighIns: {[today]: 76.12}}};
