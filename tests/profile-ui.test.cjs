@@ -485,3 +485,46 @@ test('reprend une recherche sans résultat en saisie manuelle et préserve le br
     assert.equal(app.field('food').value, '');
     assert.equal(app.document.activeElement, app.field('food'));
 });
+
+test('le retour Android replie la saisie manuelle avant de quitter la recherche ou le repas', t => {
+    const data = structuredClone(oldState);
+    data.profile.weighIns = {[today]: 78.5};
+    data.withingsWeights = {old: {day: '2026-11-01', kg: 78}};
+    const before = structuredClone(data);
+    const app = openApp(t, {data, detailed: false});
+    app.click('previous');
+    app.field('meals').querySelectorAll('button')[2].click();
+    const manual = app.field('manual-open');
+    const search = app.field('food-search');
+
+    app.click('manual-open');
+    app.fill('food', 'Galette maison');
+    app.fill('kcal', '230');
+    assert.equal(app.back(), true);
+    assert.equal(app.visible('meal'), true);
+    assert.equal(app.visible('entry-form'), false);
+    assert.equal(manual.getAttribute('aria-expanded'), 'false');
+    assert.equal(app.document.activeElement, manual);
+    assert.deepEqual(data, before);
+
+    app.fill('food-search', 'Soupe maison');
+    app.click('manual-open');
+    assert.equal(app.field('food').value, 'Galette maison');
+    assert.equal(app.field('kcal').value, '230');
+    assert.equal(app.back(), true);
+    assert.equal(app.visible('entry-form'), false);
+    assert.equal(app.visible('catalog-results'), true);
+    assert.equal(search.value, 'Soupe maison');
+
+    assert.equal(app.back(), true);
+    assert.equal(app.visible('food-categories'), true);
+    assert.equal(search.value, '');
+    app.click('manual-open');
+    assert.equal(app.field('food').value, 'Galette maison');
+    assert.equal(app.field('kcal').value, '230');
+    assert.deepEqual(data, before);
+    app.submit('entry-form');
+    assert.deepEqual(data, {...before, entries: [...before.entries, {
+        id: 'added', date: '2026-11-06', meal: 'dinner', name: 'Galette maison', kcal: 230
+    }]});
+});

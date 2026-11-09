@@ -54,7 +54,11 @@ Dernière mise à jour : 2026-11-09
 - Onze tests DOM passent sur les sources, quinze sur le candidat construit depuis le HTML 12 servi par le canal et dix-huit avec les PR #8, #9 et #10. Le SHA-256 du HTML diffusé concorde avec le manifeste. Un contrôle hors ligne 12 → candidat → 12 avec pont simulé relit un ajout après effacement de la recherche et vérifie la conservation du journal, du profil, de l’objectif et des pesées.
 - Prochaine étape. Appliquer le changement au HTML du canal courant lors de la diffusion coordonnée par le protocole 1. Sur Pixel, vérifier la cible tactile, le focus et le comportement du clavier après effacement et après retour d’une catégorie. Le lancement de Chromium est bloqué par l’environnement.
 
+- 2026-11-09. Dans un repas, le retour Android traité par l’interface replie d’abord la saisie manuelle et rend le focus à sa commande. Le nom, les calories et la recherche restent disponibles tant que le repas est ouvert. Les dialogues restent prioritaires, puis le retour aux catégories et au journal suit le parcours existant.
+
 ## Contrôles et limites
+
+- 2026-11-09. Le test de régression reproduit la sortie prématurée du repas avant le correctif. Après correction, 13 tests DOM passent sur les sources, 18 sur le candidat dérivé du HTML 12 vérifié par SHA-256 et 19 avec le compteur de la PR #17. Le scénario hors ligne 12 → candidat → 12 avec pont simulé vérifie la reprise du brouillon, l’absence d’écriture avant confirmation et la relecture d’une saisie antidatée, avec conservation du journal historique, du profil, de l’objectif et des pesées. Le brouillon reste dans le repas ouvert. Le retour physique et l’ordre de fermeture avec le clavier Android restent à vérifier sur Pixel.
 
 - 2026-11-09. Canal HTTPS vérifié, interface 12 et empreinte SHA-256 concordantes. Les 12 tests DOM des sources passent, ainsi que les 16 tests du candidat dérivé de l’interface 12 et les 21 tests avec les autres PR d’interface appliquées localement. Le test ciblé échoue avant le correctif et couvre ensuite la saisie sans résultat, le focus, le brouillon et la longueur maximale. Le contrôle 12 → candidat → 12 avec pont simulé relit la saisie manuelle antidatée et confirme la conservation du journal, du profil, de l’objectif et des pesées.
 
@@ -91,6 +95,6 @@ Dernière mise à jour : 2026-11-09
 
 ## Prochaine action
 
-- Sur Pixel après diffusion, chercher « Galette maison », ouvrir la saisie manuelle et vérifier que le nom est repris et que le clavier numérique s’ouvre sur les calories.
+- Sur Pixel après diffusion, chercher « Galette maison », ouvrir la saisie manuelle et vérifier le clavier numérique, puis utiliser Retour, rouvrir le formulaire et confirmer que le nom et les calories sont toujours présents.
 - Sur le Pixel, ouvrir un repas, reprendre une portion récente, l’ajuster et confirmer que le profil et le journal sont accessibles hors ligne. Vérifier aussi les pas et l’exécution de la sauvegarde et de la restauration sur V0.7.
 - Withings en pause. À la reprise, tester une pesée prise après la reconnexion, d’abord dans Withings puis dans Santé Connect, et vérifier la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).

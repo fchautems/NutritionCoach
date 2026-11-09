@@ -1523,6 +1523,11 @@ window.nutritionBack = () => {
     const dialogs = document.querySelectorAll('dialog[open]');
     const dialog = dialogs[dialogs.length - 1];
     if (dialog) { dialog.close(); return true; }
+    if (screen === 'meal' && !byId('entry-form').hidden) {
+        setManual(false);
+        byId('manual-open').focus();
+        return true;
+    }
     if (screen === 'meal' && (selectedCategory || byId('food-search').value)) {
         returnToCatalog();
         return true;
