@@ -1462,7 +1462,10 @@ byId('portion-form').addEventListener('submit', event => {
 
 byId('entry-form').addEventListener('submit', event => {
     event.preventDefault();
-    if (!host.addEntry(dateKey(date), currentMeal.id, byId('food').value, byId('kcal').value)) {
+    showCatalogFeedback('');
+    const name = byId('food').value;
+    const kcal = byId('kcal').value;
+    if (!host.addEntry(dateKey(date), currentMeal.id, name, kcal)) {
         message('entry-error', 'Vérifie le nom et indique entre 1 et 10 000 kcal.');
         return;
     }
@@ -1470,6 +1473,7 @@ byId('entry-form').addEventListener('submit', event => {
     byId('entry-form').reset();
     message('entry-error', '');
     renderMealEntries();
+    showCatalogFeedback('Ajouté au repas · ' + name.trim() + ' · ' + formatted(Number(kcal)) + ' kcal');
 });
 byId('delete-confirm').addEventListener('click', () => {
     if (!host.deleteEntry(pendingDelete)) {

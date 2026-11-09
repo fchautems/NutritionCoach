@@ -506,3 +506,35 @@ test('confirme un ajout du catalogue dans la fenêtre visible sans déplacer le 
     assert.equal(feedback.textContent, '');
     assert.equal(timers.size, 0);
 });
+
+test('confirme une saisie manuelle seulement après son enregistrement', t => {
+    const app = openApp(t);
+    const host = app.document.defaultView.NutritionHost;
+    const addEntry = host.addEntry;
+    app.click('previous');
+    const date = app.field('day').dateTime;
+    app.field('meals').querySelectorAll('button')[2].click();
+    app.click('manual-open');
+    app.fill('food', '  Soupe maison  ');
+    app.fill('kcal', '180');
+
+    host.addEntry = () => false;
+    app.submit('entry-form');
+    assert.equal(app.text('catalog-feedback'), '');
+    assert.equal(app.field('food').value, '  Soupe maison  ');
+    assert.equal(app.field('kcal').value, '180');
+    assert.equal(app.data.entries.length, oldState.entries.length);
+    assert.equal(app.visible('entry-error'), true);
+
+    host.addEntry = (day, meal, name, kcal) => addEntry(day, meal, name.trim(), kcal);
+    app.submit('entry-form');
+    assert.equal(app.text('catalog-feedback'), 'Ajouté au repas · Soupe maison · 180 kcal');
+    assert.equal(app.visible('entry-error'), false);
+    assert.equal(app.field('food').value, '');
+    assert.equal(app.field('kcal').value, '');
+    assert.deepEqual(app.data, {
+        ...oldState,
+        entries: [...oldState.entries, {id: 'added', date, meal: 'dinner', name: 'Soupe maison', kcal: 180}]
+    });
+    assert.match(app.text('meal-entries'), /Soupe maison/);
+});
