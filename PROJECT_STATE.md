@@ -67,6 +67,9 @@ Dernière mise à jour : 2026-11-09
 
 ### Quantités décimales au clavier
 
+- 2026-11-09. Le champ de portion accepte les quantités collées avec l’unité g et un séparateur de milliers par espace ou apostrophe. Une quantité collée suit les mêmes limites que la saisie au clavier. Les unités kg et ml et les groupements ambigus sont refusés. Le libellé enregistré utilise le format du journal.
+- Après ce changement, les 11 tests DOM des sources, les 15 du candidat sur le canal 12 et les 22 avec les autres PR d’interface passent. Le test ciblé couvre « 4,6 g », les séparateurs suisses, les unités refusées et la limite de 2 000 g. Le contrôle hors ligne 12 → candidat → 12 confirme la relecture de « Banane · 1 250,5 g » dans le journal et les récents, et la conservation du profil, de l’objectif et des pesées avec le pont simulé.
+
 - 2026-11-09. Le champ de portion accepte la virgule et le point. Une saisie comme « 4,6 » affiche le même calcul que le raccourci de 4,6 g. Une quantité hors plage ou trop précise est signalée dans le formulaire. Les entrées utilisent le format existant du journal, compatible avec les récents et le protocole 1.
 - Le test échoue sur l’ancien champ avec « 4,6 ». Onze tests DOM passent sur les sources, quinze sur le candidat dérivé du HTML 12 téléchargé et dix-neuf en combinaison avec les PR #8 à #11. Le SHA-256 de l’interface 12 concorde avec le manifeste. Le contrôle hors ligne 12 → candidat → 12 avec pont simulé vérifie que la portion décimale est relue et proposée dans les récents, et que le journal existant, le profil, l’objectif et les pesées sont préservés.
 - Prochaine étape. Appliquer le correctif au HTML du canal courant lors de la diffusion coordonnée. Sur Pixel, saisir « 4,6 » au clavier dans la portion d’huile d’olive et vérifier les 41 kcal puis la reprise dans les récents. Le lancement de Chromium est bloqué dans cet environnement.
@@ -88,6 +91,8 @@ Dernière mise à jour : 2026-11-09
 - 2026-11-08. L’interface 9 n’est pas apparue sur le Pixel au premier essai. Le manifeste et le fichier HTML ont été téléchargés en HTTP 200, sans redirection, depuis l’URL utilisée par l’APK. Le protocole 1 et l’empreinte SHA-256 concordent. Une capture du Pixel confirme ensuite que l’interface 9 est active et que la vérification indique que l’interface est à jour. Le message d’import indique toujours qu’aucune nouvelle pesée Withings n’a été trouvée.
 
 ## Prochaine action
+
+- Après diffusion, vérifier sur Pixel le collage de « 4,6 g » pour l’huile d’olive, les 41 kcal et la reprise dans les récents.
 
 - Sur le Pixel, ouvrir un repas, reprendre une portion récente, l’ajuster et confirmer que le profil et le journal sont accessibles hors ligne. Vérifier aussi les pas et l’exécution de la sauvegarde et de la restauration sur V0.7.
 - Withings en pause. À la reprise, tester une pesée prise après la reconnexion, d’abord dans Withings puis dans Santé Connect, et vérifier la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).

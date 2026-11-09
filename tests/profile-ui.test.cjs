@@ -307,13 +307,13 @@ test('accepte une virgule dans la quantité et bloque les portions invalides', t
     const before = structuredClone(app.data);
     app.fill('grams', '4,6');
     assert.match(app.text('portion-total'), /41 kcal/);
-    for (const invalid of ['', '0,9', '2000,1', '4,65', '4,', '4,6 g', '2e2', '2000']) {
+    for (const invalid of ['', '0,9', '2000,1', '4,65', '4,', '4,6 kg', '4,6 ml', '2e2', '2000']) {
         app.fill('grams', invalid);
         assert.equal(app.field('add-portion').disabled, true, invalid);
         app.submit('portion-form');
     }
     assert.deepEqual(app.data, before);
-    app.fill('grams', '4,6');
+    app.fill('grams', '4,6 g');
     assert.equal(app.field('add-portion').disabled, false);
     assert.equal(app.visible('portion-error'), false);
     assert.match(app.text('portion-total'), /41 kcal/);
@@ -327,6 +327,18 @@ test('accepte une virgule dans la quantité et bloque les portions invalides', t
     reopened.field('recent-food-list').querySelector('button').click();
     assert.equal(reopened.field('grams').value, '4.6');
     assert.match(reopened.text('portion-total'), /41 kcal/);
+    reopened.back();
+    reopened.fill('food-search', 'banane');
+    reopened.field('food-results').querySelector('button').click();
+    for (const amount of ["1'250,5 g", '1’250,5 g', '1 250,5 g', '1\u00a0250,5 g', '1\u202f250,5 g']) {
+        reopened.fill('grams', amount);
+        assert.equal(reopened.field('add-portion').disabled, false, amount);
+        assert.match(reopened.text('portion-total'), /1\s125 kcal/);
+    }
+    for (const amount of ['1,250 g', '1 25 g', '2’000,1 g']) {
+        reopened.fill('grams', amount);
+        assert.equal(reopened.field('add-portion').disabled, true, amount);
+    }
 });
 
 test('les portions utilisent les valeurs propres à l’état et acceptent une quantité décimale', t => {

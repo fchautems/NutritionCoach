@@ -871,7 +871,10 @@ function setPortionState(grams = currentPortionState().portion) {
 function renderPortion() {
     const input = byId('grams');
     const amount = input.value.trim();
-    const grams = /^\d+(?:[,.]\d)?$/.test(amount) ? Number(amount.replace(',', '.')) : NaN;
+    const numeric = amount.replace(/\s*g$/i, '');
+    const grams = /^(?:\d+|\d{1,3}[ \u00a0\u202f'’]\d{3})(?:[,.]\d)?$/.test(numeric)
+        ? Number(numeric.replace(/[ \u00a0\u202f'’]/g, '').replace(',', '.'))
+        : NaN;
     const state = currentPortionState();
     const valid = !!state && grams >= 1 && grams <= 2000;
     const kcal = valid ? Math.round(state.kcal * grams / 100) : 0;
