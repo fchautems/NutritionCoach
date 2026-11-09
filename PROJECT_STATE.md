@@ -4,6 +4,8 @@ Dernière mise à jour : 2026-11-09
 
 ## État vérifié
 
+- 2026-11-09. Lot final d’interface 14 sur `main` ([#8](https://github.com/fchautems/NutritionCoach/pull/8), [#9](https://github.com/fchautems/NutritionCoach/pull/9), [#10](https://github.com/fchautems/NutritionCoach/pull/10), [#11](https://github.com/fchautems/NutritionCoach/pull/11), [#12](https://github.com/fchautems/NutritionCoach/pull/12), [#13](https://github.com/fchautems/NutritionCoach/pull/13), [#14](https://github.com/fchautems/NutritionCoach/pull/14), [#17](https://github.com/fchautems/NutritionCoach/pull/17), [#18](https://github.com/fchautems/NutritionCoach/pull/18), [#19](https://github.com/fchautems/NutritionCoach/pull/19), [#20](https://github.com/fchautems/NutritionCoach/pull/20)). Raccourcis de repas et de date, recherche plus souple, récents par repas, portions décimales, liste des aliments du repas et confirmation des ajouts. Livraison via [le canal intégré](https://github.com/fchautems/NutritionCoach/tree/ui-channel), avec les APK déjà installées.
+
 - 2026-11-09. [Interface 13 publiée sur le canal intégré](https://github.com/fchautems/NutritionCoach/commit/6dab1aaedac009be4e78df3d9d813255428709af) après fusion de la [PR #15](https://github.com/fchautems/NutritionCoach/pull/15). Elle passe à 131 aliments hors ligne et conserve les écrans des pas et de la sauvegarde selon le pont Android installé. Elle s’applique avec l’APK existante.
 
 - 2026-11-09. L’utilisateur confirme que l’interface 12 fonctionne sur son Pixel et donne la priorité à un catalogue nettement plus large et à l’usage quotidien.
@@ -24,6 +26,8 @@ Dernière mise à jour : 2026-11-09
 - Sur `main`, l’aperçu V0.4 embarque l’interface 3 comme base et y ajoute le profil détaillé, l’estimation de maintien et l’objectif de poids. Les données supplémentaires sont enregistrées dans le profil Android existant. Le pont V0.3 reste compatible avec la partie historique de cette interface.
 
 ## Décisions et changements
+
+- 2026-11-09. Les tâches horaires d’amélioration et quotidiennes de publication sont désactivées à la demande de Fréd. Les préversions Android #5 et #6 restent en brouillon et le bilan des pas #16 dépend de cette préversion.
 
 - 2026-11-09. Le passage de coordination quotidien à 18 h 30, heure suisse, vérifie et publie les lots d’interface prêts sur le canal intégré. La tâche horaire prépare les changements en PR. Une diffusion exige une vérification du lot final et de la conservation des données. Les préversions Android suivent leur revue séparée.
 
@@ -55,6 +59,8 @@ Dernière mise à jour : 2026-11-09
 - 2026-11-08. Aperçu Android V0.5. Import local en lecture seule du poids Withings via Health Connect sur Android 14 et plus, à l’ouverture après autorisation et sur demande. L’utilisateur choisit si la dernière pesée doit servir de poids actuel. La tendance rassemble les pesées importées et manuelles.
 
 ## Contrôles et limites
+
+- 2026-11-09. Les 11 contrôles Android de PR sont réussis. Les 25 tests DOM passent sur les sources et sur le candidat du canal, en Europe/Zurich et America/Los_Angeles. Le retour hors ligne 13 → candidat → 13 avec pont Android simulé relit une nouvelle saisie et conserve le journal historique, le profil, l’objectif et les pesées. Le toucher, le clavier et TalkBack restent à vérifier sur le Pixel.
 
 - 2026-11-09. Interface 13. La [CI Android de la PR #15](https://github.com/fchautems/NutritionCoach/actions/runs/42603582833) et les 11 tests DOM des sources passent. Les 16 tests du candidat assemblé sur l’interface 12 passent en Europe/Zurich et America/Los_Angeles. Le test avec pont simulé vérifie la relecture hors ligne d’une saisie du nouveau catalogue par la 12 ainsi que la conservation du journal, du profil, de l’objectif et des pesées. Après expiration du cache GitHub, les URL HTTPS utilisées par l’APK servent le manifeste 13 et le HTML correspondant, dont le SHA-256 concorde. L’installation sur le Pixel reste à confirmer.
 
@@ -93,7 +99,7 @@ Dernière mise à jour : 2026-11-09
 
 ## Prochaine action
 
-- Sur le Pixel, appliquer l’interface 13 depuis « Paramètres → Vérifier les mises à jour », puis essayer « Plats préparés → Lasagnes → portion » et chercher le riz complet cuit et sec.
+- Sur le Pixel, appliquer l’interface 14 depuis « Paramètres → Vérifier les mises à jour », puis essayer un ajout depuis le catalogue et une saisie manuelle, avec et sans TalkBack.
 
 - Sur le Pixel, ouvrir un repas, reprendre une portion récente, l’ajuster et confirmer que le profil et le journal sont accessibles hors ligne. Vérifier aussi les pas et l’exécution de la sauvegarde et de la restauration sur V0.7.
 - Withings en pause. À la reprise, tester une pesée prise après la reconnexion, d’abord dans Withings puis dans Santé Connect, et vérifier la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).
