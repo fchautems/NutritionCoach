@@ -422,6 +422,7 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
             <div id="total" class="total"></div>
             <div class="meter" aria-hidden="true"><span id="fill"></span></div>
             <p id="balance"></p>
+            <p id="walking-balance" hidden></p>
             <button id="goal-button" class="goal" type="button"></button>
         </div>
 
@@ -433,6 +434,18 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
                 <p>NOLATR · <strong id="nolatr-steps"></strong></p>
             </div>
             <button id="steps-refresh" class="link-button" type="button" hidden>Actualiser</button>
+            <div id="step-estimate" class="spaced" hidden>
+                <label id="step-source-label" for="step-source" hidden>Source du calcul</label>
+                <select id="step-source" hidden>
+                    <option value="fit">Google Fit</option>
+                    <option value="nolatr">NOLATR</option>
+                </select>
+                <button id="estimate-walking" class="link-button" type="button"
+                    aria-describedby="step-estimate-hint">Estimer l’effet de ma marche</button>
+                <p id="step-estimate-hint" class="hint">Pour la marche en plus de ta semaine habituelle. Estimation
+                    du jour, objectif enregistré inchangé.</p>
+                <p id="step-estimate-result" role="status" hidden></p>
+            </div>
         </section>
 
         <h2 class="section-title">Tes repas</h2>
@@ -599,6 +612,8 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
 'use strict';
 const host = window.NutritionHost;
 const stepsBridge = typeof host?.readSteps === 'function';
+let stepCounts;
+let walkingReference;
 const detailedProfile = host && typeof host.saveProfileDetails === 'function';
 const byId = id => document.getElementById(id);
 const meals = [
@@ -873,6 +888,13 @@ function mealButton(meal, entries) {
 
 function refreshSteps(interactive = false) {
     if (!stepsBridge) return;
+    stepCounts = null;
+    walkingReference = null;
+    byId('step-estimate').hidden = true;
+    byId('estimate-walking').disabled = false;
+    byId('step-source').disabled = false;
+    message('step-estimate-result', '');
+    message('walking-balance', '');
     byId('steps').hidden = false;
     byId('steps-counts').hidden = true;
     byId('steps-refresh').hidden = true;
@@ -882,7 +904,12 @@ function refreshSteps(interactive = false) {
 
 function showSteps(event) {
     const {day, status, fit, nolatr} = event.detail;
-    if (screen !== 'today' || day !== dateKey(date)) return;
+    if (screen !== 'today') return;
+    if (walkingReference?.days[0] === day && walkingReference.today === dateKey(date)) {
+        collectWalkingDay(status, {fit, nolatr});
+        return;
+    }
+    if (day !== dateKey(date)) return;
     const messages = {
         denied: 'Autorise la lecture des pas dans Santé Connect.',
         unavailable: 'Le suivi des pas requiert Santé Connect sur Android 14 ou plus.',
@@ -894,6 +921,7 @@ function showSteps(event) {
         const label = count => count === null ? 'Aucun pas transmis' : formatted(count) + ' pas';
         byId('fit-steps').textContent = label(fit);
         byId('nolatr-steps').textContent = label(nolatr);
+        offerWalkingEstimate(day, {fit, nolatr});
     }
     message('steps-status', messages[status] || '');
     const button = byId('steps-refresh');
@@ -901,6 +929,85 @@ function showSteps(event) {
     button.textContent = status === 'denied' ? 'Autoriser la lecture' : 'Actualiser';
 }
 
+function offerWalkingEstimate(day, counts) {
+    if (day !== dateKey(new Date())) return;
+    const age = ageOn(state.profile?.birthDate, day);
+    const weight = weightValue(String(state.profile?.weight ?? ''));
+    const sources = Object.keys(counts).filter(source => Number.isSafeInteger(counts[source]) && counts[source] > 0);
+    if (age === null || age < 18 || weight === null || !sources.length) return;
+
+    stepCounts = counts;
+    const select = byId('step-source');
+    for (const option of select.options) option.disabled = !sources.includes(option.value);
+    if (!sources.includes(select.value)) select.value = sources[0];
+    select.hidden = byId('step-source-label').hidden = sources.length === 1;
+    byId('step-estimate').hidden = false;
+}
+
+function estimateWalking() {
+    if (!stepCounts || walkingReference) return;
+    const today = dateKey(new Date());
+    if (today !== dateKey(date)) return;
+    const cursor = new Date(date);
+    const days = Array.from({length: 7}, () => {
+        cursor.setDate(cursor.getDate() - 1);
+        return dateKey(cursor);
+    });
+    const source = byId('step-source').value;
+    walkingReference = {today, days, source, steps: stepCounts[source], samples: []};
+    byId('estimate-walking').disabled = true;
+    byId('step-source').disabled = true;
+    message('walking-balance', '');
+    message('step-estimate-result', 'Lecture des pas des sept derniers jours…');
+    host.readSteps(days[0], false);
+}
+
+function collectWalkingDay(status, counts) {
+    const reference = walkingReference;
+    const count = counts[reference.source];
+    if (status === 'done' && Number.isSafeInteger(count) && count > 0) reference.samples.push(count);
+    reference.days.shift();
+    if (reference.days.length && status === 'done') {
+        host.readSteps(reference.days[0], false);
+        return;
+    }
+
+    walkingReference = null;
+    byId('estimate-walking').disabled = false;
+    byId('step-source').disabled = false;
+    if (status !== 'done' || reference.samples.length < 5) {
+        message('step-estimate-result', 'Estimation indisponible. Il faut au moins cinq jours de pas de la même source.');
+        return;
+    }
+
+    const samples = reference.samples.sort((a, b) => a - b);
+    const typical = Math.round((samples[Math.floor((samples.length - 1) / 2)]
+        + samples[Math.floor(samples.length / 2)]) / 2);
+    const surplus = Math.max(0, reference.steps - typical);
+    // Net walking cost (3.8 minus 1 MET), assuming 0.70 m per step and 5 km/h on level ground.
+    const weight = weightValue(String(state.profile.weight));
+    const net = 2.8 * weight * surplus * 0.0007 / 5;
+    const extra = Math.min(150, Math.round(net / 10) * 10);
+    const source = reference.source === 'fit' ? 'Google Fit' : 'NOLATR';
+    const label = source + ' · Repère habituel : ' + formatted(typical) + ' pas. ';
+    if (extra === 0) {
+        message('step-estimate-result', label + 'Objectif du jour inchangé.');
+        return;
+    }
+    const dailyGoal = state.goal + extra;
+    const remaining = dailyGoal - sum(dayEntries());
+    const balance = remaining === 0 ? 'Repère atteint.' : formatted(Math.abs(remaining))
+        + (remaining < 0 ? ' kcal au-dessus.' : ' kcal restantes.');
+    message('walking-balance', 'Avec la marche · ≈ ' + formatted(dailyGoal) + ' kcal. ' + balance);
+    message('step-estimate-result', label + 'Marche supplémentaire : environ ' + formatted(extra)
+        + ' kcal. Le bilan du jour affiche le repère ajusté.');
+}
+
+byId('step-source').addEventListener('change', () => {
+    message('step-estimate-result', '');
+    message('walking-balance', '');
+});
+byId('estimate-walking').addEventListener('click', estimateWalking);
 byId('steps-refresh').addEventListener('click', () => refreshSteps(true));
 window.addEventListener('nutrition-steps', showSteps);
 window.addEventListener('nutrition-resume', () => {

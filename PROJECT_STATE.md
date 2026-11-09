@@ -1,6 +1,6 @@
 # NutritionCoach — état du projet
 
-Dernière mise à jour : 2026-11-08
+Dernière mise à jour : 2026-11-09
 
 ## État vérifié
 
@@ -76,3 +76,9 @@ Dernière mise à jour : 2026-11-08
 
 - Installer l’aperçu V0.6 sur l’Android de la personne qui porte le bracelet. Dans le journal, ouvrir « Pas », autoriser la lecture puis actualiser après la synchronisation habituelle du bracelet. Vérifier le compteur NOLATR séparément de Fit. Un compteur Fit seul valide uniquement la présence de données Fit.
 - Le diagnostic Withings est mis en pause.
+
+## Repère calorique des pas, proposition du 9 novembre 2026
+
+- 2026-11-09. Le journal du jour peut afficher, à la demande, un repère calorique issu des pas au-dessus de la médiane des sept jours précédents. L’estimation utilise la même source pour toutes les lectures, exige cinq jours de référence et plafonne l’ajout à 150 kcal. L’objectif enregistré et les jours passés restent lisibles avec leurs valeurs habituelles. L’interface utilise le pont déjà disponible dans l’aperçu Android de la PR #5.
+- 2026-11-09. Les 14 tests DOM sur la branche et les 19 tests du candidat combinant les pas et le catalogue sur l’interface 12 passent. Le candidat a été vérifié en Europe/Zurich et America/Los_Angeles. Les tests couvrent les données absentes, l’isolement des sources, le plafond, la navigation en cours de lecture, les calories restantes et la conservation du journal, du profil, de l’objectif et des pesées en revenant à la 12. Le pont est simulé.
+- Prochaine action. Sur Pixel, vérifier qu’une source a transmis cinq jours et mesurer le délai de lecture. Comparer un jour habituel et un jour nettement plus actif. La longueur du pas, l’allure et la couverture du capteur restent des hypothèses. [Méthode et piste de régularité hebdomadaire](docs/BILAN_PAS.md).
