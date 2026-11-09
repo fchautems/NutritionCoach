@@ -1,6 +1,6 @@
 # NutritionCoach — état du projet
 
-Dernière mise à jour : 2026-11-08
+Dernière mise à jour : 2026-11-09
 
 ## État vérifié
 
@@ -20,6 +20,8 @@ Dernière mise à jour : 2026-11-08
 - Sur `main`, l’aperçu V0.4 embarque l’interface 3 comme base et y ajoute le profil détaillé, l’estimation de maintien et l’objectif de poids. Les données supplémentaires sont enregistrées dans le profil Android existant. Le pont V0.3 reste compatible avec la partie historique de cette interface.
 
 ## Décisions et changements
+
+- 2026-11-09. La PR #8 complète les raccourcis de repas. Depuis un repas, le bouton « Journal » et le retour Android ramènent à la tuile du repas consulté, sur la date affichée. Depuis une recherche, le premier retour Android ramène au catalogue.
 
 - 2026-11-08. Sur Aujourd’hui et dans le journal d’un autre jour, « Ajouter un aliment » apparaît juste sous le bilan calorique. Trois tuiles ouvrent directement la recherche du repas choisi et affichent son total si des aliments sont déjà enregistrés. Sur un écran étroit, les tuiles se disposent sur une colonne. Ce parcours remplace le sélecteur de repas en bas du journal.
 
@@ -49,6 +51,8 @@ Dernière mise à jour : 2026-11-08
 - 2026-11-08. Aperçu Android V0.5. Import local en lecture seule du poids Withings via Health Connect sur Android 14 et plus, à l’ouverture après autorisation et sur demande. L’utilisateur choisit si la dernière pesée doit servir de poids actuel. La tendance rassemble les pesées importées et manuelles.
 
 ## Contrôles et limites
+
+- 2026-11-09. Interface 12 et manifeste HTTPS relus. Le SHA-256 correspond. Le test de retour à la tuile reproduit la perte de focus avant correction. Les 11 tests DOM des sources passent, ainsi que les 15 tests du candidat sur le canal 12 et les 20 du candidat avec les PR #9 à #13 appliquées localement. Un contrôle supplémentaire avec stockage simulé confirme la conservation du journal, du profil, de l’objectif et des pesées et la relecture d’une saisie antidatée après retour hors ligne à l’interface 12. Le défilement et l’annonce TalkBack restent à vérifier sur Pixel.
 
 - 2026-11-08. Accès direct aux repas. Onze tests DOM passent sur les sources et quinze sur le HTML candidat construit depuis l’interface 12, dont l’ajout à une date passée et la conservation des totaux. Le contrôle 12 → candidate → 12 avec stockage Android simulé confirme la relecture du profil, de l’objectif, du journal et des pesées. Le rendu tactile sur Pixel reste à vérifier.
 
@@ -85,6 +89,6 @@ Dernière mise à jour : 2026-11-08
 
 ## Prochaine action
 
-- Préparer la diffusion de l’accueil via le canal intégré, puis vérifier sur le Pixel la position des tuiles et leur ouverture directe sur le bon repas.
+- Après diffusion via le canal intégré, vérifier sur Pixel l’ouverture du bon repas et le retour à sa tuile sur une journée passée, avec « Journal » et le geste Retour. Vérifier aussi l’annonce de la tuile avec TalkBack.
 - Sur le Pixel, ouvrir un repas, reprendre une portion récente, l’ajuster et confirmer que le profil et le journal sont accessibles hors ligne. Vérifier aussi les pas et l’exécution de la sauvegarde et de la restauration sur V0.7.
 - Withings en pause. À la reprise, tester une pesée prise après la reconnexion, d’abord dans Withings puis dans Santé Connect, et vérifier la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).

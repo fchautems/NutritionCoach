@@ -891,6 +891,7 @@ function mealButton(meal, entries) {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'meal';
+    button.dataset.meal = meal.id;
     const svg = icon(meal.illustration);
     svg.setAttribute('class', 'meal-mark');
     const label = document.createElement('span');
@@ -982,6 +983,11 @@ function openMeal(meal) {
     show('meal');
     renderMealEntries();
     byId('meal-title').focus();
+}
+
+function returnToJournal() {
+    renderToday();
+    byId('meals').querySelector(`[data-meal="${currentMeal.id}"]`).focus();
 }
 
 function weightValue(value) {
@@ -1395,7 +1401,7 @@ byId('previous').addEventListener('click', () => { date.setDate(date.getDate() -
 byId('next').addEventListener('click', () => { date.setDate(date.getDate() + 1); renderToday(); });
 byId('return-today').addEventListener('click', () => { date = new Date(); renderToday(); });
 byId('cancel-profile').addEventListener('click', renderToday);
-byId('back').addEventListener('click', renderToday);
+byId('back').addEventListener('click', returnToJournal);
 byId('settings-button').addEventListener('click', () => {
     updateStatus();
     updateWithingsStatus();
@@ -1497,7 +1503,8 @@ window.nutritionBack = () => {
         resetCatalog();
         return true;
     }
-    if (screen === 'meal' || (screen === 'profile' && state.profile)) { renderToday(); return true; }
+    if (screen === 'meal') { returnToJournal(); return true; }
+    if (screen === 'profile' && state.profile) { renderToday(); return true; }
     return false;
 };
 </script>

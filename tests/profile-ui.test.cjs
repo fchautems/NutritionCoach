@@ -169,11 +169,21 @@ test('ouvre le bon repas en un appui et ajoute sur le jour affiché', t => {
 
     assert.equal(app.field('day').dateTime, '2026-11-06');
     assert.equal(meals()[2].querySelector('small').textContent, '107 kcal');
+    assert.equal(app.document.activeElement, meals()[2]);
     assert.deepEqual(app.data, {...oldState, entries: [...oldState.entries, {
         id: 'added', date: '2026-11-06', meal: 'dinner', name: 'Chocolat noir · 20 g', kcal: 107
     }]});
     app.click('return-today');
     assert.equal(app.text('total'), '247 kcal');
+
+    meals()[1].click();
+    app.fill('food-search', 'riz');
+    assert.equal(app.back(), true);
+    assert.equal(app.visible('meal'), true);
+    assert.equal(app.visible('food-categories'), true);
+    assert.equal(app.back(), true);
+    assert.equal(app.document.activeElement, meals()[1]);
+    assert.equal(app.field('day').dateTime, today);
 });
 
 test('compare les rythmes et permet de modifier une échéance serrée ou le poids cible', t => {
