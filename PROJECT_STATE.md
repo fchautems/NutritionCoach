@@ -1,6 +1,6 @@
 # NutritionCoach — état du projet
 
-Dernière mise à jour : 2026-11-08
+Dernière mise à jour : 2026-11-09
 
 ## État vérifié
 
@@ -64,6 +64,14 @@ Dernière mise à jour : 2026-11-08
 - Profil V0.4 : neuf tests JUnit et quatre tests DOM réussis. [CI de la PR #4 réussie](https://github.com/fchautems/NutritionCoach/actions/runs/42378225698). Compilation locale avec le SDK Android 35 et certificat vérifié identique à celui de l’aperçu V0.3 distribué. L’ouverture du profil détaillé sur le Pixel a été confirmée. Le scénario complet de conservation du journal reste à vérifier.
 
 - Interface 5 : six tests DOM réussis, y compris maintien de l’ancien journal, confirmation de l’objectif, pâtes sèches et cuites, et saisie décimale. Le pont Android existant est utilisé.
+
+### Quantités décimales au clavier
+
+- 2026-11-09. Le champ de portion accepte la virgule et le point. Une saisie comme « 4,6 » affiche le même calcul que le raccourci de 4,6 g. Une quantité hors plage ou trop précise est signalée dans le formulaire. Les entrées utilisent le format existant du journal, compatible avec les récents et le protocole 1.
+- Le test échoue sur l’ancien champ avec « 4,6 ». Onze tests DOM passent sur les sources, quinze sur le candidat dérivé du HTML 12 téléchargé et dix-neuf en combinaison avec les PR #8 à #11. Le SHA-256 de l’interface 12 concorde avec le manifeste. Le contrôle hors ligne 12 → candidat → 12 avec pont simulé vérifie que la portion décimale est relue et proposée dans les récents, et que le journal existant, le profil, l’objectif et les pesées sont préservés.
+- Prochaine étape. Appliquer le correctif au HTML du canal courant lors de la diffusion coordonnée. Sur Pixel, saisir « 4,6 » au clavier dans la portion d’huile d’olive et vérifier les 41 kcal puis la reprise dans les récents. Le lancement de Chromium est bloqué dans cet environnement.
+
+### Contrôles des préversions et de Santé Connect
 
 - Interface 6 et V0.5. Sept tests DOM et dix tests JUnit réussis. APK compilée avec le SDK 35. L’identifiant, le certificat de l’aperçu V0.4 et les permissions de lecture sont vérifiés. L’utilisateur confirme que l’import a abouti sur son Pixel. L’attribution des mesures dans le cas d’une balance partagée reste à vérifier.
 

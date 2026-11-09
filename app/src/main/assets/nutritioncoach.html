@@ -556,7 +556,7 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
         <p id="weighing-note" class="hint" hidden></p>
         <div id="portion-presets" class="presets" aria-label="Quantités proposées"></div>
         <label for="grams">Quantité (g)</label>
-        <input id="grams" type="number" inputmode="decimal" min="1" max="2000" step="0.1" required>
+        <input id="grams" type="text" inputmode="decimal" required aria-describedby="portion-error">
         <p id="portion-total" class="portion-total" aria-live="polite"></p>
         <p id="portion-error" class="error" role="alert" hidden></p>
         <div class="actions">
@@ -870,18 +870,23 @@ function setPortionState(grams = currentPortionState().portion) {
 
 function renderPortion() {
     const input = byId('grams');
-    const grams = input.valueAsNumber;
+    const amount = input.value.trim();
+    const grams = /^\d+(?:[,.]\d)?$/.test(amount) ? Number(amount.replace(',', '.')) : NaN;
     const state = currentPortionState();
-    const valid = !!state && input.validity.valid;
+    const valid = !!state && grams >= 1 && grams <= 2000;
     const kcal = valid ? Math.round(state.kcal * grams / 100) : 0;
+    const canAdd = valid && kcal >= 1 && kcal <= 10000;
     byId('portion-total').textContent = valid ? '≈ ' + formatted(kcal) + ' kcal' : 'Indique une quantité.';
-    byId('add-portion').disabled = !valid || kcal < 1 || kcal > 10000;
+    byId('add-portion').disabled = !canAdd;
     byId('portion-presets').querySelectorAll('button').forEach(button => {
         button.setAttribute('aria-pressed', String(Number(button.dataset.grams) === grams));
     });
-    message('portion-error', valid && (kcal < 1 || kcal > 10000)
-        ? 'Choisis une portion entre 1 et 10 000 kcal.' : '');
-    return kcal;
+    let error = '';
+    if (amount && !valid) error = 'Indique de 1 à 2 000 g, avec au plus une décimale.';
+    else if (valid && !canAdd) error = 'Choisis une portion entre 1 et 10 000 kcal.';
+    input.setAttribute('aria-invalid', String(!!error));
+    message('portion-error', error);
+    return canAdd ? {grams, kcal} : null;
 }
 
 function mealButton(meal, entries) {
@@ -1330,9 +1335,9 @@ byId('weighing-state').addEventListener('change', () => setPortionState());
 byId('grams').addEventListener('input', renderPortion);
 byId('portion-form').addEventListener('submit', event => {
     event.preventDefault();
-    const kcal = renderPortion();
-    if (byId('add-portion').disabled) return;
-    const grams = byId('grams').valueAsNumber;
+    const portion = renderPortion();
+    if (!portion) return;
+    const {grams, kcal} = portion;
     const name = portionLabel(selectedFood, currentPortionState()) + ' · ' + formatted(grams) + ' g';
     if (!host.addEntry(dateKey(date), currentMeal.id, name, String(kcal))) {
         message('portion-error', 'L’aliment n’a pas été enregistré. Réessaie.');
