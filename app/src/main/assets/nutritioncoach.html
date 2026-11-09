@@ -547,8 +547,9 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
     <p id="withings-history-count"></p>
     <ul id="withings-weights" role="list" aria-label="Pesées, de la plus récente à la plus ancienne" tabindex="0"></ul>
 </dialog>
-<dialog id="portion-dialog" aria-labelledby="portion-title">
+<dialog id="portion-dialog" aria-labelledby="portion-title" aria-describedby="portion-destination">
     <h2 id="portion-title"></h2>
+    <p id="portion-destination" class="hint"></p>
     <p id="portion-reference"></p>
     <form id="portion-form">
         <div id="weighing-options" hidden>
@@ -847,6 +848,7 @@ function setManual(open) {
 function openPortion(food, index = 0, grams = food.states[index].portion) {
     selectedFood = food;
     byId('portion-title').textContent = food.name;
+    byId('portion-destination').textContent = currentMeal.label + ' · ' + dateFormat.format(date);
     const select = byId('weighing-state');
     byId('weighing-options').hidden = food.states.length === 1;
     select.replaceChildren(...food.states.map((state, index) => new Option(state.weighing, index)));

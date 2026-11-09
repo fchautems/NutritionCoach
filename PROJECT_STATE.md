@@ -1,6 +1,6 @@
 # NutritionCoach — état du projet
 
-Dernière mise à jour : 2026-11-08
+Dernière mise à jour : 2026-11-09
 
 ## État vérifié
 
@@ -20,6 +20,8 @@ Dernière mise à jour : 2026-11-08
 - Sur `main`, l’aperçu V0.4 embarque l’interface 3 comme base et y ajoute le profil détaillé, l’estimation de maintien et l’objectif de poids. Les données supplémentaires sont enregistrées dans le profil Android existant. Le pont V0.3 reste compatible avec la partie historique de cette interface.
 
 ## Décisions et changements
+
+- 2026-11-09. PR #10. La fenêtre de portion affiche le repas et la date avant l’ajout. Elle expose ces informations comme description de la fenêtre aux lecteurs d’écran. Le libellé est recalculé à chaque ouverture, pour le jour courant comme pour une saisie antidatée.
 
 - 2026-11-08. Activation de la tâche horaire d’amélioration. Chaque passage reprend la branche par défaut, vérifie les PR et le canal diffusé, puis propose les changements vérifiés sur une branche `auto/nutritioncoach-*` via une PR. La fusion et la diffusion suivent le flux de coordination.
 - 2026-11-08. Après avoir choisi un repas, « Aliments récents » propose jusqu’à trois aliments distincts reconnus dans le journal, par ordre d’ajout. Chaque raccourci reprend l’état de pesée et la dernière portion, modifiables avant validation. La reconnaissance utilise le libellé du catalogue et les kcal enregistrées. Les anciens formats et les saisies libres sans correspondance restent visibles dans le journal. Le pont, le stockage et les valeurs OSAV restent identiques.
@@ -47,6 +49,8 @@ Dernière mise à jour : 2026-11-08
 - 2026-11-08. Aperçu Android V0.5. Import local en lecture seule du poids Withings via Health Connect sur Android 14 et plus, à l’ouverture après autorisation et sur demande. L’utilisateur choisit si la dernière pesée doit servir de poids actuel. La tendance rassemble les pesées importées et manuelles.
 
 ## Contrôles et limites
+
+- 2026-11-09. Interface 12 et empreinte du canal HTTPS vérifiées. Les 11 tests DOM des sources passent, ainsi que les 15 tests du candidat et les 21 du candidat combiné avec les autres PR d’interface dans les fuseaux Europe/Zurich et America/Los_Angeles. Le test de date couvre le changement de repas et de jour et l’annulation sans écriture. Le contrôle hors ligne 12 → candidat → 12 relit une portion au repas et à la date annoncés et confirme la conservation du journal, du profil, de l’objectif et des pesées avec pont Android simulé.
 
 - 2026-11-08. Interface 12. Les 14 tests DOM passent avec le HTML diffusé, dont les pas, les entrées récentes et la sauvegarde/restauration via pont simulé. Deux contrôles de relecture hors ligne couvrent les passages 9 → 12 → 9 et 11 → 12 → 11 avec conservation du journal, du profil, de l’objectif et des pesées. Le manifeste et le HTML sont servis en HTTP 200 sans redirection par l’URL utilisée par l’APK. L’empreinte SHA-256 concorde. Le lancement de Chromium tactile est bloqué par l’environnement. Une capture du Pixel confirme que l’interface 12 est active, que les paramètres la signalent à jour et que les commandes de sauvegarde et de restauration sont visibles. La capture ne valide ni leur exécution ni la reprise d’une portion.
 
@@ -87,5 +91,6 @@ Dernière mise à jour : 2026-11-08
 
 ## Prochaine action
 
+- Après diffusion, ouvrir une date passée sur Pixel, choisir un repas et une portion, puis vérifier la lisibilité du repas et de la date avec le texte agrandi et leur annonce par TalkBack.
 - Sur le Pixel, ouvrir un repas, reprendre une portion récente, l’ajuster et confirmer que le profil et le journal sont accessibles hors ligne. Vérifier aussi les pas et l’exécution de la sauvegarde et de la restauration sur V0.7.
 - Withings en pause. À la reprise, tester une pesée prise après la reconnexion, d’abord dans Withings puis dans Santé Connect, et vérifier la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).

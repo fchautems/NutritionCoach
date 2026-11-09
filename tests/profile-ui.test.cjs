@@ -221,6 +221,13 @@ test('ouvre directement une date du journal et saisit dans le jour sélectionné
 
     app.field('meals').querySelectorAll('button')[1].click();
     assert.match(app.text('meal-entries'), /Poire/);
+    app.fill('food-search', 'pomme');
+    app.field('food-results').querySelector('button').click();
+    assert.equal(app.field('portion-dialog').getAttribute('aria-describedby'), 'portion-destination');
+    assert.match(app.text('portion-destination'), /^Midi · .*25 octobre 2026$/);
+    assert.equal(app.back(), true);
+    assert.deepEqual(data, before);
+
     app.click('manual-open');
     app.fill('food', 'Soupe');
     app.fill('kcal', '120');
@@ -232,6 +239,11 @@ test('ouvre directement une date du journal et saisit dans le jour sélectionné
     assert.equal(app.text('total'), '247 kcal');
     assert.deepEqual(data, {...before, entries: [...before.entries,
         {id: 'added', date: past, meal: 'lunch', name: 'Soupe', kcal: 120}]});
+
+    app.field('meals').querySelectorAll('button')[2].click();
+    app.fill('food-search', 'pomme');
+    app.field('food-results').querySelector('button').click();
+    assert.match(app.text('portion-destination'), /^Soir · .*7 novembre 2026$/);
 });
 
 test('garde le journal et le catalogue utilisables avec le pont de la V0.3', t => {
