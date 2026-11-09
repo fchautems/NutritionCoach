@@ -409,3 +409,45 @@ test('affiche les 243 pesées importées par date depuis le diagnostic et le pro
     assert.equal(app.field('withings-history').open, true);
     assert.deepEqual(visibleDays(), days.map(record => record.day));
 });
+
+test('affiche et annonce le nombre de fiches trouvées sans écrire dans le journal', t => {
+    const data = structuredClone(oldState);
+    data.profile.weighIns = {[today]: 78.5};
+    data.withingsWeights = {old: {day: '2026-11-01', kg: 78}};
+    const before = structuredClone(data);
+    const app = openApp(t, {data});
+    app.field('meals').querySelectorAll('button')[1].click();
+
+    const count = app.field('search-count');
+    const results = app.field('food-results');
+    assert.equal(count.getAttribute('role'), 'status');
+    assert.equal(app.visible('search-count'), true);
+    assert.equal(count.textContent, '');
+
+    app.fill('food-search', 'pomme');
+    assert.ok(results.childElementCount > 1);
+    assert.equal(count.textContent, results.childElementCount + ' résultats');
+    const announcement = count.firstChild;
+    app.fill('food-search', 'POMME');
+    assert.equal(count.firstChild, announcement);
+
+    app.fill('food-search', 'pâtes sans œufs');
+    assert.equal(results.childElementCount, 1);
+    assert.equal(count.textContent, '1 résultat');
+    results.firstElementChild.click();
+    assert.equal(app.field('portion-dialog').open, true);
+    app.back();
+    assert.equal(count.textContent, '1 résultat');
+
+    app.fill('food-search', 'sans correspondance');
+    assert.equal(count.textContent, '0 résultat');
+    assert.equal(app.visible('food-empty'), true);
+    assert.equal(app.visible('manual-open'), true);
+
+    app.back();
+    assert.equal(count.textContent, '');
+    assert.equal(app.visible('food-categories'), true);
+    app.field('food-categories').querySelector('[data-group="starches"]').click();
+    assert.equal(count.textContent, '');
+    assert.deepEqual(data, before);
+});

@@ -133,6 +133,7 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
 .category[data-group="dairy"], .category[data-group="other"] { background: #eee9f3; }
 .catalog-heading { display: flex; align-items: baseline; justify-content: space-between; gap: .4rem; }
 .catalog-heading .link-button { min-height: 3rem; white-space: nowrap; }
+.search-count:not(:empty) { margin-top: .4rem; color: var(--muted); font-size: .9rem; }
 .catalog-list { max-height: 23rem; overflow: auto; }
 .food-row {
     width: 100%; text-align: left; padding: .65rem .8rem; border: 0; box-shadow: none;
@@ -455,6 +456,7 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
                 <div id="recent-food-list" class="card catalog-list"></div>
             </section>
             <div id="food-categories" class="category-grid spaced"></div>
+            <p id="search-count" class="search-count" role="status" aria-atomic="true"></p>
             <section id="catalog-results" class="spaced" hidden aria-labelledby="results-title">
                 <div class="catalog-heading">
                     <h2 id="results-title" tabindex="-1">Résultats</h2>
@@ -787,6 +789,8 @@ function renderCatalog() {
     const showingResults = !!(query || selectedCategory);
     byId('food-categories').hidden = showingResults;
     byId('catalog-results').hidden = !showingResults;
+    const count = byId('search-count');
+    if (!query && count.textContent) count.textContent = '';
     if (!showingResults) {
         renderRecentFoods();
         return;
@@ -810,6 +814,11 @@ function renderCatalog() {
             + (food.states.length > 1 ? ' · ' + firstState.weighing.split(' · ')[0].toLowerCase() : '');
         results.appendChild(foodRow(food.name, detail, () => openPortion(food)));
     });
+    if (query) {
+        const total = matches.length;
+        const label = formatted(total) + (total > 1 ? ' résultats' : ' résultat');
+        if (count.textContent !== label) count.textContent = label;
+    }
 }
 
 function openCategory(id) {

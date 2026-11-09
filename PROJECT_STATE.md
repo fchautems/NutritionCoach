@@ -1,6 +1,6 @@
 # NutritionCoach — état du projet
 
-Dernière mise à jour : 2026-11-08
+Dernière mise à jour : 2026-11-09
 
 ## État vérifié
 
@@ -20,6 +20,8 @@ Dernière mise à jour : 2026-11-08
 - Sur `main`, l’aperçu V0.4 embarque l’interface 3 comme base et y ajoute le profil détaillé, l’estimation de maintien et l’objectif de poids. Les données supplémentaires sont enregistrées dans le profil Android existant. Le pont V0.3 reste compatible avec la partie historique de cette interface.
 
 ## Décisions et changements
+
+- 2026-11-09. Le nombre de fiches trouvées s’affiche sous la recherche, y compris à zéro. Le compteur est une zone de statut et ne répète pas le même total à chaque frappe. Effacer la recherche ou revenir aux catégories l’efface. Le parcours de portion et la saisie manuelle restent accessibles. Livraison prévue par le canal intégré, protocole 1.
 
 - 2026-11-08. Activation de la tâche horaire d’amélioration. Chaque passage reprend la branche par défaut, vérifie les PR et le canal diffusé, puis propose les changements vérifiés sur une branche `auto/nutritioncoach-*` via une PR. La fusion et la diffusion suivent le flux de coordination.
 - 2026-11-08. Après avoir choisi un repas, « Aliments récents » propose jusqu’à trois aliments distincts reconnus dans le journal, par ordre d’ajout. Chaque raccourci reprend l’état de pesée et la dernière portion, modifiables avant validation. La reconnaissance utilise le libellé du catalogue et les kcal enregistrées. Les anciens formats et les saisies libres sans correspondance restent visibles dans le journal. Le pont, le stockage et les valeurs OSAV restent identiques.
@@ -47,6 +49,8 @@ Dernière mise à jour : 2026-11-08
 - 2026-11-08. Aperçu Android V0.5. Import local en lecture seule du poids Withings via Health Connect sur Android 14 et plus, à l’ouverture après autorisation et sur demande. L’utilisateur choisit si la dernière pesée doit servir de poids actuel. La tendance rassemble les pesées importées et manuelles.
 
 ## Contrôles et limites
+
+- 2026-11-09. Le manifeste et le HTML servis pour l’interface 12 correspondent à `ui-channel` et à son empreinte. Onze tests DOM passent sur les sources et quinze sur le candidat dérivé de l’interface 12, dont le passage hors ligne 12 → candidat → 12 avec pont simulé. Une portion ajoutée depuis la recherche est relue dans la 12, avec le journal historique, le profil, l’objectif et les pesées conservés. Dans le candidat combiné avec les PR d’interface et le catalogue #15, les trois contrôles ciblés passent. Deux assertions de l’assemblage échouent aussi avant le compteur : le catalogue passe de 8 à 10 catégories et « patates cuites » passe de 1 à 3 résultats. À ajuster lors de la coordination des PR. L’annonce TalkBack reste à vérifier sur Pixel.
 
 - 2026-11-08. Interface 12. Les 14 tests DOM passent avec le HTML diffusé, dont les pas, les entrées récentes et la sauvegarde/restauration via pont simulé. Deux contrôles de relecture hors ligne couvrent les passages 9 → 12 → 9 et 11 → 12 → 11 avec conservation du journal, du profil, de l’objectif et des pesées. Le manifeste et le HTML sont servis en HTTP 200 sans redirection par l’URL utilisée par l’APK. L’empreinte SHA-256 concorde. Le lancement de Chromium tactile est bloqué par l’environnement. Une capture du Pixel confirme que l’interface 12 est active, que les paramètres la signalent à jour et que les commandes de sauvegarde et de restauration sont visibles. La capture ne valide ni leur exécution ni la reprise d’une portion.
 
@@ -80,6 +84,8 @@ Dernière mise à jour : 2026-11-08
 - 2026-11-08. L’interface 9 n’est pas apparue sur le Pixel au premier essai. Le manifeste et le fichier HTML ont été téléchargés en HTTP 200, sans redirection, depuis l’URL utilisée par l’APK. Le protocole 1 et l’empreinte SHA-256 concordent. Une capture du Pixel confirme ensuite que l’interface 9 est active et que la vérification indique que l’interface est à jour. Le message d’import indique toujours qu’aucune nouvelle pesée Withings n’a été trouvée.
 
 ## Prochaine action
+
+- Après diffusion coordonnée, essayer une recherche avec zéro, un et plusieurs résultats sur Pixel, puis effacer le texte et vérifier l’annonce TalkBack et l’accès à la saisie manuelle.
 
 - Sur le Pixel, ouvrir un repas, reprendre une portion récente, l’ajuster et confirmer que le profil et le journal sont accessibles hors ligne. Vérifier aussi les pas et l’exécution de la sauvegarde et de la restauration sur V0.7.
 - Withings en pause. À la reprise, tester une pesée prise après la reconnexion, d’abord dans Withings puis dans Santé Connect, et vérifier la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).
