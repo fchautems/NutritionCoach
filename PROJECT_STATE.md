@@ -21,6 +21,8 @@ Dernière mise à jour : 2026-11-09
 
 ## Décisions et changements
 
+- 2026-11-09. PR #9. La recherche place en tête la fiche dont le nom complet correspond au texte normalisé. « POMME » ouvre ainsi d’abord l’accès à la pomme, puis laisse les autres résultats dans leur ordre habituel. La navigation par catégories garde son ordre.
+
 - 2026-11-09. PR #9. La recherche reconnaît « patates », « filet de poulet » et « œufs durs ». Elle ouvre les fiches existantes des pommes de terre cuites à l’eau, du blanc de poulet grillé et de l’œuf dur. Les variantes de nom servent à la recherche. Le journal continue d’utiliser les libellés et les valeurs des fiches OSAV V7.1.
 
 - 2026-11-08. Activation de la tâche horaire d’amélioration. Chaque passage reprend la branche par défaut, vérifie les PR et le canal diffusé, puis propose les changements vérifiés sur une branche `auto/nutritioncoach-*` via une PR. La fusion et la diffusion suivent le flux de coordination.
@@ -51,6 +53,8 @@ Dernière mise à jour : 2026-11-09
 - 2026-11-08. Aperçu Android V0.5. Import local en lecture seule du poids Withings via Health Connect sur Android 14 et plus, à l’ouverture après autorisation et sur demande. L’utilisateur choisit si la dernière pesée doit servir de poids actuel. La tendance rassemble les pesées importées et manuelles.
 
 ## Contrôles et limites
+
+- 2026-11-09. Le test reproduit l’ancien classement de « POMME », vérifie la pomme à 52 kcal pour 100 g en tête et confirme que les autres résultats restent visibles. Les 12 tests DOM des sources, les 16 du candidat construit depuis le canal 12 vérifié et les 22 du candidat combiné passent. La relecture hors ligne via l’interface 12 retrouve la portion de pomme dans le bon repas et conserve le reste du journal, le profil, l’objectif et les pesées avec le pont simulé.
 
 - 2026-11-09. Manifeste et HTML 12 vérifiés sur le canal HTTPS. Les 12 tests DOM des sources, les 16 du candidat sur l’interface 12 et les 22 avec les autres PR d’interface passent. Le test couvre les trois noms courants et vérifie que « patate douce » et « filet de poulet cru » ne renvoient pas de fiche inadaptée. Le contrôle hors ligne 12 → candidat → 12 avec pont simulé confirme la relecture d’une portion ajoutée via « œufs durs » et la conservation du journal, du profil, de l’objectif et des pesées.
 
@@ -89,6 +93,7 @@ Dernière mise à jour : 2026-11-09
 
 ## Prochaine action
 
+- Après diffusion, chercher « pomme » sur Pixel et vérifier que le premier résultat ouvre la portion de pomme.
 - Sur Pixel après diffusion, chercher « patates cuites », ouvrir la fiche et vérifier que l’état de pesée et la portion sont lisibles avant validation.
 - Sur le Pixel, ouvrir un repas, reprendre une portion récente, l’ajuster et confirmer que le profil et le journal sont accessibles hors ligne. Vérifier aussi les pas et l’exécution de la sauvegarde et de la restauration sur V0.7.
 - Withings en pause. À la reprise, tester une pesée prise après la reconnexion, d’abord dans Withings puis dans Santé Connect, et vérifier la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).

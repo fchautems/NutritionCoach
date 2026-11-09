@@ -360,6 +360,18 @@ test('ouvre directement l’état de pesée recherché et garde les valeurs du j
 test('retrouve des aliments du catalogue par leur nom courant', t => {
     const app = openApp(t, {detailed: false});
     app.field('meals').querySelectorAll('button')[1].click();
+    app.fill('food-search', '  POMME  ');
+    const [first, ...others] = app.field('food-results').querySelectorAll('button');
+    assert.equal(first.querySelector('span').firstChild.textContent, 'Pomme');
+    assert.equal(first.querySelector('small').textContent, '52 kcal / 100 g');
+    assert.ok(others.some(row => row.textContent.startsWith('Laitue pommée')));
+    assert.ok(others.some(row => row.textContent.startsWith('Pommes de terre')));
+    first.click();
+    assert.equal(app.text('portion-title'), 'Pomme');
+    assert.equal(app.field('grams').value, '150');
+    assert.match(app.text('portion-total'), /78 kcal/);
+    app.field('portion-dialog').querySelector('.close').click();
+
     for (const [query, name, kcal] of [
         ['patates cuites', 'Pommes de terre nouvelles', 66],
         ['filet de poulet', 'Blanc de poulet grillé', 128],

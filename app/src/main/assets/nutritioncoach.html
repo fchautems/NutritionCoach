@@ -807,6 +807,10 @@ function renderCatalog() {
         });
         return index < 0 ? [] : [{food, index}];
     });
+    if (query) {
+        const exact = matches.findIndex(({food}) => searchKey(food.name) === query);
+        if (exact > 0) matches.unshift(matches.splice(exact, 1)[0]);
+    }
     const results = byId('food-results');
     results.textContent = '';
     results.hidden = !matches.length;
