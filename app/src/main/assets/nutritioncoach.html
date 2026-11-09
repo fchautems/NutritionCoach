@@ -127,9 +127,9 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
 }
 .category svg { width: 2.8rem; height: 2.3rem; }
 .category[data-group="meat"], .category[data-group="fruit"] { background: #f8e7e0; }
-.category[data-group="fish"] { background: #e6edf6; }
+.category[data-group="fish"], .category[data-group="drinks"] { background: #e6edf6; }
 .category[data-group="vegetables"] { background: #eef0e1; }
-.category[data-group="starches"], .category[data-group="eggs"] { background: #f7eddb; }
+.category[data-group="dishes"], .category[data-group="starches"], .category[data-group="eggs"] { background: #f7eddb; }
 .category[data-group="dairy"], .category[data-group="other"] { background: #eee9f3; }
 .catalog-heading { display: flex; align-items: baseline; justify-content: space-between; gap: .4rem; }
 .catalog-heading .link-button { min-height: 3rem; white-space: nowrap; }
@@ -285,6 +285,16 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
             <circle cx="22" cy="27" r="7.5" fill="#e6a953"/>
             <path d="M34 18c2-6 9-6 11-1 3 5-3 9-7 7-4 0-5-2-4-6Z" fill="#9aa96f"/>
             <path d="M34 30c1-5 8-6 11-1 3 5-3 10-8 7-3-1-4-3-3-6Z" fill="#bb956a"/>
+        </symbol>
+        <symbol id="food-dishes" viewBox="0 0 52 42">
+            <ellipse cx="26" cy="34" rx="22" ry="3" fill="#dbc8a9"/>
+            <path d="M8 31h36c0-10-8-17-18-17S8 21 8 31Z" fill="#efc67d" stroke="#a47e48" stroke-width="1.5"/>
+            <circle cx="26" cy="12" r="3" fill="#a47e48"/>
+        </symbol>
+        <symbol id="food-drinks" viewBox="0 0 52 42">
+            <path d="M15 8h22l-3 28H18Z" fill="#edf5f7" stroke="#6386a0" stroke-width="1.5"/>
+            <path d="M17 20h18l-2 15H19Z" fill="#95c0d8"/>
+            <path d="m28 23 4-17h6" fill="none" stroke="#6386a0" stroke-width="1.5" stroke-linecap="round"/>
         </symbol>
         <symbol id="food-other" viewBox="0 0 52 42">
             <path d="M9 10h10v6l4 6v13H5V22l4-6Z" fill="#e3b66f" stroke="#aa8045" stroke-width="1.4" stroke-linejoin="round"/>
@@ -607,7 +617,9 @@ const categories = [
     ['fruit', 'Fruits'],
     ['dairy', 'Produits laitiers'],
     ['eggs', 'Œufs et légumineuses'],
-    ['other', 'Boissons et divers']
+    ['dishes', 'Plats préparés'],
+    ['drinks', 'Boissons'],
+    ['other', 'Sauces et en-cas']
 ];
 // OSAV, Base de données suisse des valeurs nutritives V7.1, Generic Foods.
 // Each row gives the source ID, category, label, kcal per 100 g, default grams, shortcuts and weighing state.
@@ -619,12 +631,23 @@ const foods = [
     [13258, "meat", "Entrecôte de bœuf grillée", 162, 150, [100, 150, 200], "Cuite à point, sans gras ajouté"],
     [13297, "meat", "Bœuf haché", 211, 120, [60, 120, 150], "Grillé · après cuisson", [14237, 208, 125, [75, 125, 200], "Cru · avant cuisson"]],
     [691, "meat", "Jambon cuit", 104, 40, [20, 40, 60], "Tel que vendu, jambon de derrière"],
+    [13275, "meat", "Escalope de dinde grillée", 141, 120, [80, 120, 160], "Cuite, sans gras ni sel ajoutés"],
+    [693, "meat", "Jambon cru", 229, 40, [20, 40, 60], "Tel que vendu, partie consommée"],
+    [709, "meat", "Viande séchée", 190, 40, [20, 40, 60], "Telle que vendue, moyenne Grisons, Tessin et Valais"],
+    [13270, "meat", "Tranche de porc grillée", 162, 120, [80, 120, 160], "Cuite, noix de porc, sans gras ni sel ajoutés"],
+    [14183, "meat", "Saucisse de veau grillée", 232, 100, [60, 100, 140], "Cuite, sans gras ni sel ajoutés"],
+    [1589, "meat", "Saucisse de Vienne cuite", 220, 100, [50, 100, 150], "Cuite, poids de la portion consommée"],
     [13354, "fish", "Filet de saumon vapeur", 200, 120, [80, 120, 160], "Cuit, saumon d’élevage, sans arêtes ni gras ajouté"],
     [193, "fish", "Saumon fumé", 173, 50, [25, 50, 80], "Tel que vendu, prêt à manger"],
     [417, "fish", "Thon au naturel", 109, 100, [50, 100, 150], "En conserve, égoutté"],
     [418, "fish", "Thon à l’huile", 199, 100, [50, 100, 150], "En conserve, égoutté"],
     [13350, "fish", "Filet de cabillaud vapeur", 74, 120, [75, 120, 160], "Cuit, sans arêtes ni gras ajouté"],
     [14293, "fish", "Crevettes cuites", 86, 75, [50, 75, 120], "Cuites, décortiquées, sans queue non consommée"],
+    [413, "fish", "Sardines à l’huile", 204, 90, [50, 90, 130], "En conserve, égouttées"],
+    [13976, "fish", "Truite fumée", 177, 80, [40, 80, 120], "Telle que vendue, sans peau ni arêtes si retirées"],
+    [13349, "fish", "Truite bouillie", 115, 120, [80, 120, 160], "Cuite à l’eau, chair sans arêtes, sans gras ni sel ajoutés"],
+    [1169, "fish", "Bâtonnets de poisson au four", 251, 100, [50, 100, 150], "Cuits au four, sans gras ajouté"],
+    [13977, "fish", "Moules cuites", 108, 100, [50, 100, 150], "Cuites, chair sans coquille"],
     [1005, "vegetables", "Brocoli vapeur", 35, 120, [80, 120, 180], "Cuit, sans sauce"],
     [1002, "vegetables", "Carottes vapeur", 44, 100, [50, 100, 160], "Cuites, sans sauce"],
     [1654, "vegetables", "Courgettes vapeur", 18, 100, [50, 100, 170], "Cuites, sans sauce"],
@@ -632,6 +655,15 @@ const foods = [
     [354, "vegetables", "Concombre", 12, 75, [50, 75, 150], "Cru, partie mangée"],
     [448, "vegetables", "Laitue pommée", 16, 40, [20, 40, 60], "Crue, feuilles seules"],
     [1009, "vegetables", "Haricots verts vapeur", 33, 100, [50, 100, 170], "Cuits, sans sauce"],
+    [1004, "vegetables", "Chou-fleur vapeur", 26, 120, [60, 120, 180], "Cuit à la vapeur, sans sel ajouté"],
+    [1025, "vegetables", "Épinards vapeur", 31, 120, [60, 120, 180], "Cuits à la vapeur, sans sel ajouté"],
+    [1019, "vegetables", "Betterave rouge vapeur", 56, 120, [60, 120, 180], "Cuite à la vapeur, sans sel ajouté"],
+    [1020, "vegetables", "Courge vapeur", 29, 120, [60, 120, 200], "Cuite à la vapeur, sans peau ni graines si retirées, sans sel ajouté"],
+    [1024, "vegetables", "Asperges vapeur", 25, 120, [60, 120, 180], "Cuites à la vapeur, partie tendre, sans sel ajouté"],
+    [360, "vegetables", "Poivron rouge", 32, 80, [40, 80, 150], "Cru, sans pédoncule ni graines"],
+    [375, "vegetables", "Champignons de Paris", 25, 80, [40, 80, 150], "Crus, après nettoyage"],
+    [368, "vegetables", "Oignon", 39, 50, [20, 50, 100], "Cru, pelé"],
+    [1015, "vegetables", "Poireau à l’étuvée", 34, 120, [60, 120, 180], "Cuit à l’étuvée, sans gras ni sel ajoutés"],
     [1066, "starches", "Riz blanc cuit", 117, 120, [80, 120, 180], "Cuit à l’eau, sans sauce"],
     [800, "starches", "Pâtes sans œufs", 353, 75, [50, 75, 100], "Sec · avant cuisson", [1063, 158, 170, [100, 170, 250], "Cuit · dans l’assiette"]],
     [801, "starches", "Pâtes complètes", 338, 75, [50, 75, 100], "Sec · avant cuisson", [1064, 152, 170, [100, 170, 250], "Cuit · dans l’assiette"]],
@@ -639,7 +671,19 @@ const foods = [
     [823, "starches", "Pain blanc", 242, 60, [30, 60, 100], "Tel que vendu"],
     [198, "starches", "Flocons d’avoine", 381, 50, [30, 50, 75], "Secs, avant lait ou eau"],
     [13396, "starches", "Quinoa cuit", 117, 120, [80, 120, 180], "Cuit, sans gras ni sel ajoutés"],
-    [1535, "starches", "Pizza margherita", 238, 200, [100, 200, 300], "Cuite au four, portion mangée"],
+    [14262, "starches", "Patate douce au four", 100, 150, [80, 150, 250], "Cuite au four, sans gras ni sel ajoutés, partie consommée"],
+    [1067, "starches", "Riz complet", 133, 120, [80, 120, 180], "Cuit · dans l’assiette", [428, 350, 60, [45, 60, 75], "Sec · avant cuisson"]],
+    [14191, "starches", "Semoule de couscous cuite", 158, 120, [80, 120, 180], "Cuite, sans gras ni sel ajoutés"],
+    [14197, "starches", "Gnocchis de pommes de terre", 177, 160, [100, 160, 250], "Cuits, pesés dans l’assiette"],
+    [1619, "starches", "Polenta cuite", 79, 150, [80, 150, 220], "Semoule de maïs cuite"],
+    [821, "starches", "Pain complet", 213, 60, [30, 60, 100], "Pain de froment, tel que vendu"],
+    [824, "starches", "Pain de seigle valaisan", 218, 60, [30, 60, 100], "Tel que vendu"],
+    [825, "starches", "Pain de mie complet", 271, 50, [25, 50, 75], "Tel que vendu"],
+    [820, "starches", "Tresse au beurre", 325, 60, [30, 60, 90], "Telle que vendue"],
+    [836, "starches", "Croissant au beurre", 432, 55, [35, 55, 80], "Cuit, farine blanche"],
+    [943, "starches", "Muesli aux fruits et aux noix", 372, 45, [30, 45, 70], "Sec, sans sucre ajouté, avant ajout de lait"],
+    [14104, "starches", "Muesli croquant (granola)", 432, 40, [25, 40, 60], "Sec, mélange sucré, avant ajout de lait"],
+    [940, "starches", "Cornflakes nature", 376, 40, [25, 40, 60], "Secs, avant ajout de lait"],
     [381, "fruit", "Banane", 90, 120, [[60, "½ banane"], [120, "1 banane"], 150], "Crue, pelée"],
     [378, "fruit", "Pomme", 52, 150, [75, 150, 200], "Crue, sans trognon"],
     [382, "fruit", "Poire", 54, 140, [75, 140, 200], "Crue, sans trognon"],
@@ -648,20 +692,70 @@ const foods = [
     [389, "fruit", "Myrtilles", 51, 60, [30, 60, 100], "Crues, partie mangée"],
     [395, "fruit", "Kiwi", 58, 75, [50, 75, 150], "Cru, chair si pelé"],
     [380, "fruit", "Avocat", 158, 75, [40, 75, 150], "Cru, chair sans peau ni noyau"],
+    [379, "fruit", "Abricot", 44, 80, [40, 80, 120], "Cru, sans noyau"],
+    [377, "fruit", "Ananas", 52, 150, [75, 150, 220], "Cru, chair sans écorce"],
+    [397, "fruit", "Mandarine", 45, 100, [60, 100, 150], "Crue, pelée"],
+    [396, "fruit", "Mangue", 68, 150, [75, 150, 220], "Crue, chair sans peau ni noyau"],
+    [399, "fruit", "Melon à chair orange", 62, 150, [75, 150, 220], "Cru, sans écorce ni pépins"],
+    [402, "fruit", "Pastèque", 39, 200, [100, 200, 300], "Crue, chair sans écorce"],
+    [401, "fruit", "Pêche jaune", 43, 140, [80, 140, 200], "Crue, sans noyau"],
+    [404, "fruit", "Nectarine", 55, 140, [80, 140, 200], "Crue, sans noyau"],
+    [390, "fruit", "Framboises", 44, 100, [50, 100, 150], "Crues, partie consommée"],
+    [478, "fruit", "Raisin blanc", 69, 120, [60, 120, 180], "Cru, grains sans rafle"],
+    [628, "fruit", "Compote de pommes sans sucre ajouté", 55, 100, [60, 100, 150], "En conserve, non sucrée"],
     [13399, "dairy", "Lait demi-écrémé 1,5 %", 46, 206, [[51.5, "50 ml"], [206, "200 ml"], [257.5, "250 ml"]], "Liquide UHT"],
     [52, "dairy", "Yogourt nature", 66, 125, [100, 125, 180], "Tel que vendu, non sucré"],
     [1192, "dairy", "Yogourt sucré", 105, 180, [100, 125, 180], "Tel que vendu, moyenne générique"],
     [82, "dairy", "Mozzarella", 256, 60, [30, 60, 125], "Égouttée, prête à manger"],
     [505, "dairy", "Cottage cheese nature", 100, 100, [50, 100, 150], "Tel que vendu, fromage frais granulé"],
+    [71, "dairy", "Séré maigre nature", 61, 125, [80, 125, 200], "Tel que vendu"],
+    [530, "dairy", "Gruyère", 394, 30, [15, 30, 50], "Tel que vendu, sans croûte si retirée"],
+    [555, "dairy", "Emmental", 407, 30, [15, 30, 50], "Tel que vendu, sans croûte si retirée"],
+    [532, "dairy", "Fromage à raclette", 355, 80, [40, 80, 140], "Poids du fromage seul, sans accompagnement"],
+    [549, "dairy", "Feta de brebis et chèvre", 281, 50, [25, 50, 80], "Égouttée si conservée en saumure"],
+    [482, "dairy", "Parmesan", 401, 15, [5, 15, 30], "Poids du fromage seul, râpé ou en morceau"],
+    [14126, "dairy", "Lait entier 3,5 %", 65, 200, [100, 200, 250], "UHT, pesé en grammes"],
     [1070, "eggs", "Œuf dur", 156, 50, [[50, "1 œuf"], [100, "2 œufs"], [150, "3 œufs"]], "Cuit dur, sans coquille"],
     [1059, "eggs", "Pois chiches cuits", 131, 100, [60, 100, 150], "Cuits, égouttés, sans gras ni sel ajoutés"],
     [1060, "eggs", "Lentilles entières cuites", 111, 120, [60, 120, 150], "Cuites, égouttées, sans gras ni sel ajoutés"],
     [13437, "eggs", "Tofu ferme nature", 148, 120, [50, 120, 200], "Tel que vendu, égoutté si liquide séparé, avant cuisson"],
     [273, "eggs", "Amandes nature", 624, 20, [15, 20, 30], "Amandes décortiquées, sans assaisonnement"],
+    [1500, "eggs", "Omelette nature", 151, 120, [60, 120, 180], "Préparée, sans garniture"],
+    [14055, "eggs", "Houmous", 204, 40, [20, 40, 80], "Préparé, sans accompagnement"],
+    [13388, "eggs", "Haricots secs cuits", 111, 120, [60, 120, 180], "Grains cuits, égouttés, sans gras ni sel ajoutés"],
+    [13386, "eggs", "Lentilles décortiquées cuites", 131, 120, [60, 120, 180], "Cuites, sans gras ni sel ajoutés"],
+    [271, "eggs", "Noix", 709, 20, [10, 20, 35], "Cerneaux, sans coque"],
+    [275, "eggs", "Noix de cajou", 619, 20, [10, 20, 35], "Décortiquées"],
+    [14066, "eggs", "Falafels frits", 229, 80, [40, 80, 140], "Cuits par friture, sans accompagnement"],
+    [1535, "dishes", "Pizza margherita", 238, 200, [100, 200, 300], "Cuite au four, portion mangée"],
+    [1664, "dishes", "Lasagnes à la viande", 154, 250, [120, 250, 350], "Préparées, prêtes à manger"],
+    [1666, "dishes", "Lasagnes aux légumes", 133, 250, [120, 250, 350], "Préparées, prêtes à manger"],
+    [1541, "dishes", "Quiche lorraine", 307, 150, [80, 150, 220], "Cuite au four, pâte brisée"],
+    [1538, "dishes", "Pizza au jambon", 219, 200, [100, 200, 300], "Cuite au four, part consommée"],
+    [1475, "dishes", "Fondue moitié-moitié", 292, 180, [100, 180, 250], "Préparée, fromage fondu seul, pain à saisir séparément"],
+    [670, "dishes", "Soupe de tomate", 39, 250, [120, 250, 350], "Préparée, prête à manger"],
+    [1557, "dishes", "Sandwich baguette au jambon", 129, 150, [80, 150, 220], "Préparé, pain et garniture compris"],
+    [1198, "dishes", "Bircher non sucré", 86, 180, [100, 180, 250], "Préparé, prêt à manger"],
+    [863, "dishes", "Purée de pommes de terre", 95, 150, [80, 150, 250], "Préparée avec lait entier et beurre"],
+    [576, "drinks", "Jus d’orange", 42, 208, [[104, "100 ml"], [208, "200 ml"], [260, "250 ml"]], "Liquide, 100 % jus, sans dilution"],
+    [568, "drinks", "Jus de pomme", 48, 200, [100, 200, 250], "Liquide, pesé en grammes"],
+    [14114, "drinks", "Boisson à l’avoine", 47, 200, [100, 200, 250], "Liquide, pesée en grammes"],
+    [72, "drinks", "Boisson au soja nature", 40, 200, [100, 200, 250], "Liquide, pesée en grammes"],
+    [498, "drinks", "Soda au cola sucré", 40, 250, [150, 250, 330], "Liquide, pesé en grammes"],
+    [816, "drinks", "Bière blonde", 42, 250, [150, 250, 330], "Liquide, pesée en grammes"],
+    [13420, "drinks", "Bière sans alcool", 23, 250, [150, 250, 330], "Liquide, pesée en grammes"],
     [591, "other", "Huile d’olive", 900, 10, [[4.6, "1 c. à café"], 10, 15], "Quantité utilisée pour la part mangée"],
     [60, "other", "Beurre de fromagerie", 747, 10, [5, 10, 20], "Tel que vendu, quantité mangée ou attribuée à sa part"],
     [196, "other", "Chocolat noir", 537, 20, [10, 20, 30], "Tel que vendu, tablette générique"],
-    [576, "other", "Jus d’orange", 42, 208, [[104, "100 ml"], [208, "200 ml"], [260, "250 ml"]], "Liquide, 100 % jus, sans dilution"]
+    [600, "other", "Huile de colza", 900, 10, [5, 10, 15], "Quantité utilisée pour la part consommée"],
+    [472, "other", "Miel de fleurs", 306, 10, [5, 10, 20], "Tel que vendu"],
+    [696, "other", "Confiture", 246, 15, [5, 15, 25], "Telle que vendue, moyenne générique"],
+    [195, "other", "Chocolat au lait", 537, 20, [10, 20, 30], "Tel que vendu, tablette générique"],
+    [771, "other", "Mayonnaise", 693, 15, [5, 15, 30], "Prête à consommer"],
+    [635, "other", "Ketchup", 117, 15, [5, 15, 30], "Prêt à consommer"],
+    [13459, "other", "Pesto vert", 436, 20, [10, 20, 35], "Prêt à consommer"],
+    [667, "other", "Sauce tomate", 69, 75, [30, 75, 120], "Prête à consommer"],
+    [12982, "other", "Chips de pommes de terre", 538, 30, [15, 30, 50], "Telles que vendues"]
 ].map(([id, group, name, kcal, portion, presets, weighing, alternate]) => {
     const states = [{id, kcal, portion, presets, weighing}];
     if (alternate) {
