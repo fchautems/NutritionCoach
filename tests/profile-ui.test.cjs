@@ -395,3 +395,72 @@ test('masque le résultat périmé en changeant de jour et distingue zéro des d
     assert.equal(app.text('fit-steps'), '0 pas');
     assert.match(app.text('nolatr-steps'), /^1\s234 pas$/);
 });
+
+test('ajuste le bilan du jour avec la médiane d’une seule source et préserve les données', t => {
+    const data = structuredClone(oldState);
+    Object.assign(data.profile, {birthDate: '1988-01-01', weight: 70, weighIns: {[today]: 70}});
+    const before = structuredClone(data);
+    const calls = [];
+    const history = [5200, 5800, null, 6200, 6800, 10000, 0];
+    const app = openApp(t, {data, readSteps: (day, interactive, reply) => {
+        calls.push({day, interactive});
+        reply(day === today ? {status: 'done', fit: 4000, nolatr: 9200}
+            : {status: 'done', fit: 9000, nolatr: history[Math.round((Date.parse(today) - Date.parse(day)) / 86400000) - 1]});
+    }});
+    assert.equal(app.visible('step-estimate'), true);
+    assert.equal(calls.length, 1);
+    app.fill('step-source', 'nolatr');
+    app.click('estimate-walking');
+    assert.equal(calls.length, 8);
+    assert.ok(calls.every(call => call.interactive === false));
+    assert.match(app.text('step-estimate-result'), /NOLATR.*6\s200 pas.*80 kcal/);
+    assert.match(app.text('walking-balance'), /2\s255 kcal.*2\s008 kcal restantes/);
+    assert.match(app.text('goal-button'), /2\s175 kcal/);
+    assert.deepEqual(data, before);
+
+    app.fill('step-source', 'fit');
+    app.field('step-source').dispatchEvent(new app.document.defaultView.Event('change'));
+    assert.equal(app.visible('walking-balance'), false);
+    app.click('estimate-walking');
+    assert.match(app.text('step-estimate-result'), /Google Fit.*9\s000 pas.*inchangé/);
+    assert.equal(app.visible('walking-balance'), false);
+    app.click('previous');
+    assert.equal(app.visible('step-estimate'), false);
+    assert.deepEqual(data, before);
+});
+
+test('exige assez de jours de la même source et plafonne le repère ajusté', t => {
+    const data = structuredClone(oldState);
+    data.profile.birthDate = '1988-01-01';
+    let reliable = false;
+    const app = openApp(t, {data, readSteps: (day, interactive, reply) => {
+        reply({status: 'done', fit: day === today ? 25000 : reliable ? 4000 : null, nolatr: 6000});
+    }});
+    app.click('estimate-walking');
+    assert.match(app.text('step-estimate-result'), /au moins cinq jours/);
+    assert.equal(app.visible('walking-balance'), false);
+    reliable = true;
+    app.click('estimate-walking');
+    assert.match(app.text('step-estimate-result'), /150 kcal/);
+    assert.match(app.text('walking-balance'), /2\s325 kcal/);
+    assert.equal(data.goal, oldState.goal);
+});
+
+test('écarte la réponse historique quand on quitte le jour en cours', t => {
+    const data = structuredClone(oldState);
+    data.profile.birthDate = '1988-01-01';
+    const requests = [];
+    const app = openApp(t, {data, readSteps: (day, interactive, reply) => requests.push({day, reply})});
+    requests[0].reply({status: 'done', fit: 8000, nolatr: null});
+    app.click('estimate-walking');
+    assert.equal(requests[1].day, '2026-11-06');
+    app.click('previous');
+    requests[1].reply({status: 'done', fit: 3500, nolatr: null});
+    assert.equal(requests.length, 3);
+    assert.equal(app.visible('step-estimate'), false);
+    assert.equal(app.visible('walking-balance'), false);
+    app.click('return-today');
+    requests[3].reply({status: 'done', fit: 8100, nolatr: null});
+    assert.equal(app.field('step-source').disabled, false);
+    assert.equal(app.visible('step-estimate'), true);
+});
