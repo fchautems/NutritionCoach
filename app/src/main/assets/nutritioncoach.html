@@ -467,11 +467,11 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
                     <button id="reset-catalog" class="link-button" type="button">Catégories</button>
                 </div>
                 <div id="food-results" class="card catalog-list"></div>
-                <p id="food-empty" class="hint" hidden>Aucun aliment trouvé. Tu peux encore le saisir à la main.</p>
+                <p id="food-empty" class="hint" hidden>Aucun aliment trouvé.</p>
             </section>
+            <button id="manual-open" class="link-button" type="button" aria-expanded="false" aria-controls="entry-form">Saisir un aliment à la main</button>
             <p id="catalog-feedback" class="hint" role="status" hidden></p>
             <p class="source">Valeurs pour la partie comestible. Base de données suisse des valeurs nutritives V7.1, OSAV, valeursnutritives.ch.</p>
-            <button id="manual-open" class="link-button" type="button" aria-expanded="false" aria-controls="entry-form">Saisir un aliment à la main</button>
         </div>
         <form id="entry-form" class="card panel" hidden>
             <label for="food">Aliment ou plat</label>
@@ -1342,7 +1342,17 @@ byId('clear-food-search').addEventListener('click', () => {
 byId('manual-open').addEventListener('click', () => {
     const open = byId('entry-form').hidden;
     setManual(open);
-    if (open) byId('food').focus();
+    if (!open) return;
+    const food = byId('food');
+    const kcal = byId('kcal');
+    const query = byId('food-search').value.trim();
+    const noResults = !byId('catalog-results').hidden && !byId('food-empty').hidden;
+    if (noResults && query && query.length <= food.maxLength && !food.value && !kcal.value) {
+        food.value = query;
+        kcal.focus();
+    } else {
+        food.focus();
+    }
 });
 byId('weighing-state').addEventListener('change', () => setPortionState());
 byId('grams').addEventListener('input', renderPortion);

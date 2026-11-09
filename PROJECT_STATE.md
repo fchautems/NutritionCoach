@@ -1,6 +1,6 @@
 # NutritionCoach — état du projet
 
-Dernière mise à jour : 2026-11-08
+Dernière mise à jour : 2026-11-09
 
 ## État vérifié
 
@@ -20,6 +20,8 @@ Dernière mise à jour : 2026-11-08
 - Sur `main`, l’aperçu V0.4 embarque l’interface 3 comme base et y ajoute le profil détaillé, l’estimation de maintien et l’objectif de poids. Les données supplémentaires sont enregistrées dans le profil Android existant. Le pont V0.3 reste compatible avec la partie historique de cette interface.
 
 ## Décisions et changements
+
+- 2026-11-09. PR #11. Si le catalogue ne trouve aucun aliment, « Saisir un aliment à la main » reprend le nom recherché dans un formulaire vierge et place le focus sur les calories. Le nom reste modifiable. Un brouillon est conservé et une recherche de plus de 80 caractères reste à reformuler dans le champ du nom.
 
 - 2026-11-08. Activation de la tâche horaire d’amélioration. Chaque passage reprend la branche par défaut, vérifie les PR et le canal diffusé, puis propose les changements vérifiés sur une branche `auto/nutritioncoach-*` via une PR. La fusion et la diffusion suivent le flux de coordination.
 - 2026-11-08. Après avoir choisi un repas, « Aliments récents » propose jusqu’à trois aliments distincts reconnus dans le journal, par ordre d’ajout. Chaque raccourci reprend l’état de pesée et la dernière portion, modifiables avant validation. La reconnaissance utilise le libellé du catalogue et les kcal enregistrées. Les anciens formats et les saisies libres sans correspondance restent visibles dans le journal. Le pont, le stockage et les valeurs OSAV restent identiques.
@@ -54,6 +56,8 @@ Dernière mise à jour : 2026-11-08
 
 ## Contrôles et limites
 
+- 2026-11-09. Canal HTTPS vérifié, interface 12 et empreinte SHA-256 concordantes. Les 12 tests DOM des sources passent, ainsi que les 16 tests du candidat dérivé de l’interface 12 et les 21 tests avec les autres PR d’interface appliquées localement. Le test ciblé échoue avant le correctif et couvre ensuite la saisie sans résultat, le focus, le brouillon et la longueur maximale. Le contrôle 12 → candidat → 12 avec pont simulé relit la saisie manuelle antidatée et confirme la conservation du journal, du profil, de l’objectif et des pesées.
+
 - 2026-11-08. Interface 12. Les 14 tests DOM passent avec le HTML diffusé, dont les pas, les entrées récentes et la sauvegarde/restauration via pont simulé. Deux contrôles de relecture hors ligne couvrent les passages 9 → 12 → 9 et 11 → 12 → 11 avec conservation du journal, du profil, de l’objectif et des pesées. Le manifeste et le HTML sont servis en HTTP 200 sans redirection par l’URL utilisée par l’APK. L’empreinte SHA-256 concorde. Le lancement de Chromium tactile est bloqué par l’environnement. Une capture du Pixel confirme que l’interface 12 est active, que les paramètres la signalent à jour et que les commandes de sauvegarde et de restauration sont visibles. La capture ne valide ni leur exécution ni la reprise d’une portion.
 
 - 2026-11-08. Le manifeste HTTPS du canal indique l’interface 9, protocole 1. Le SHA-256 du HTML correspond au manifeste et les octets correspondent à l’interface de départ sur `main`. Dix tests DOM passent avec les récents, dont un test sur le pont V0.3 qui vérifie le tri, la déduplication, l’état cuit, l’annulation, l’ajout et la suppression. Un contrôle hors ligne avec pont simulé valide le passage interface 9 → candidate → 9 avec le même profil, objectif et historique. L’application locale du changement sur la branche de la PR #6 réussit avec ses 14 tests DOM, y compris les pas et la sauvegarde. Le rendu et le toucher restent à vérifier sur le Pixel. Les tests Android Gradle relèvent de la CI, le SDK étant absent de cet environnement.
@@ -87,5 +91,6 @@ Dernière mise à jour : 2026-11-08
 
 ## Prochaine action
 
+- Sur Pixel après diffusion, chercher « Galette maison », ouvrir la saisie manuelle et vérifier que le nom est repris et que le clavier numérique s’ouvre sur les calories.
 - Sur le Pixel, ouvrir un repas, reprendre une portion récente, l’ajuster et confirmer que le profil et le journal sont accessibles hors ligne. Vérifier aussi les pas et l’exécution de la sauvegarde et de la restauration sur V0.7.
 - Withings en pause. À la reprise, tester une pesée prise après la reconnexion, d’abord dans Withings puis dans Santé Connect, et vérifier la confirmation des calories. [Parcours Withings](docs/WITHINGS.md#pilote-android-v05).

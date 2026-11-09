@@ -450,3 +450,38 @@ test('efface une recherche en un appui et revient à la catégorie sans ouvrir l
     assert.equal(app.document.activeElement, app.field('catalog-title'));
     assert.deepEqual(data, before);
 });
+
+test('reprend une recherche sans résultat en saisie manuelle et préserve le brouillon', t => {
+    const app = openApp(t, {detailed: false});
+    app.click('previous');
+    app.field('meals').querySelectorAll('button')[2].click();
+
+    app.fill('food-search', 'pomme');
+    app.click('manual-open');
+    assert.equal(app.field('food').value, '');
+    assert.equal(app.document.activeElement, app.field('food'));
+    app.click('manual-open');
+
+    app.fill('food-search', '  Galette maison  ');
+    app.click('manual-open');
+    assert.equal(app.field('food').value, 'Galette maison');
+    assert.equal(app.document.activeElement, app.field('kcal'));
+    assert.deepEqual(app.data, oldState);
+
+    app.fill('kcal', '230');
+    app.click('manual-open');
+    app.fill('food-search', 'Soupe maison');
+    app.click('manual-open');
+    assert.equal(app.field('food').value, 'Galette maison');
+    assert.equal(app.field('kcal').value, '230');
+    app.submit('entry-form');
+    assert.deepEqual(app.data, {...oldState, entries: [...oldState.entries, {
+        id: 'added', date: '2026-11-06', meal: 'dinner', name: 'Galette maison', kcal: 230
+    }]});
+
+    app.click('manual-open');
+    app.fill('food-search', 'a'.repeat(81));
+    app.click('manual-open');
+    assert.equal(app.field('food').value, '');
+    assert.equal(app.document.activeElement, app.field('food'));
+});
