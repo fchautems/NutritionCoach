@@ -546,7 +546,7 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
     <ul id="withings-weights" role="list" aria-label="Pesées, de la plus récente à la plus ancienne" tabindex="0"></ul>
 </dialog>
 <dialog id="portion-dialog" aria-labelledby="portion-title">
-    <h2 id="portion-title"></h2>
+    <h2 id="portion-title" tabindex="-1" autofocus></h2>
     <p id="portion-reference"></p>
     <form id="portion-form">
         <div id="weighing-options" hidden>
@@ -554,7 +554,7 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
             <select id="weighing-state"></select>
         </div>
         <p id="weighing-note" class="hint" hidden></p>
-        <div id="portion-presets" class="presets" aria-label="Quantités proposées"></div>
+        <div id="portion-presets" class="presets" role="group" aria-label="Quantités proposées"></div>
         <label for="grams">Quantité (g)</label>
         <input id="grams" type="number" inputmode="decimal" min="1" max="2000" step="0.1" required>
         <p id="portion-total" class="portion-total" aria-live="polite"></p>
@@ -753,7 +753,11 @@ function foodRow(label, detail, open) {
     arrow.setAttribute('aria-hidden', 'true');
     arrow.textContent = '›';
     button.append(text, arrow);
-    button.addEventListener('click', open);
+    button.addEventListener('click', () => {
+        // A tap may leave focus on the search field until the dialog opens.
+        button.focus({preventScroll: true});
+        open();
+    });
     return button;
 }
 

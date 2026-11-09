@@ -31,8 +31,16 @@ function openApp(t, {data = structuredClone(oldState), detailed = true, day = to
                 constructor(...args) { super(...(args.length ? args : [year, month - 1, date, 12])); }
             };
             window.scrollTo = () => {};
-            window.HTMLDialogElement.prototype.showModal = function () { this.open = true; };
-            window.HTMLDialogElement.prototype.close = function () { this.open = false; };
+            const modalOpeners = new WeakMap();
+            window.HTMLDialogElement.prototype.showModal = function () {
+                modalOpeners.set(this, window.document.activeElement);
+                this.open = true;
+                this.querySelector('[autofocus]')?.focus();
+            };
+            window.HTMLDialogElement.prototype.close = function () {
+                this.open = false;
+                modalOpeners.get(this)?.focus();
+            };
             window.NutritionHost = {
                 state: () => JSON.stringify(data),
                 ready: opening => { window.readyOpening = opening; },
@@ -408,4 +416,33 @@ test('affiche les 243 pesées importées par date depuis le diagnostic et le pro
     app.click('profile-withings-history');
     assert.equal(app.field('withings-history').open, true);
     assert.deepEqual(visibleDays(), days.map(record => record.day));
+});
+
+
+test('la portion place le focus sur le nom puis le rend à la fiche après annulation', t => {
+    const data = structuredClone(oldState);
+    data.entries.push({id: 'pasta', date: today, meal: 'lunch',
+        name: 'Pâtes sans œufs · cuit · 170,5 g', kcal: 269});
+    const before = structuredClone(data);
+    const app = openApp(t, {data});
+    app.field('meals').querySelector('button').click();
+    const recent = app.field('recent-food-list').querySelector('button');
+    app.field('food-search').focus();
+    recent.click();
+    assert.equal(app.document.activeElement, app.field('portion-title'));
+    assert.match(app.text('portion-title'), /Pâtes/);
+    assert.equal(app.field('portion-presets').getAttribute('role'), 'group');
+    assert.equal(app.back(), true);
+    assert.equal(app.document.activeElement, recent);
+
+    app.fill('food-search', 'pomme');
+    const result = app.field('food-results').querySelector('button');
+    app.field('food-search').focus();
+    result.click();
+    assert.equal(app.document.activeElement, app.field('portion-title'));
+    assert.equal(app.text('portion-title'), result.querySelector('span').firstChild.textContent);
+    app.field('portion-dialog').querySelector('.close').click();
+    assert.equal(app.document.activeElement, result);
+    assert.equal(app.field('food-search').value, 'pomme');
+    assert.deepEqual(data, before);
 });
