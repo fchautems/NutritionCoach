@@ -323,6 +323,22 @@ test('les portions utilisent les valeurs propres à l’état et acceptent une q
     assert.equal(app.data.entries.at(-1).kcal, 41);
 });
 
+test('une longue liste d’aliments défile avec la page', t => {
+    const app = openApp(t);
+    app.field('meals').querySelector('button').click();
+    app.field('food-categories').querySelector('[data-group="vegetables"]').click();
+    const results = app.field('food-results');
+    const assertPageScroll = () => {
+        assert.ok(results.querySelectorAll('button').length > 10);
+        const {overflow, overflowY, maxHeight} = app.document.defaultView.getComputedStyle(results);
+        assert.doesNotMatch(overflow + ' ' + overflowY, /\b(auto|scroll)\b/);
+        assert.ok(!maxHeight || maxHeight === 'none');
+    };
+    assertPageScroll();
+    app.fill('food-search', 'cuit');
+    assertPageScroll();
+});
+
 test('trouve les nouveaux plats et boissons et calcule le riz complet dans les deux états', t => {
     const app = openApp(t);
     app.field('meals').querySelectorAll('button')[1].click();

@@ -25,6 +25,8 @@ Dernière mise à jour : 2026-11-09
 
 ## Décisions et changements
 
+- 2026-11-09. Proposition pour le canal intégré. Les résultats de recherche et les listes par catégorie suivent le défilement de la page. Avec le catalogue de 131 fiches, cela évite de devoir défiler dans un cadre pour atteindre les derniers aliments.
+
 - 2026-11-09. Le passage de coordination quotidien à 18 h 30, heure suisse, vérifie et publie les lots d’interface prêts sur le canal intégré. La tâche horaire prépare les changements en PR. Une diffusion exige une vérification du lot final et de la conservation des données. Les préversions Android suivent leur revue séparée.
 
 - 2026-11-09. Extension du catalogue hors ligne à 131 fiches avec 82 aliments supplémentaires. Les catégories « Plats préparés », « Boissons » et « Sauces et en-cas » accélèrent le choix sans recherche. Les libellés, valeurs et portions des 49 fiches historiques sont préservés. [Source, unités et états de pesée](docs/CATALOGUE_PORTIONS.md#extension-du-catalogue-courant-du-9-novembre-2026).
@@ -55,6 +57,8 @@ Dernière mise à jour : 2026-11-09
 - 2026-11-08. Aperçu Android V0.5. Import local en lecture seule du poids Withings via Health Connect sur Android 14 et plus, à l’ouverture après autorisation et sur demande. L’utilisateur choisit si la dernière pesée doit servir de poids actuel. La tendance rassemble les pesées importées et manuelles.
 
 ## Contrôles et limites
+
+- 2026-11-09. Défilement du catalogue. 12 tests DOM passent sur les sources. Le test de régression échoue sur l’interface 13 diffusée et passe sur le candidat. Les 17 contrôles du candidat passent en Europe/Zurich et America/Los_Angeles, dont le retour hors ligne 13 → candidat → 13 avec pont simulé. L’interface 13 relit la portion ajoutée et conserve les entrées historiques, le profil, l’objectif et les pesées. Le changement HTML s’applique aussi aux branches des PR d’interface et des aperçus Android ouverts. Le démarrage de Chromium est bloqué par l’environnement et le geste tactile reste à vérifier sur Pixel.
 
 - 2026-11-09. Interface 13. La [CI Android de la PR #15](https://github.com/fchautems/NutritionCoach/actions/runs/42603582833) et les 11 tests DOM des sources passent. Les 16 tests du candidat assemblé sur l’interface 12 passent en Europe/Zurich et America/Los_Angeles. Le test avec pont simulé vérifie la relecture hors ligne d’une saisie du nouveau catalogue par la 12 ainsi que la conservation du journal, du profil, de l’objectif et des pesées. Après expiration du cache GitHub, les URL HTTPS utilisées par l’APK servent le manifeste 13 et le HTML correspondant, dont le SHA-256 concorde. L’installation sur le Pixel reste à confirmer.
 
@@ -92,6 +96,8 @@ Dernière mise à jour : 2026-11-09
 - 2026-11-08. L’interface 9 n’est pas apparue sur le Pixel au premier essai. Le manifeste et le fichier HTML ont été téléchargés en HTTP 200, sans redirection, depuis l’URL utilisée par l’APK. Le protocole 1 et l’empreinte SHA-256 concordent. Une capture du Pixel confirme ensuite que l’interface 9 est active et que la vérification indique que l’interface est à jour. Le message d’import indique toujours qu’aucune nouvelle pesée Withings n’a été trouvée.
 
 ## Prochaine action
+
+- Après diffusion du lot, sur Pixel, ouvrir « Légumes », défiler jusqu’en bas et ouvrir une portion. Répéter avec la recherche « cuit », puis vérifier le retour aux catégories.
 
 - Sur le Pixel, appliquer l’interface 13 depuis « Paramètres → Vérifier les mises à jour », puis essayer « Plats préparés → Lasagnes → portion » et chercher le riz complet cuit et sec.
 
