@@ -287,12 +287,21 @@ test('consulte et corrige les aliments du repas sans descendre sous le catalogue
     assert.deepEqual(data, before);
 
     app.click('manual-open');
-    app.fill('food', 'Salade');
+    app.fill('food', 'Riz cuit (150 g)');
     app.fill('kcal', '80');
     app.submit('entry-form');
     assert.equal(saved.open, true);
     assert.equal(summary.textContent, '2 aliments enregistrés · 275 kcal');
-    app.field('meal-entries').querySelector('button').click();
+    const remove = app.field('meal-entries').querySelectorAll('button');
+    assert.match(remove[0].getAttribute('aria-label'), /80 kcal/);
+    assert.match(remove[1].getAttribute('aria-label'), /195 kcal/);
+    remove[0].click();
+    assert.equal(app.text('delete-name'), 'Riz cuit (150 g)');
+    assert.match(app.text('delete-context'), /^80 kcal · Midi · .*7 novembre 2026$/);
+    assert.equal(app.field('delete-dialog').getAttribute('aria-describedby'), 'delete-name delete-context');
+    assert.equal(app.back(), true);
+    assert.equal(summary.textContent, '2 aliments enregistrés · 275 kcal');
+    remove[0].click();
     app.click('delete-confirm');
     assert.equal(app.document.activeElement, summary);
     assert.equal(summary.textContent, '1 aliment enregistré · 195 kcal');
@@ -305,11 +314,17 @@ test('consulte et corrige les aliments du repas sans descendre sous le catalogue
     assert.equal(summary.textContent, '1 aliment enregistré · 130 kcal');
     summary.click();
     app.field('meal-entries').querySelector('button').click();
+    assert.match(app.text('delete-context'), /^130 kcal · Midi · .*6 novembre 2026$/);
     app.click('delete-confirm');
     assert.equal(saved.hidden, true);
     assert.equal(saved.open, false);
     assert.equal(app.document.activeElement, app.field('meal-title'));
     assert.deepEqual(data, {...before, entries: before.entries.filter(entry => entry.id !== 'yesterday')});
+
+    app.click('back');
+    app.click('return-today');
+    app.field('legacy-entries').querySelector('button').click();
+    assert.match(app.text('delete-context'), /^52 kcal · samedi,? 7 novembre 2026$/);
 });
 
 test('la proposition calorique modifie le journal seulement après confirmation', t => {

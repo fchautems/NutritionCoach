@@ -581,9 +581,10 @@ button.icon-button { width: 3rem; padding: 0; display: inline-grid; place-items:
         </div>
     </form>
 </dialog>
-<dialog id="delete-dialog" aria-labelledby="delete-title">
+<dialog id="delete-dialog" aria-labelledby="delete-title" aria-describedby="delete-name delete-context">
     <h2 id="delete-title">Supprimer cet aliment ?</h2>
     <p id="delete-name"></p>
+    <p id="delete-context" class="hint"></p>
     <p id="delete-error" class="error" role="alert" hidden></p>
     <div class="actions">
         <button class="close" type="button">Annuler</button>
@@ -945,14 +946,18 @@ function listEntries(container, entries) {
         const name = document.createElement('strong');
         name.textContent = entry.name;
         const amount = document.createElement('small');
-        amount.textContent = formatted(entry.kcal) + ' kcal';
+        const calories = formatted(entry.kcal) + ' kcal';
+        amount.textContent = calories;
         const remove = document.createElement('button');
         remove.type = 'button';
         remove.textContent = '×';
-        remove.setAttribute('aria-label', 'Supprimer ' + entry.name);
+        remove.setAttribute('aria-label', 'Supprimer ' + entry.name + ' · ' + calories);
         remove.addEventListener('click', () => {
             pendingDelete = entry.id;
             byId('delete-name').textContent = entry.name;
+            const meal = meals.find(meal => meal.id === entry.meal);
+            byId('delete-context').textContent = [calories, meal?.label, dateFormat.format(date)]
+                .filter(Boolean).join(' · ');
             message('delete-error', '');
             byId('delete-dialog').showModal();
         });
