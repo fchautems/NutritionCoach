@@ -1,6 +1,29 @@
 # NutritionCoach — état du projet
 
-Dernière mise à jour : 2026-11-09
+Dernière mise à jour : 2026-11-25
+
+## Reprise du 25 novembre 2026 — reconnaissance photographique
+
+### État vérifié
+- Le manifeste du canal `ui-channel` annonce toujours l’interface 14, protocole 1.
+- Le socle sur `main` est Android Java/Gradle. `MainActivity` charge le HTML dans une WebView qui bloque les requêtes réseau et les accès fichiers/contenus ; le pont `NutritionHost` ne propose pas de capture photo ni d’analyse de repas.
+- `JournalStore` conserve les entrées dans `entries_v1` (SharedPreferences) : identifiant, date, repas, libellé, kcal entières. Le catalogue JS repose sur 131 aliments OSAV V7.1, identifiants et kcal/100 g avec états de préparation ; le contrat historique n’enregistre pas de macros structurées. L’interface publiée utilise déjà recherche, portions et calcul local.
+- Aucun code ni APK modifié pour cette reprise ; aucun essai API, test appareil ou mesure de coût effectué.
+
+### Direction produit confirmée
+- Priorité : photo d’une assiette, analyse automatique, corrections facultatives, validation unique du repas. Détecter aliments, préparations et sauces, estimer quantités et nutriments ; afficher les incertitudes, notamment ingrédients cachés.
+- Sélecteurs d’aliments corrigibles ; ajout/suppression d’éléments ; taille petite/normale/grande indépendante par aliment, normale = quantité estimée sur la photo ; coefficients à valider. Nombre global de portions par pas de 0,5, initialement 1, sans nouvelle photo.
+- Conserver le journal, le profil, les pesées, l’objectif, la saisie manuelle, le fonctionnement hors ligne et le canal de mises à jour. Recalculer les calories et protéines/glucides/lipides localement après chaque correction, sans nouvel appel API.
+- Exploiter ensuite les macros, calories, objectifs et évolution du poids pour le coaching et les propositions de menus. Ne pas inventer de macros pour les anciennes entrées inconnues.
+
+### Proposition technique (à valider)
+- Conserver Android Java et HTML/JS. Ajouter un petit service Python (FastAPI proposé) authentifié en HTTPS ; appel vision OpenAI côté serveur uniquement, clé dédiée en variable d’environnement, jamais dans l’APK, le dépôt ou l’interface. Maintenir la WebView isolée ; capture photo native et communication via un pont Android étendu.
+- POC avec GPT-5.4 mini et Responses API / Structured Outputs ; schéma validé côté serveur, identifiant OSAV résolu localement, état de préparation, estimation de grammes et signal d’incertitude. Distinguer les valeurs OSAV des estimations de secours hors catalogue. Étendre la base locale OSAV aux macros et aux aliments utiles ; ne pas réutiliser des valeurs nutritionnelles d’un aliment remplacé.
+- Étendre le stockage et le pont en préservant les champs historiques, avec ajout atomique d’un repas et prévention du double enregistrement. La nouvelle APK devra conserver identifiant, certificat et données ; vérifier sauvegarde/restauration et repli vers une interface compatible. Ne pas réactiver les tâches automatiques arrêtées.
+- Hébergement et authentification du service, disponibilité du projet API/crédits, coefficients de taille et qualité/coût réels de l’analyse : non vérifiés / à déterminer. Le service ne doit recevoir que les données nécessaires ; prévoir limites de taille/fréquence et ne pas conserver les photos par défaut.
+
+### Prochaine action prioritaire
+Valider la proposition puis réaliser un POC Python isolé sur des photos de repas représentatives avec une clé API dédiée ; vérifier reconnaissance, JSON, quantités et coût avant toute modification Android. Les vérifications antérieures ci-dessous restent utiles mais ne sont plus la priorité produit.
 
 ## État vérifié
 
